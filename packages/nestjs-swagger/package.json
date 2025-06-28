@@ -1,0 +1,80 @@
+{
+  "name": "@globalart/nest-swagger",
+  "version": "1.2.0",
+  "description": "A simple documentation builder for NestJS Swagger Module",
+  "author": {
+    "name": "GlobalArt, Inc"
+  },
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GlobalArtInc/nestjs-swagger-decorator"
+  },
+  "keywords": [
+    "nestjs",
+    "swagger",
+    "documentation"
+  ],
+  "scripts": {
+    "format": "prettier --write \"**/*.ts\"",
+    "test": "jest --runInBand",
+    "test:cov": "jest --coverage",
+    "coveralls": "yarn run test:cov --coverageReporters=text-lcov | coveralls",
+    "build": "rm -rf ./dist && tsc",
+    "prepublishOnly": "npm run build",
+    "publish:dev": "npm publish --access public --tag dev",
+    "publish:npm": "release-it"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.1.0",
+    "@nestjs/core": "^11.1.0",
+    "@nestjs/swagger": "^11.2.0",
+    "@nestjs/testing": "^11.1.0",
+    "@nestjs/typeorm": "^11.0.0",
+    "mysql": "^2.17.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.0.7",
+    "coveralls": "^3.0.5",
+    "jest": "^30.0.2",
+    "prettier": "^3.5.3",
+    "reflect-metadata": "^0.2.2",
+    "release-it": "19.0.3",
+    "rxjs": "^7.8.1",
+    "ts-jest": "^29.3.2",
+    "ts-node": "^10.0.0",
+    "typeorm": "0.3.25",
+    "typescript": "^5.8.3"
+  },
+  "jest": {
+    "coveragePathIgnorePatterns": [
+      "src/__tests__"
+    ],
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".spec.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "coverageDirectory": "../coverage"
+  }
+}

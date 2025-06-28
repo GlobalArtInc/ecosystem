@@ -1,0 +1,94 @@
+{
+  "name": "@globalart/nestjs-typeorm-pagination",
+  "version": "11.0.7",
+  "author": "GlobalArt, Inc",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib/**/*"
+  ],
+  "description": "Pagination and filtering helper method for TypeORM repostiories or query builders using Nest.js framework.",
+  "keywords": [
+    "nestjs",
+    "typeorm",
+    "express",
+    "pagination",
+    "paginate",
+    "filtering",
+    "search"
+  ],
+  "scripts": {
+    "prebuild": "rimraf lib",
+    "build": "tsc",
+    "prepare": "tsc",
+    "dev:yalc": "nodemon --watch src --ext ts --exec 'npm run build && yalc push'",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:ci": "prettier --list-different \"src/**/*.ts\"",
+    "lint": "eslint -c .eslintrc.json --ext .ts --max-warnings 0 src",
+    "test": "jest",
+    "prepublish:npm": "npm run build",
+    "publish:npm": "release-it",
+    "prepublish:dev": "npm run build",
+    "publish:dev": "npm publish --access public --tag dev",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"
+  },
+  "devDependencies": {
+    "@nestjs/common": "^11.0.7",
+    "@types/express": "^5.0.0",
+    "@types/jest": "^30.0.0",
+    "@types/lodash": "^4.17.15",
+    "@types/node": "^24.0.4",
+    "@typescript-eslint/eslint-plugin": "^8.22.0",
+    "@typescript-eslint/parser": "^8.22.0",
+    "eslint": "^9.19.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-prettier": "^5.2.3",
+    "fastify": "^5.2.1",
+    "jest": "^30.0.3",
+    "pg": "^8.13.1",
+    "prettier": "^3.4.2",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "sqlite3": "^5.1.7",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
+    "typeorm": "^0.3.20",
+    "typescript": "^5.7.3",
+    "release-it": "18.1.2"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^11.0.7",
+    "@nestjs/swagger": "^11.0.3",
+    "express": "^4.21.2",
+    "fastify": "^5.2.1",
+    "typeorm": "^0.3.20"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".spec.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "release": {
+    "branches": [
+      "master"
+    ]
+  }
+}
