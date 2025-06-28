@@ -1,0 +1,407 @@
+---
+sidebar_position: 2
+---
+
+# nestjs-typeorm-pagination
+
+A comprehensive pagination and filtering utility for TypeORM repositories and query builders in NestJS applications.
+
+## Installation
+
+```bash npm2yarn
+npm install @globalart/nestjs-typeorm-pagination
+```
+
+## Overview
+
+This package provides a complete solution for implementing pagination, filtering, sorting, and searching in your NestJS applications using TypeORM. It includes decorators, DTOs, and utility functions that make it easy to add these features to your API endpoints.
+
+## Key Features
+
+- 📄 **Pagination** - Easy-to-use pagination with configurable limits
+- 🔍 **Search** - Full-text search across multiple columns
+- 🎯 **Filtering** - Advanced filtering with multiple operators
+- 📊 **Sorting** - Multi-column sorting with custom order
+- 🎨 **Swagger Integration** - Automatic OpenAPI documentation
+- 🔧 **TypeScript Support** - Full type safety and IntelliSense
+- 🚀 **Performance Optimized** - Efficient queries with proper indexing
+
+## Quick Start
+
+```typescript
+import { Controller, Get } from '@nestjs/common';
+import { Paginate, PaginateQuery } from '@globalart/nestjs-typeorm-pagination';
+import { paginate, Paginated } from '@globalart/nestjs-typeorm-pagination';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from './user.entity';
+
+@Controller('users')
+export class UsersController {
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
+
+  @Get()
+  async getUsers(@Paginate() query: PaginateQuery): Promise<Paginated<User>> {
+    return paginate(query, this.userRepository, {
+      sortableColumns: ['id', 'name', 'email', 'createdAt'],
+      searchableColumns: ['name', 'email'],
+      filterableColumns: {
+        name: true,
+        email: true,
+        createdAt: ['gte', 'lte'],
+      },
+    });
+  }
+}
+```
+
+## API Reference
+
+### Paginate Decorator
+
+The `@Paginate()` decorator extracts pagination parameters from the request query and provides a structured `PaginateQuery` object.
+
+#### PaginateQuery Interface
+
+```typescript
+interface PaginateQuery {
+  page?: number;           // Current page number
+  limit?: number;          // Items per page
+  sortBy?: [string, string][]; // Sorting configuration
+  searchBy?: string[];     // Columns to search in
+  search?: string;         // Search term
+  filter?: { [column: string]: string | string[] }; // Filter conditions
+  select?: string[];       // Columns to select
+  path: string;           // Current request path
+}
+```
+
+### Paginate Function
+
+The main `paginate` function handles the pagination logic and returns a `Paginated` result.
+
+#### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `query` | `PaginateQuery` | Pagination query parameters |
+| `repo` | `Repository<T> \| SelectQueryBuilder<T>` | TypeORM repository or query builder |
+| `config` | `PaginateConfig<T>` | Pagination configuration |
+
+#### PaginateConfig Interface
+
+```typescript
+interface PaginateConfig<T> {
+  relations?: FindOptionsRelations<T> | RelationColumn<T>[] | FindOptionsRelationByString;
+  sortableColumns: Column<T>[];                    // Columns that can be sorted
+  nullSort?: 'first' | 'last';                     // How to handle null values in sorting
+  searchableColumns?: Column<T>[];                 // Columns to search in
+  select?: Column<T>[] | string[];                 // Columns to select
+  maxLimit?: number;                               // Maximum items per page
+  defaultSortBy?: SortBy<T>;                       // Default sorting
+  defaultLimit?: number;                           // Default items per page
+  where?: FindOptionsWhere<T> | FindOptionsWhere<T>[]; // Additional where conditions
+  filterableColumns?: {                            // Filterable columns and operators
+    [key in Column<T> | string]?: (FilterOperator | FilterSuffix)[] | true;
+  };
+  loadEagerRelations?: boolean;                    // Load eager relations
+  withDeleted?: boolean;                           // Include soft-deleted records
+  paginationType?: PaginationType;                 // Pagination type
+  relativePath?: boolean;                          // Use relative paths
+  origin?: string;                                 // Origin URL
+}
+```
+
+### Paginated Result
+
+```typescript
+class Paginated<T> {
+  data: T[];                    // Array of items
+  payload: {
+    pagination: {
+      limit: number;            // Items per page
+      totalItems: number;       // Total number of items
+      page: number;             // Current page
+      total: number;            // Total number of pages
+      sortBy: SortBy<T>;        // Current sorting
+      searchBy: Column<T>[];    // Search columns
+      search: string;           // Search term
+      select: string[];         // Selected columns
+      filter?: { [column: string]: string | string[] }; // Applied filters
+      links: {                  // Pagination links
+        url?: string;
+        label?: string;
+        active?: boolean;
+        page?: number;
+      }[];
+    };
+  };
+}
+```
+
+## Usage Examples
+
+### Basic Pagination
+
+```typescript
+import { Controller, Get } from '@nestjs/common';
+import { Paginate, PaginateQuery } from '@globalart/nestjs-typeorm-pagination';
+import { paginate, Paginated } from '@globalart/nestjs-typeorm-pagination';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from './user.entity';
+
+@Controller('users')
+export class UsersController {
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
+
+  @Get()
+  async getUsers(@Paginate() query: PaginateQuery): Promise<Paginated<User>> {
+    return paginate(query, this.userRepository, {
+      sortableColumns: ['id', 'name', 'email', 'createdAt'],
+      defaultSortBy: [['createdAt', 'DESC']],
+      defaultLimit: 20,
+      maxLimit: 100,
+    });
+  }
+}
+```
+
+### With Search and Filtering
+
+```typescript
+@Controller('users')
+export class UsersController {
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
+
+  @Get()
+  async getUsers(@Paginate() query: PaginateQuery): Promise<Paginated<User>> {
+    return paginate(query, this.userRepository, {
+      sortableColumns: ['id', 'name', 'email', 'createdAt'],
+      searchableColumns: ['name', 'email'],
+      filterableColumns: {
+        name: true,
+        email: true,
+        createdAt: ['gte', 'lte'],
+        status: ['eq', 'in'],
+      },
+      defaultSortBy: [['createdAt', 'DESC']],
+      defaultLimit: 20,
+    });
+  }
+}
+```
+
+### With Relations
+
+```typescript
+@Controller('posts')
+export class PostsController {
+  constructor(
+    @InjectRepository(Post)
+    private readonly postRepository: Repository<Post>,
+  ) {}
+
+  @Get()
+  async getPosts(@Paginate() query: PaginateQuery): Promise<Paginated<Post>> {
+    return paginate(query, this.postRepository, {
+      sortableColumns: ['id', 'title', 'createdAt'],
+      searchableColumns: ['title', 'content'],
+      relations: ['author', 'categories'],
+      filterableColumns: {
+        authorId: ['eq'],
+        categoryId: ['in'],
+        published: ['eq'],
+        createdAt: ['gte', 'lte'],
+      },
+    });
+  }
+}
+```
+
+### Using Query Builder
+
+```typescript
+@Controller('users')
+export class UsersController {
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
+
+  @Get('active')
+  async getActiveUsers(@Paginate() query: PaginateQuery): Promise<Paginated<User>> {
+    const queryBuilder = this.userRepository
+      .createQueryBuilder('user')
+      .where('user.isActive = :isActive', { isActive: true });
+
+    return paginate(query, queryBuilder, {
+      sortableColumns: ['id', 'name', 'email', 'createdAt'],
+      searchableColumns: ['name', 'email'],
+      filterableColumns: {
+        name: true,
+        email: true,
+        createdAt: ['gte', 'lte'],
+      },
+    });
+  }
+}
+```
+
+## Query Parameters
+
+### Pagination
+
+- `page` - Page number (default: 1)
+- `limit` - Items per page (default: 20, max: 100)
+
+### Sorting
+
+- `sortBy` - Sort configuration in format `column:direction`
+  - Example: `?sortBy=name:ASC&sortBy=createdAt:DESC`
+
+### Search
+
+- `search` - Search term
+- `searchBy` - Columns to search in
+  - Example: `?search=john&searchBy=name&searchBy=email`
+
+### Filtering
+
+- `filter.column` - Filter by specific column
+  - Example: `?filter.name=john&filter.createdAt.gte=2023-01-01`
+
+### Selection
+
+- `select` - Columns to select
+  - Example: `?select=id,name,email`
+
+## Filter Operators
+
+The package supports various filter operators:
+
+- `eq` - Equal
+- `ne` - Not equal
+- `gt` - Greater than
+- `gte` - Greater than or equal
+- `lt` - Less than
+- `lte` - Less than or equal
+- `in` - In array
+- `notIn` - Not in array
+- `like` - Like pattern
+- `notLike` - Not like pattern
+- `isNull` - Is null
+- `isNotNull` - Is not null
+
+## Swagger Integration
+
+The package includes Swagger decorators for automatic API documentation:
+
+```typescript
+import { Controller, Get } from '@nestjs/common';
+import { 
+  Paginate, 
+  PaginateQuery,
+  ApiPaginatedQuery,
+  ApiOkPaginatedResponse 
+} from '@globalart/nestjs-typeorm-pagination';
+import { paginate, Paginated } from '@globalart/nestjs-typeorm-pagination';
+import { User } from './user.entity';
+
+@Controller('users')
+export class UsersController {
+  @Get()
+  @ApiPaginatedQuery()
+  @ApiOkPaginatedResponse(User)
+  async getUsers(@Paginate() query: PaginateQuery): Promise<Paginated<User>> {
+    return paginate(query, this.userRepository, {
+      sortableColumns: ['id', 'name', 'email', 'createdAt'],
+      searchableColumns: ['name', 'email'],
+      filterableColumns: {
+        name: true,
+        email: true,
+        createdAt: ['gte', 'lte'],
+      },
+    });
+  }
+}
+```
+
+## Advanced Examples
+
+### Custom Where Conditions
+
+```typescript
+@Get('admin')
+async getAdminUsers(@Paginate() query: PaginateQuery): Promise<Paginated<User>> {
+  return paginate(query, this.userRepository, {
+    sortableColumns: ['id', 'name', 'email', 'createdAt'],
+    where: { role: 'admin' },
+    searchableColumns: ['name', 'email'],
+  });
+}
+```
+
+### Multiple Where Conditions
+
+```typescript
+@Get('filtered')
+async getFilteredUsers(@Paginate() query: PaginateQuery): Promise<Paginated<User>> {
+  return paginate(query, this.userRepository, {
+    sortableColumns: ['id', 'name', 'email', 'createdAt'],
+    where: [
+      { role: 'admin' },
+      { role: 'moderator' }
+    ],
+    searchableColumns: ['name', 'email'],
+  });
+}
+```
+
+### Custom Query Builder with Joins
+
+```typescript
+@Get('with-posts')
+async getUsersWithPosts(@Paginate() query: PaginateQuery): Promise<Paginated<User>> {
+  const queryBuilder = this.userRepository
+    .createQueryBuilder('user')
+    .leftJoinAndSelect('user.posts', 'post')
+    .where('post.published = :published', { published: true });
+
+  return paginate(query, queryBuilder, {
+    sortableColumns: ['user.id', 'user.name', 'user.email', 'user.createdAt'],
+    searchableColumns: ['user.name', 'user.email'],
+    filterableColumns: {
+      'user.name': true,
+      'user.email': true,
+      'user.createdAt': ['gte', 'lte'],
+    },
+  });
+}
+```
+
+## Best Practices
+
+1. **Define sortable columns** - Always specify which columns can be sorted to prevent SQL injection
+2. **Set reasonable limits** - Use `maxLimit` to prevent performance issues
+3. **Index searchable columns** - Add database indexes on columns used for search
+4. **Use relations wisely** - Only load necessary relations to avoid N+1 queries
+5. **Validate filter operators** - Only allow safe filter operators for each column
+6. **Cache when possible** - Consider caching for frequently accessed data
+
+## Performance Tips
+
+- Add database indexes on sortable and searchable columns
+- Use `select` to limit returned columns when full entities aren't needed
+- Consider using query builder for complex queries with joins
+- Set appropriate `maxLimit` to prevent large result sets
+- Use `withDeleted: false` when you don't need soft-deleted records

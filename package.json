@@ -1,0 +1,51 @@
+{
+  "name": "nestjs-toolkit",
+  "private": true,
+  "scripts": {
+    "bootstrap": "pnpm install",
+    "build": "pnpm -r build",
+    "build:watch": "pnpm -r --parallel build:watch",
+    "test": "pnpm -r test",
+    "test:cov": "pnpm -r test:cov",
+    "lint": "pnpm -r lint",
+    "format": "pnpm -r format",
+    "clean": "pnpm -r clean && rimraf node_modules packages/*/node_modules",
+    "dev": "pnpm -r --parallel dev",
+    "publish:dev": "pnpm -r publish:dev",
+    "publish:npm": "pnpm -r publish:npm",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "pnpm build && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.5",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GlobalArtInc/nestjs-toolkit.git"
+  },
+  "keywords": [
+    "nestjs",
+    "toolkit",
+    "swagger",
+    "typeorm",
+    "pagination"
+  ],
+  "author": "GlobalArt, Inc",
+  "license": "MIT",
+  "dependencies": {
+    "css-select": "4.3.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "css-select": "4.3.0"
+    }
+  }
+}
