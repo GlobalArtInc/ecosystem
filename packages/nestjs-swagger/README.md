@@ -1,0 +1,204 @@
+# @globalart/nest-swagger
+
+A simple documentation builder for NestJS Swagger module that simplifies creating OpenAPI documentation for your REST APIs.
+
+## Installation
+
+```bash
+npm install @globalart/nest-swagger
+```
+
+or
+
+```bash
+yarn add @globalart/nest-swagger
+```
+
+## Description
+
+This package provides a convenient `SwaggerDocumentation` decorator for automatic Swagger documentation generation in NestJS applications. It significantly simplifies the process of adding documentation to your endpoints by providing a unified interface for describing operations and possible errors.
+
+## Key Features
+
+- 📝 Simple decorator for endpoint documentation
+- 🔧 Pre-configured descriptions for standard HTTP errors
+- 📊 Support for paginated responses
+- 🎯 Support for arrays in responses
+- 📋 Automatic schema generation for DTOs
+- 🛡️ Full TypeScript typing
+
+## Quick Start
+
+```typescript
+import { Controller, Get } from '@nestjs/common';
+import { SwaggerDocumentation, ERROR_DESCRIPTIONS } from '@globalart/nest-swagger';
+
+@Controller('users')
+export class UsersController {
+  @Get()
+  @SwaggerDocumentation({
+    endpointDescription: 'Get list of all users',
+    endpointSummary: 'List users',
+    error400Description: ERROR_DESCRIPTIONS.BAD_REQUEST,
+    error401Description: ERROR_DESCRIPTIONS.UNAUTHORIZED,
+    error500Description: ERROR_DESCRIPTIONS.INTERNAL_SERVER_ERROR
+  })
+  async getAllUsers() {
+    return [];
+  }
+}
+```
+
+## API Reference
+
+### SwaggerDocumentation
+
+Decorator for automatic Swagger documentation generation.
+
+#### Parameters
+
+| Parameter             | Type       | Description                          |
+| --------------------- | ---------- | ------------------------------------ |
+| `endpointDescription` | `string`   | Detailed endpoint description        |
+| `endpointSummary`     | `string`   | Brief endpoint description           |
+| `responseDto`         | `Function` | DTO class for response               |
+| `isArray`             | `boolean`  | Indicates that response is an array  |
+| `isPaginated`         | `boolean`  | Indicates that response is paginated |
+| `error400Description` | `string`   | 400 error description                |
+| `error401Description` | `string`   | 401 error description                |
+| `error403Description` | `string`   | 403 error description                |
+| `error404Description` | `string`   | 404 error description                |
+| `error409Description` | `string`   | 409 error description                |
+| `error422Description` | `string`   | 422 error description                |
+| `error429Description` | `string`   | 429 error description                |
+| `error500Description` | `string`   | 500 error description                |
+| `error503Description` | `string`   | 503 error description                |
+
+### ERROR_DESCRIPTIONS
+
+Object with pre-configured error descriptions:
+
+```typescript
+export const ERROR_DESCRIPTIONS = {
+  BAD_REQUEST: "Invalid request data or parameters",
+  UNAUTHORIZED: "Authentication required", 
+  FORBIDDEN: "Access denied",
+  NOT_FOUND: "Resource not found",
+  CONFLICT: "Resource already exists or conflict detected",
+  UNPROCESSABLE_ENTITY: "Validation error",
+  RATE_LIMIT_EXCEEDED: "Rate limit exceeded. Too many requests",
+  INTERNAL_SERVER_ERROR: "Internal server error",
+  SERVICE_UNAVAILABLE: "Service temporarily unavailable"
+};
+```
+
+## Usage Examples
+
+### Basic Usage
+
+```typescript
+import { Controller, Get } from '@nestjs/common';
+import { SwaggerDocumentation, ERROR_DESCRIPTIONS } from '@globalart/nest-swagger';
+
+@Controller()
+export class AppController {
+  @Get('hello')
+  @SwaggerDocumentation({
+    endpointDescription: 'Simple greeting endpoint',
+    endpointSummary: 'Greeting',
+    error400Description: ERROR_DESCRIPTIONS.BAD_REQUEST,
+    error401Description: ERROR_DESCRIPTIONS.UNAUTHORIZED,
+    error403Description: ERROR_DESCRIPTIONS.FORBIDDEN,
+    error404Description: ERROR_DESCRIPTIONS.NOT_FOUND,
+    error429Description: ERROR_DESCRIPTIONS.RATE_LIMIT_EXCEEDED,
+    error500Description: ERROR_DESCRIPTIONS.INTERNAL_SERVER_ERROR
+  })
+  async hello() {
+    return 'Hello World';
+  }
+}
+```
+
+### Using with DTO
+
+```typescript
+import { ApiProperty } from '@nestjs/swagger';
+
+export class UserDto {
+  @ApiProperty()
+  id: number;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  email: string;
+}
+
+@Controller('users')
+export class UsersController {
+  @Get(':id')
+  @SwaggerDocumentation({
+    endpointDescription: 'Get user by ID',
+    endpointSummary: 'Get user',
+    responseDto: UserDto,
+    error404Description: ERROR_DESCRIPTIONS.NOT_FOUND,
+    error500Description: ERROR_DESCRIPTIONS.INTERNAL_SERVER_ERROR
+  })
+  async getUserById(@Param('id') id: number) {
+    // user retrieval logic
+  }
+}
+```
+
+### Working with Arrays
+
+```typescript
+@Controller('users')
+export class UsersController {
+  @Get()
+  @SwaggerDocumentation({
+    endpointDescription: 'Get list of all users',
+    endpointSummary: 'List users',
+    responseDto: UserDto,
+    isArray: true,
+    error500Description: ERROR_DESCRIPTIONS.INTERNAL_SERVER_ERROR
+  })
+  async getAllUsers() {
+    // user list retrieval logic
+  }
+}
+```
+
+### Paginated Responses
+
+```typescript
+@Controller('users')
+export class UsersController {
+  @Get()
+  @SwaggerDocumentation({
+    endpointDescription: 'Get paginated list of users',
+    endpointSummary: 'Paginated user list',
+    responseDto: UserDto,
+    isPaginated: true,
+    error400Description: ERROR_DESCRIPTIONS.BAD_REQUEST,
+    error500Description: ERROR_DESCRIPTIONS.INTERNAL_SERVER_ERROR
+  })
+  async getPaginatedUsers(@Query() query: PaginationDto) {
+    // pagination logic
+  }
+}
+```
+
+## Paginated Response Structure
+
+When using `isPaginated: true`, the response is automatically wrapped in the structure:
+
+```typescript
+{
+  data: T[],        // array of objects of the specified DTO
+  totalCount: number,  // total number of records
+  offset: number,      // offset
+  limit: number        // limit of records per page
+}
+```
