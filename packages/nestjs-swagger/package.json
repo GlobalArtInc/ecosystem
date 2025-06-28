@@ -31,8 +31,8 @@
   ],
   "scripts": {
     "format": "prettier --write \"**/*.ts\"",
-    "test": "jest --runInBand",
-    "test:cov": "jest --coverage",
+    "test": "jest --runInBand --passWithNoTests",
+    "test:cov": "jest --coverage --passWithNoTests",
     "coveralls": "yarn run test:cov --coverageReporters=text-lcov | coveralls",
     "build": "rm -rf ./dist && tsc",
     "prepublishOnly": "npm run build",

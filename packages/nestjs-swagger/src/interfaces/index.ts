@@ -10,7 +10,8 @@ export interface SwaggerDocumentationErrorStatus {
   error503Description?: string;
 }
 
-export interface SwaggerDocumentationOptions extends SwaggerDocumentationErrorStatus {
+export interface SwaggerDocumentationOptions
+  extends SwaggerDocumentationErrorStatus {
   endpointDescription?: string;
   endpointSummary?: string;
   // eslint-disable-next-line @typescript-eslint/ban-types

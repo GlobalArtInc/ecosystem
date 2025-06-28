@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { Paginated } from '../paginate'
+import { ApiProperty } from "@nestjs/swagger";
+import { Paginated } from "../paginate";
 
 // class PaginatedLinksDocumented {
 //     @ApiProperty({
@@ -132,17 +132,17 @@ import { Paginated } from '../paginate'
 // }
 
 export class PaginatedDocumented<T> extends Paginated<T> {
-    @ApiProperty({
-        isArray: true,
-        required: true,
-        title: 'Array of entities',
-        type: Object,
-    })
-    override data!: T[]
+  @ApiProperty({
+    isArray: true,
+    required: true,
+    title: "Array of entities",
+    type: Object,
+  })
+  declare data: T[];
 
-    // @ApiProperty({
-    //     title: 'Pagination Metadata',
-    //     required: true,
-    // })
-    // override payload!: PaginatedPayloadDocumented<T>
+  // @ApiProperty({
+  //     title: 'Pagination Metadata',
+  //     required: true,
+  // })
+  // override payload!: PaginatedPayloadDocumented<T>
 }
