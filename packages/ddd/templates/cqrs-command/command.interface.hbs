@@ -1,0 +1,6 @@
+import { z } from 'zod';
+import { type {{camelCase name}}CommandInput } from './{{kebabCase name}}.command.input';
+import { type {{camelCase name}}CommandOutput } from './{{kebabCase name}}.command.output';
+
+export type I{{pascalCase name}}Input = z.infer<typeof {{camelCase name}}CommandInput>;
+export type I{{pascalCase name}}Output = z.infer<typeof {{camelCase name}}CommandOutput>;

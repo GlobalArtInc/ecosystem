@@ -1,0 +1,15 @@
+export const new{{pascalCase name}}Spec = (input: ICreate{{pascalCase name}}Internal) => {
+  // example
+  // return WithInstructionName.fromString(input.name)
+  //   .and(WithInstructionAccountId.fromExistingNumber(input.accountId))
+  //   .and(WithInstructionDescription.fromString(input.description))
+  //   .and(WithInstructionGptDescription.fromString(input.gptDescription))
+};
+
+export const with{{pascalCase name}}FilterSpec = (filter: {{pascalCase name}}RootFilter) => {
+  if (!filter) {
+    return None as Option<BaseFilterSpecification>;
+  }
+
+  return convertFilterSpec(filter.unpack());
+};

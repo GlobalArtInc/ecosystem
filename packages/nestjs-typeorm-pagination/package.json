@@ -1,0 +1,102 @@
+{
+  "name": "@globalart/nestjs-typeorm-pagination",
+  "version": "1.0.5",
+  "author": "GlobalArt, Inc",
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "lib/**/*"
+  ],
+  "description": "Pagination and filtering helper method for TypeORM repostiories or query builders using Nest.js framework.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GlobalArtInc/ecosystem/tree/main/packages/nestjs-typeorm-pagination"
+  },
+  "keywords": [
+    "nestjs",
+    "typeorm",
+    "express",
+    "pagination",
+    "paginate",
+    "filtering",
+    "search"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "prebuild": "rimraf lib",
+    "build": "tsdown",
+    "build:watch": "tsdown --watch",
+    "prepare": "tsc",
+    "dev:yalc": "nodemon --watch src --ext ts --exec 'npm run build && yalc push'",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:ci": "prettier --list-different \"src/**/*.ts\"",
+    "lint": "eslint -c .eslintrc.json --ext .ts --max-warnings 0 src",
+    "test": "jest --passWithNoTests",
+    "prepublish:npm": "npm run build",
+    "publish:npm": "release-it --config ../../.release-it.json",
+    "prepublish:dev": "npm run build",
+    "publish:dev": "npm publish --access public --tag dev",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"
+  },
+  "devDependencies": {
+    "@nestjs/common": "^11.1.6",
+    "@types/express": "^5.0.3",
+    "@types/jest": "^30.0.0",
+    "@types/lodash": "^4.17.19",
+    "@types/node": "^24.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.39.1",
+    "@typescript-eslint/parser": "^8.39.1",
+    "eslint": "^9.33.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.5.4",
+    "fastify": "^5.5.0",
+    "jest": "^30.0.3",
+    "pg": "^8.16.3",
+    "prettier": "^3.6.2",
+    "reflect-metadata": "^0.2.2",
+    "release-it": "19.0.5",
+    "rxjs": "^7.8.2",
+    "sqlite3": "^5.1.7",
+    "ts-jest": "^29.4.0",
+    "ts-node": "^10.9.2",
+    "tsdown": "0.15.9",
+    "typeorm": "^0.3.25",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@nestjs/swagger": "^11.2.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.0",
+    "lodash": "^4.17.21"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".spec.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "release": {
+    "branches": [
+      "master"
+    ]
+  }
+}

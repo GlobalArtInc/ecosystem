@@ -1,0 +1,8 @@
+import { type I{{pascalCase name}}Input } from './{{kebabCase name}}.command.interface';
+import { Command } from '@globalart/ddd';
+
+export class {{pascalCase name}}Command extends Command implements I{{pascalCase name}}Input {
+  constructor(command: I{{pascalCase name}}Input) {
+    super(command);
+  }
+}

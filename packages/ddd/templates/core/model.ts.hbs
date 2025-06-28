@@ -1,0 +1,15 @@
+import { and, ID } from '@globalart/ddd';
+
+export class {{pascalCase name}} {
+  public id!: ID;
+
+  static empty(): {{pascalCase name}} {
+    return new {{pascalCase name}}();
+  }
+
+  toJSON(): IQuery{{pascalCase name}} {
+    return {
+      id: this.id.unpack(),
+    };
+  }
+}

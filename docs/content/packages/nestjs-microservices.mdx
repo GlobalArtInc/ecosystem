@@ -1,0 +1,221 @@
+---
+sidebar_position: 3
+---
+
+# NestJS Microservices
+
+Simplified decorators for multiple transport patterns in NestJS microservices with full type safety.
+
+## Installation
+
+```bash npm2yarn
+npm install @globalart/nestjs-microservices
+```
+
+## Overview
+
+This package provides convenient decorators for different transport patterns in NestJS microservices. It simplifies the process of creating message handlers for various transport protocols by providing dedicated decorators for each transport type.
+
+## Key Features
+
+- **Multiple Transports** - Support for TCP, Redis, MQTT, gRPC, NATS, RabbitMQ, and Kafka
+- **Type Safety** - Full TypeScript support with proper typing
+- **Simple API** - Intuitive decorators that reduce boilerplate code
+- **Easy Integration** - Drop-in replacement for standard NestJS message patterns
+
+## Quick Start
+
+```typescript
+import { Controller } from '@nestjs/common';
+import { TcpPattern } from '@globalart/nestjs-microservices';
+
+@Controller()
+export class UserController {
+  @TcpPattern('user.created')
+  async handleUserCreated(data: UserCreatedEvent) {
+    return this.userService.processUser(data);
+  }
+}
+```
+
+## Available Decorators
+
+| Decorator         | Transport | Description                    |
+|-------------------|-----------|--------------------------------|
+| `TcpPattern`      | TCP       | TCP message pattern decorator  |
+| `RedisPattern`    | Redis     | Redis message pattern decorator|
+| `MqttPattern`     | MQTT      | MQTT message pattern decorator |
+| `GrpcPattern`     | gRPC      | gRPC message pattern decorator |
+| `NatsPattern`     | NATS      | NATS message pattern decorator |
+| `RabbitMqPattern` | RabbitMQ  | RabbitMQ message pattern decorator |
+| `KafkaPattern`    | Kafka     | Kafka message pattern decorator |
+
+## Usage Examples
+
+### TCP Transport
+
+```typescript
+import { Controller } from '@nestjs/common';
+import { TcpPattern } from '@globalart/nestjs-microservices';
+
+@Controller()
+export class UserController {
+  @TcpPattern('user.created')
+  async handleUserCreated(data: UserCreatedEvent) {
+    return this.userService.processUser(data);
+  }
+
+  @TcpPattern('user.updated')
+  async handleUserUpdated(data: UserUpdatedEvent) {
+    return this.userService.updateUser(data);
+  }
+}
+```
+
+### Redis Transport
+
+```typescript
+import { Controller } from '@nestjs/common';
+import { RedisPattern } from '@globalart/nestjs-microservices';
+
+@Controller()
+export class NotificationController {
+  @RedisPattern('notification.send')
+  async handleNotification(data: NotificationData) {
+    return this.notificationService.send(data);
+  }
+}
+```
+
+### MQTT Transport
+
+```typescript
+import { Controller } from '@nestjs/common';
+import { MqttPattern } from '@globalart/nestjs-microservices';
+
+@Controller()
+export class SensorController {
+  @MqttPattern('sensor.data')
+  async handleSensorData(data: SensorReading) {
+    return this.sensorService.processReading(data);
+  }
+}
+```
+
+### gRPC Transport
+
+```typescript
+import { Controller } from '@nestjs/common';
+import { GrpcPattern } from '@globalart/nestjs-microservices';
+
+@Controller()
+export class OrderController {
+  @GrpcPattern('order.process')
+  async handleOrder(data: OrderRequest) {
+    return this.orderService.processOrder(data);
+  }
+}
+```
+
+### NATS Transport
+
+```typescript
+import { Controller } from '@nestjs/common';
+import { NatsPattern } from '@globalart/nestjs-microservices';
+
+@Controller()
+export class PaymentController {
+  @NatsPattern('payment.completed')
+  async handlePayment(data: PaymentEvent) {
+    return this.paymentService.confirmPayment(data);
+  }
+}
+```
+
+### RabbitMQ Transport
+
+```typescript
+import { Controller } from '@nestjs/common';
+import { RabbitMqPattern } from '@globalart/nestjs-microservices';
+
+@Controller()
+export class EmailController {
+  @RabbitMqPattern('email.send')
+  async handleEmail(data: EmailRequest) {
+    return this.emailService.sendEmail(data);
+  }
+}
+```
+
+### Kafka Transport
+
+```typescript
+import { Controller } from '@nestjs/common';
+import { KafkaPattern } from '@globalart/nestjs-microservices';
+
+@Controller()
+export class AnalyticsController {
+  @KafkaPattern('analytics.event')
+  async handleAnalytics(data: AnalyticsEvent) {
+    return this.analyticsService.trackEvent(data);
+  }
+}
+```
+
+## Multiple Transport Support
+
+You can use multiple transport patterns in the same controller:
+
+```typescript
+import { Controller } from '@nestjs/common';
+import { TcpPattern, RedisPattern, KafkaPattern } from '@globalart/nestjs-microservices';
+
+@Controller()
+export class EventController {
+  @TcpPattern('user.event')
+  async handleUserEvent(data: UserEvent) {
+    return this.userService.handleEvent(data);
+  }
+
+  @RedisPattern('cache.update')
+  async handleCacheUpdate(data: CacheData) {
+    return this.cacheService.update(data);
+  }
+
+  @KafkaPattern('log.event')
+  async handleLogEvent(data: LogEvent) {
+    return this.logService.log(data);
+  }
+}
+```
+
+## Type Safety
+
+All decorators support TypeScript typing for better development experience:
+
+```typescript
+interface UserCreatedEvent {
+  userId: string;
+  email: string;
+  name: string;
+  timestamp: Date;
+}
+
+@Controller()
+export class UserController {
+  @TcpPattern('user.created')
+  async handleUserCreated(data: UserCreatedEvent): Promise<void> {
+    // data is fully typed as UserCreatedEvent
+    console.log(`Processing user: ${data.name} (${data.email})`);
+    await this.userService.processUser(data);
+  }
+}
+```
+
+## Best Practices
+
+- **Use Descriptive Patterns** - Choose clear, hierarchical pattern names like `user.created` or `order.payment.processed`
+- **Type Your Events** - Always define interfaces for your event data to ensure type safety
+- **Handle Errors Gracefully** - Implement proper error handling in your message handlers
+- **Use Appropriate Transport** - Choose the right transport for your use case (TCP for RPC, Kafka for events, etc.)
+- **Keep Handlers Simple** - Message handlers should be lightweight and delegate to services

@@ -1,0 +1,23 @@
+export interface SwaggerDocumentationErrorStatus {
+  error400Description?: string;
+  error401Description?: string;
+  error403Description?: string;
+  error404Description?: string;
+  error409Description?: string;
+  error422Description?: string;
+  error429Description?: string;
+  error500Description?: string;
+  error503Description?: string;
+}
+
+export interface SwaggerDocumentationOptions
+  extends SwaggerDocumentationErrorStatus {
+  endpointSummary: string;
+  endpointDescription?: string;
+  operationId?: string;
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  responseDto?: any;
+  isArray?: boolean;
+  isPaginated?: boolean;
+  deprecated?: boolean;
+}

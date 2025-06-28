@@ -1,0 +1,18 @@
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { {{pascalCase name}}Query } from './{{kebabCase name}}.query';
+import { I{{pascalCase name}}Output } from './{{kebabCase name}}.query.interface';
+
+export class {{pascalCase name}}QueryHandler implements IQueryHandler<{{pascalCase name}}Query, I{{pascalCase name}}Output> {
+  constructor() {}
+
+  async execute(query: {{pascalCase name}}Query) {
+    throw new Error('Not implemented');
+  }
+}
+
+@QueryHandler({{pascalCase name}}Query)
+export class Nest{{pascalCase name}}QueryHandler extends {{pascalCase name}}QueryHandler {
+  constructor() {
+    super();
+  }
+}

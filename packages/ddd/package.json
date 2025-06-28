@@ -1,0 +1,58 @@
+{
+  "name": "@globalart/ddd",
+  "version": "1.0.31",
+  "description": "Advanced Domain-Driven Design",
+  "author": {
+    "name": "GlobalArt, Inc"
+  },
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist",
+    "templates",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GlobalArtInc/ecosystem.git#main"
+  },
+  "keywords": [
+    "ddd"
+  ],
+  "scripts": {
+    "format": "prettier --write \"**/*.ts\"",
+    "test": "jest --runInBand --passWithNoTests",
+    "test:cov": "jest --coverage --passWithNoTests",
+    "coveralls": "yarn run test:cov --coverageReporters=text-lcov | coveralls",
+    "build": "tsdown",
+    "build:watch": "tsdown --watch",
+    "prepublishOnly": "npm run build",
+    "publish:dev": "npm version prerelease --preid=dev && npm publish --tag dev --access public",
+    "publish:npm": "release-it --config ../../.release-it.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "date-fns": "4.1.0",
+    "dequal": "2.0.3",
+    "nanoid": "5.1.5",
+    "oxide.ts": "1.1.0",
+    "prettier": "^3.6.2",
+    "ts-pattern": "5.8.0",
+    "uuid": "13.0.0",
+    "zod": "4.1.12"
+  },
+  "devDependencies": {
+    "release-it": "19.0.5",
+    "tsdown": "0.15.9"
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "name": "@globalart/nestjs-fastify",
+  "version": "1.0.12",
+  "description": "A fastify for NestJS",
+  "author": {
+    "name": "GlobalArt, Inc"
+  },
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GlobalArtInc/ecosystem.git#main"
+  },
+  "keywords": [
+    "nestjs",
+    "fastify"
+  ],
+  "scripts": {
+    "format": "prettier --write \"**/*.ts\"",
+    "test": "jest --runInBand --passWithNoTests",
+    "test:cov": "jest --coverage --passWithNoTests",
+    "coveralls": "yarn run test:cov --coverageReporters=text-lcov | coveralls",
+    "build": "rm -rf ./dist && tsdown && cp src/globals.d.ts dist/",
+    "build:watch": "tsdown --watch",
+    "prepublishOnly": "npm run build",
+    "publish:dev": "npm publish --access public --tag dev",
+    "publish:npm": "release-it --config ../../.release-it.json"
+  },
+  "dependencies": {
+    "@fastify/cookie": "11.0.2",
+    "@fastify/multipart": "9.2.1",
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/core": "^11.1.6",
+    "@nestjs/microservices": "11.1.7",
+    "@nestjs/platform-fastify": "11.1.7",
+    "@nestjs/swagger": "^11.2.0",
+    "@nestjs/testing": "^11.1.6",
+    "@nestjs/typeorm": "^11.0.0",
+    "fastify": "^5.5.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.3.0",
+    "coveralls": "^3.1.1",
+    "jest": "^30.0.3",
+    "prettier": "^3.6.2",
+    "reflect-metadata": "^0.2.2",
+    "release-it": "19.0.5",
+    "rxjs": "^7.8.2",
+    "ts-jest": "^29.4.0",
+    "ts-node": "^10.9.2",
+    "tsdown": "0.15.9",
+    "typescript": "^5.9.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
