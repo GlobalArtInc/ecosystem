@@ -7,6 +7,10 @@ Monorepo with tools for NestJS
 - [`@globalart/nest-swagger`](./packages/nestjs-swagger) - Simple documentation builder for NestJS Swagger Module
 - [`@globalart/nestjs-typeorm-pagination`](./packages/nestjs-typeorm-pagination) - Pagination and filtering for TypeORM repositories
 
+## Examples
+
+- [`swagger-example`](./examples/swagger-example) - Example application demonstrating @globalart/nest-swagger usage
+
 ## Requirements
 
 - Node.js >= 18.0.0
@@ -43,4 +47,11 @@ pnpm lint
 
 # Code formatting
 pnpm format
+```
+
+### Examples
+
+```bash
+# Run swagger example
+pnpm --filter swagger-example start:dev
 ```
