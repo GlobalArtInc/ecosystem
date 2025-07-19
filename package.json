@@ -36,7 +36,8 @@
     "toolkit",
     "swagger",
     "typeorm",
-    "pagination"
+    "pagination",
+    "microservices"
   ],
   "author": "GlobalArt, Inc",
   "license": "MIT",

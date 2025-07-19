@@ -6,6 +6,7 @@ Monorepo with tools for NestJS
 
 - [`@globalart/nestjs-swagger`](./packages/nestjs-swagger) - Simple documentation builder for NestJS Swagger Module
 - [`@globalart/nestjs-typeorm-pagination`](./packages/nestjs-typeorm-pagination) - Pagination and filtering for TypeORM repositories
+- [`@globalart/nestjs-microservices`](./packages/nestjs-microservices) - Convenient decorators for different transport patterns in NestJS microservices
 
 ## Examples
 

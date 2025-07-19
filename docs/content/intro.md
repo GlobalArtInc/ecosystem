@@ -30,6 +30,15 @@ A pagination utility for TypeORM that provides easy-to-use decorators and DTOs f
 - Configurable pagination parameters
 - Response DTOs with metadata
 
+### @globalart/nestjs-microservices
+A simple microservices builder for NestJS that provides convenient decorators for different transport patterns.
+
+**Key Features:**
+- Simple decorators for different transport patterns
+- Support for TCP, Redis, MQTT, gRPC, NATS, RabbitMQ, and Kafka
+- Type-safe message handling
+- Easy to use and integrate
+
 ## Quick Start
 
 ## Getting Started
