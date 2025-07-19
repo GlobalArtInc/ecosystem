@@ -3,52 +3,52 @@ import { MessagePattern, Transport } from "@nestjs/microservices";
 
 /**
  * TCP message pattern decorator
- * @param name - Pattern name
+ * @param pattern - Pattern name
  */
-const TcpPattern = (name: unknown) =>
-  applyDecorators(MessagePattern(name, Transport.TCP));
+const TcpPattern = (pattern: unknown) =>
+  applyDecorators(MessagePattern(pattern, Transport.TCP));
 
 /**
  * Redis message pattern decorator
- * @param name - Pattern name
+ * @param pattern - Pattern name
  */
-const RedisPattern = (name: unknown) =>
-  applyDecorators(MessagePattern(name, Transport.REDIS));
+const RedisPattern = (pattern: unknown) =>
+  applyDecorators(MessagePattern(pattern, Transport.REDIS));
 
 /**
  * MQTT message pattern decorator
- * @param name - Pattern name
+ * @param pattern - Pattern name
  */
-const MqttPattern = (name: unknown) =>
-  applyDecorators(MessagePattern(name, Transport.MQTT));
+const MqttPattern = (pattern: unknown) =>
+  applyDecorators(MessagePattern(pattern, Transport.MQTT));
 
 /**
  * gRPC message pattern decorator
- * @param name - Pattern name
+ * @param pattern - Pattern name
  */
-const GrpcPattern = (name: unknown) =>
-  applyDecorators(MessagePattern(name, Transport.GRPC));
+const GrpcPattern = (pattern: unknown) =>
+  applyDecorators(MessagePattern(pattern, Transport.GRPC));
 
 /**
  * NATS message pattern decorator
- * @param name - Pattern name
+ * @param pattern - Pattern name
  */
-const NatsPattern = (name: unknown) =>
-  applyDecorators(MessagePattern(name, Transport.NATS));
+const NatsPattern = (pattern: unknown) =>
+  applyDecorators(MessagePattern(pattern, Transport.NATS));
 
 /**
  * RabbitMQ message pattern decorator
- * @param name - Pattern name
+ * @param pattern - Pattern name
  */
-const RabbitMqPattern = (name: unknown) =>
-  applyDecorators(MessagePattern(name, Transport.RMQ));
+const RabbitMqPattern = (pattern: unknown) =>
+  applyDecorators(MessagePattern(pattern, Transport.RMQ));
 
 /**
  * Kafka message pattern decorator
- * @param name - Pattern name
+ * @param pattern - Pattern name
  */
-const KafkaPattern = (name: unknown) =>
-  applyDecorators(MessagePattern(name, Transport.KAFKA));
+const KafkaPattern = (pattern: unknown) =>
+  applyDecorators(MessagePattern(pattern, Transport.KAFKA));
 
 export {
   TcpPattern,
