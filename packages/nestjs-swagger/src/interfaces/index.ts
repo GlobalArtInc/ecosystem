@@ -15,7 +15,7 @@ export interface SwaggerDocumentationOptions
   endpointDescription?: string;
   endpointSummary?: string;
   // eslint-disable-next-line @typescript-eslint/ban-types
-  responseDto?: Function;
+  responseDto?: any;
   isArray?: boolean;
   isPaginated?: boolean;
 }
