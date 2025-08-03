@@ -1,6 +1,7 @@
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
+import { HttpLoggerInterceptor } from "@globalart/nestjs-logger";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,6 +13,7 @@ async function bootstrap() {
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("", app, documentFactory);
+  app.useGlobalInterceptors(app.get(HttpLoggerInterceptor));
 
   await app.listen(4500);
   console.log("Application is running on: http://localhost:4500");
