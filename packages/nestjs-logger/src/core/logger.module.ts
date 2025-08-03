@@ -16,6 +16,7 @@ export interface LoggerModuleOptions {
   context?: string;
   format?: "json" | "text" | "pino";
   sensitiveFields?: string[];
+  exclude?: string[];
 }
 
 export interface LoggerModuleAsyncOptions {
@@ -67,6 +68,7 @@ export class LoggerModule {
       ...options,
       sensitiveFields:
         options.sensitiveFields ?? DEFAULT_LOGGER_CONFIG.sensitiveFields,
+      exclude: options.exclude ?? DEFAULT_LOGGER_CONFIG.exclude,
     };
   }
 
@@ -120,10 +122,21 @@ export class LoggerModule {
         useFactory: (
           logger: LoggerService,
           dataSanitizer: DataSanitizer,
-          requestIdGenerator: RequestIdGenerator
+          requestIdGenerator: RequestIdGenerator,
+          config: LoggerConfiguration
         ) =>
-          new HttpLoggerInterceptor(logger, dataSanitizer, requestIdGenerator),
-        inject: [LoggerService, DataSanitizer, RequestIdGenerator],
+          new HttpLoggerInterceptor(
+            logger,
+            dataSanitizer,
+            requestIdGenerator,
+            config
+          ),
+        inject: [
+          LoggerService,
+          DataSanitizer,
+          RequestIdGenerator,
+          LOGGER_CONFIG_TOKEN,
+        ],
       },
     ];
   }

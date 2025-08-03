@@ -3,12 +3,19 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
+  Inject,
 } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { tap, catchError } from "rxjs/operators";
 import { LoggerService } from "./logger.service";
 import { IDataSanitizer, IRequestIdGenerator } from "../contracts";
-import { HttpRequestLogEntry, HttpRequest, HttpResponse } from "../types";
+import {
+  HttpRequestLogEntry,
+  HttpRequest,
+  HttpResponse,
+  LoggerConfiguration,
+} from "../types";
+import { LOGGER_CONFIG_TOKEN } from "../constants";
 import { hostname } from "os";
 
 @Injectable()
@@ -19,12 +26,18 @@ export class HttpLoggerInterceptor implements NestInterceptor {
   constructor(
     private readonly logger: LoggerService,
     private readonly dataSanitizer: IDataSanitizer,
-    private readonly requestIdGenerator: IRequestIdGenerator
+    private readonly requestIdGenerator: IRequestIdGenerator,
+    @Inject(LOGGER_CONFIG_TOKEN) private readonly config: LoggerConfiguration
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
+
+    // Проверяем, нужно ли исключить этот URL из логирования
+    if (this.shouldExcludeUrl(request.url)) {
+      return next.handle();
+    }
 
     const requestId = this.requestIdGenerator.generate();
     const startTime = Date.now();
@@ -122,5 +135,19 @@ export class HttpLoggerInterceptor implements NestInterceptor {
     }
 
     return this.dataSanitizer.sanitize(sanitized) as Record<string, string>;
+  }
+
+  private shouldExcludeUrl(url: string): boolean {
+    return this.config.exclude.some((excludeUrl) => {
+      // Поддержка простых паттернов с * (wildcard)
+      if (excludeUrl.includes("*")) {
+        const pattern = excludeUrl.replace(/\*/g, ".*");
+        const regex = new RegExp(`^${pattern}$`);
+        return regex.test(url);
+      }
+
+      // Точное совпадение
+      return url === excludeUrl;
+    });
   }
 }

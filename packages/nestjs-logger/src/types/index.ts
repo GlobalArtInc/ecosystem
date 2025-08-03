@@ -62,6 +62,7 @@ export interface LoggerConfiguration {
   readonly context?: string;
   readonly format: LogFormat;
   readonly sensitiveFields: readonly string[];
+  readonly exclude: readonly string[];
 }
 
 export interface FormatterOptions {

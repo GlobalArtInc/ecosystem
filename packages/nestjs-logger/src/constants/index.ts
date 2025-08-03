@@ -35,4 +35,5 @@ export const DEFAULT_LOGGER_CONFIG = {
   colors: true,
   format: "text" as const,
   sensitiveFields: DEFAULT_SENSITIVE_FIELDS,
+  exclude: [],
 } as const;
