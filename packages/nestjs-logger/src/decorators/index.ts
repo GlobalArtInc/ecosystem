@@ -2,6 +2,7 @@ import { SetMetadata } from "@nestjs/common";
 import {
   LOGGER_CONTEXT_METADATA,
   LOGGER_METADATA_METADATA,
+  LOGGER_EXCLUDE_METADATA,
 } from "../constants";
 
 /**
@@ -15,3 +16,8 @@ export const LogContext = (context: string) =>
  */
 export const LogMetadata = (metadata: Record<string, unknown>) =>
   SetMetadata(LOGGER_METADATA_METADATA, metadata);
+
+/**
+ * Decorator to exclude logging for a controller or method
+ */
+export const ExcludeLogging = () => SetMetadata(LOGGER_EXCLUDE_METADATA, true);

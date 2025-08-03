@@ -7,6 +7,7 @@ import {
 } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { tap, catchError } from "rxjs/operators";
+import { Reflector } from "@nestjs/core";
 import { LoggerService } from "./logger.service";
 import { IDataSanitizer, IRequestIdGenerator } from "../contracts";
 import {
@@ -15,7 +16,7 @@ import {
   HttpResponse,
   LoggerConfiguration,
 } from "../types";
-import { LOGGER_CONFIG_TOKEN } from "../constants";
+import { LOGGER_CONFIG_TOKEN, LOGGER_EXCLUDE_METADATA } from "../constants";
 import { hostname } from "os";
 
 @Injectable()
@@ -27,7 +28,8 @@ export class HttpLoggerInterceptor implements NestInterceptor {
     private readonly logger: LoggerService,
     private readonly dataSanitizer: IDataSanitizer,
     private readonly requestIdGenerator: IRequestIdGenerator,
-    @Inject(LOGGER_CONFIG_TOKEN) private readonly config: LoggerConfiguration
+    @Inject(LOGGER_CONFIG_TOKEN) private readonly config: LoggerConfiguration,
+    private readonly reflector: Reflector
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
@@ -36,6 +38,16 @@ export class HttpLoggerInterceptor implements NestInterceptor {
 
     // Проверяем, нужно ли исключить этот URL из логирования
     if (this.shouldExcludeUrl(request.url)) {
+      return next.handle();
+    }
+
+    // Проверяем, есть ли декоратор ExcludeLogging на контроллере или методе
+    const isExcluded = this.reflector.getAllAndOverride<boolean>(
+      LOGGER_EXCLUDE_METADATA,
+      [context.getHandler(), context.getClass()]
+    );
+
+    if (isExcluded) {
       return next.handle();
     }
 

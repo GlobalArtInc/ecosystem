@@ -6,7 +6,7 @@ export {
 } from "./core/logger.module";
 export { LoggerService } from "./core/logger.service";
 export { HttpLoggerInterceptor } from "./core/http-logger.interceptor";
-export { LogContext, LogMetadata } from "./decorators";
+export { LogContext, LogMetadata, ExcludeLogging } from "./decorators";
 
 // Types
 export * from "./types";

@@ -1,4 +1,5 @@
 import { DynamicModule, Module, Provider } from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
 import { LoggerService } from "./logger.service";
 import { HttpLoggerInterceptor } from "./http-logger.interceptor";
 import { FormatterFactory } from "../factories/formatter.factory";
@@ -124,13 +125,16 @@ export class LoggerModule {
           dataSanitizer: DataSanitizer,
           requestIdGenerator: RequestIdGenerator,
           config: LoggerConfiguration
-        ) =>
-          new HttpLoggerInterceptor(
+        ) => {
+          const reflector = new Reflector();
+          return new HttpLoggerInterceptor(
             logger,
             dataSanitizer,
             requestIdGenerator,
-            config
-          ),
+            config,
+            reflector
+          );
+        },
         inject: [
           LoggerService,
           DataSanitizer,
