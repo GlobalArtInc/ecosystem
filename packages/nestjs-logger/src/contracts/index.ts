@@ -1,32 +1,16 @@
-import { LogEntry, HttpRequestLogEntry, LoggerConfiguration } from "../types";
+import {
+  LogEntry,
+  HttpRequestLogEntry,
+  LoggerConfiguration,
+  LogOptions,
+} from "../types";
 
 export interface ILogger {
-  log(
-    message: string,
-    context?: string,
-    metadata?: Record<string, unknown>
-  ): void;
-  error(
-    message: string,
-    trace?: string,
-    context?: string,
-    metadata?: Record<string, unknown>
-  ): void;
-  warn(
-    message: string,
-    context?: string,
-    metadata?: Record<string, unknown>
-  ): void;
-  debug(
-    message: string,
-    context?: string,
-    metadata?: Record<string, unknown>
-  ): void;
-  verbose(
-    message: string,
-    context?: string,
-    metadata?: Record<string, unknown>
-  ): void;
+  log(options: LogOptions): void;
+  error(options: LogOptions): void;
+  warn(options: LogOptions): void;
+  debug(options: LogOptions): void;
+  verbose(options: LogOptions): void;
   setContext(context: string): void;
   logHttpRequest(entry: HttpRequestLogEntry): void;
 }

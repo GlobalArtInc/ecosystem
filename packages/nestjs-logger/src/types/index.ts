@@ -70,3 +70,10 @@ export interface FormatterOptions {
   readonly timestamp: boolean;
   readonly context?: string;
 }
+
+export interface LogOptions {
+  message: string;
+  context?: string;
+  metadata?: Record<string, unknown>;
+  trace?: string;
+}

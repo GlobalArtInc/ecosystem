@@ -10,6 +10,7 @@ import {
   HttpRequestLogEntry,
   LoggerConfiguration,
   LogLevel,
+  LogOptions,
 } from "../types";
 
 @Injectable()
@@ -27,45 +28,35 @@ export class LoggerService implements NestLoggerService, ILogger {
     this.context = context;
   }
 
-  log(
-    message: string,
-    context?: string,
-    metadata?: Record<string, unknown>
-  ): void {
-    this.writeLog("info", message, context, metadata);
+  log(options: LogOptions): void {
+    this.writeLog("info", options.message, options.context, options.metadata);
   }
 
-  error(
-    message: string,
-    trace?: string,
-    context?: string,
-    metadata?: Record<string, unknown>
-  ): void {
-    this.writeLog("error", message, context, metadata, trace);
+  error(options: LogOptions): void {
+    this.writeLog(
+      "error",
+      options.message,
+      options.context,
+      options.metadata,
+      options.trace
+    );
   }
 
-  warn(
-    message: string,
-    context?: string,
-    metadata?: Record<string, unknown>
-  ): void {
-    this.writeLog("warn", message, context, metadata);
+  warn(options: LogOptions): void {
+    this.writeLog("warn", options.message, options.context, options.metadata);
   }
 
-  debug(
-    message: string,
-    context?: string,
-    metadata?: Record<string, unknown>
-  ): void {
-    this.writeLog("debug", message, context, metadata);
+  debug(options: LogOptions): void {
+    this.writeLog("debug", options.message, options.context, options.metadata);
   }
 
-  verbose(
-    message: string,
-    context?: string,
-    metadata?: Record<string, unknown>
-  ): void {
-    this.writeLog("verbose", message, context, metadata);
+  verbose(options: LogOptions): void {
+    this.writeLog(
+      "verbose",
+      options.message,
+      options.context,
+      options.metadata
+    );
   }
 
   logHttpRequest(entry: HttpRequestLogEntry): void {
