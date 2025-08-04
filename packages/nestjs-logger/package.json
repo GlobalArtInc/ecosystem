@@ -1,6 +1,6 @@
 {
   "name": "@globalart/nestjs-logger",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A advanced logger for NestJS",
   "author": {
     "name": "GlobalArt, Inc"
