@@ -1,11 +1,22 @@
-import { Controller, Get } from "@nestjs/common";
+import { BadRequestException, Controller, Get } from "@nestjs/common";
 import { ExcludeLogging } from "@globalart/nestjs-logger";
+import { LoggerService } from "@globalart/nestjs-logger";
 
 @Controller()
 export class AppController {
-  @Get("hello")
-  getHello(): string {
+  constructor(private readonly logger: LoggerService) {}
+
+  @Get("info")
+  loggerInfo(): string {
+    this.logger.log({
+      message: "Hello World!",
+    });
     return "Hello World!";
+  }
+
+  @Get("error")
+  loggerError(): string {
+    throw new BadRequestException("Error!");
   }
 
   @ExcludeLogging()

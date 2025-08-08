@@ -15,6 +15,9 @@ import {
   HttpRequest,
   HttpResponse,
   LoggerConfiguration,
+  LogEntry,
+  LogLevel,
+  LogOptions,
 } from "../types";
 import { LOGGER_CONFIG_TOKEN, LOGGER_EXCLUDE_METADATA } from "../constants";
 import { hostname } from "os";
@@ -36,12 +39,10 @@ export class HttpLoggerInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
 
-    // Проверяем, нужно ли исключить этот URL из логирования
     if (this.shouldExcludeUrl(request.url)) {
       return next.handle();
     }
 
-    // Проверяем, есть ли декоратор ExcludeLogging на контроллере или методе
     const isExcluded = this.reflector.getAllAndOverride<boolean>(
       LOGGER_EXCLUDE_METADATA,
       [context.getHandler(), context.getClass()]
@@ -56,32 +57,52 @@ export class HttpLoggerInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap(() => {
-        const entry = this.createLogEntry(
-          request,
-          response,
-          requestId,
-          startTime,
-          30, // INFO level
-          "request completed"
-        );
-        this.logger.logHttpRequest(entry);
+        if (this.config.format === "pino") {
+          const entry = this.createHttpLogEntry(
+            request,
+            response,
+            requestId,
+            startTime,
+            30,
+            "request completed"
+          );
+          this.logger.logHttpRequest(entry);
+        } else {
+          const entry = this.createLogEntry(
+            request,
+            response,
+            requestId,
+            startTime
+          );
+          this.logger.log(entry);
+        }
       }),
       catchError((error) => {
-        const entry = this.createLogEntry(
-          request,
-          response,
-          requestId,
-          startTime,
-          50, // ERROR level
-          "request failed"
-        );
-        this.logger.logHttpRequest(entry);
+        if (this.config.format === "pino") {
+          const entry = this.createHttpLogEntry(
+            request,
+            response,
+            requestId,
+            startTime,
+            50,
+            "request failed"
+          );
+          this.logger.logHttpRequest(entry);
+        } else {
+          const entry = this.createLogEntry(
+            request,
+            response,
+            requestId,
+            startTime
+          );
+          this.logger.error(entry);
+        }
         throw error;
       })
     );
   }
 
-  private createLogEntry(
+  private createHttpLogEntry(
     request: any,
     response: any,
     requestId: string,
@@ -121,6 +142,30 @@ export class HttpLoggerInterceptor implements NestInterceptor {
     };
   }
 
+  private createLogEntry(
+    request: any,
+    response: any,
+    requestId: string,
+    startTime: number
+  ): LogOptions {
+    const responseTime = Date.now() - startTime;
+    const ip = this.getClientIp(request);
+
+    return {
+      message: `${request.method} ${request.url} - ${response.statusCode || 500} (${responseTime}ms)`,
+      context: "HttpLogger",
+      metadata: {
+        requestId,
+        method: request.method,
+        url: request.url,
+        statusCode: response.statusCode || 500,
+        responseTime,
+        remoteAddress: ip,
+        userAgent: request.headers["user-agent"],
+      },
+    };
+  }
+
   private getClientIp(request: any): string {
     return (
       request.headers["x-forwarded-for"] ||
@@ -151,14 +196,12 @@ export class HttpLoggerInterceptor implements NestInterceptor {
 
   private shouldExcludeUrl(url: string): boolean {
     return this.config.exclude.some((excludeUrl) => {
-      // Поддержка простых паттернов с * (wildcard)
       if (excludeUrl.includes("*")) {
         const pattern = excludeUrl.replace(/\*/g, ".*");
         const regex = new RegExp(`^${pattern}$`);
         return regex.test(url);
       }
 
-      // Точное совпадение
       return url === excludeUrl;
     });
   }

@@ -1,0 +1,502 @@
+---
+sidebar_position: 2
+---
+
+# nestjs-logger
+
+A professional logging module for NestJS with clean architecture, strict typing, and extensibility.
+
+## Installation
+
+```bash npm2yarn
+npm install @globalart/nestjs-logger
+```
+
+## Overview
+
+This package provides a comprehensive logging solution for NestJS applications with support for multiple output formats, automatic HTTP request logging, and built-in security features. Built on Clean Architecture principles, it offers excellent performance, extensibility, and developer experience.
+
+## Key Features
+
+- 🏗️ **Clean Architecture** - separation of concerns, SOLID principles
+- 🔒 **Type Safety** - full TypeScript type safety
+- ⚡ **Performance** - optimized architecture with minimal allocations
+- 🔧 **Extensibility** - easy to add new formatters and transports
+- 🧪 **Testability** - dependency injection, easy mocking
+- 🎯 **Automatic Context** - class detection from call stack
+- 🌐 **HTTP Logging** - detailed request logging with format consistency
+- 🛡️ **Security** - automatic sanitization of sensitive data
+- 🎨 **Colored Output** - beautiful console logs
+- 📊 **Multiple Formats** - Text, JSON, and Pino support
+
+## Quick Start
+
+```typescript
+import { Module } from "@nestjs/common";
+import { LoggerModule } from "@globalart/nestjs-logger";
+
+@Module({
+  imports: [
+    LoggerModule.forRoot({
+      level: "info",
+      timestamp: true,
+      colors: true,
+      format: "text",
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+## Configuration
+
+### Synchronous Configuration
+
+```typescript
+LoggerModule.forRoot({
+  level: "debug",
+  timestamp: true,
+  colors: true,
+  format: "pino",
+  sensitiveFields: ["password", "secret"],
+  exclude: ["/health", "/metrics"],
+});
+```
+
+### Asynchronous Configuration
+
+```typescript
+import { ConfigService } from "@nestjs/config";
+
+LoggerModule.forRootAsync({
+  useFactory: (configService: ConfigService) => ({
+    level: configService.get("LOG_LEVEL", "info"),
+    format: configService.get("LOG_FORMAT", "text"),
+    colors: !configService.get("PRODUCTION"),
+    sensitiveFields: configService.get("SENSITIVE_FIELDS", []),
+  }),
+  inject: [ConfigService],
+});
+```
+
+## Usage
+
+### In Services
+
+```typescript
+import { Injectable } from "@nestjs/common";
+import { LoggerService } from "@globalart/nestjs-logger";
+
+@Injectable()
+export class UserService {
+  constructor(private readonly logger: LoggerService) {}
+
+  async createUser(userData: CreateUserDto) {
+    this.logger.log({
+      message: "Creating new user",
+      metadata: { userId: userData.email },
+    });
+
+    try {
+      const user = await this.userRepository.save(userData);
+      this.logger.log({
+        message: "User created successfully",
+        metadata: { id: user.id },
+      });
+      return user;
+    } catch (error) {
+      this.logger.error({
+        message: "Failed to create user",
+        trace: error.stack,
+        metadata: { email: userData.email },
+      });
+      throw error;
+    }
+  }
+}
+```
+
+### HTTP Logging
+
+```typescript
+import { Controller, UseInterceptors } from "@nestjs/common";
+import { HttpLoggerInterceptor, LogContext } from "@globalart/nestjs-logger";
+
+@Controller("users")
+@UseInterceptors(HttpLoggerInterceptor)
+@LogContext("UserController")
+export class UserController {
+  // All HTTP requests will be automatically logged
+}
+```
+
+### Global HTTP Logging
+
+```typescript
+import { Module } from "@nestjs/common";
+import { APP_INTERCEPTOR } from "@nestjs/core";
+import { LoggerModule, HttpLoggerInterceptor } from "@globalart/nestjs-logger";
+
+@Module({
+  imports: [LoggerModule.forRoot()],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: HttpLoggerInterceptor,
+    },
+  ],
+})
+export class AppModule {}
+```
+
+## Output Formats
+
+### Text Format (Default)
+
+```
+[2024-01-15T10:30:45.123Z] [INFO] [UserService] Creating new user {"userId":"123"}
+[2024-01-15T10:30:45.335Z] [INFO] [HttpLogger] GET /users - 200 (12ms)
+```
+
+### JSON Format
+
+```json
+{
+  "timestamp": "2024-01-15T10:30:45.123Z",
+  "level": "info",
+  "message": "Creating new user",
+  "context": "UserService",
+  "metadata": {"userId": "123"}
+}
+{
+  "timestamp": "2024-01-15T10:30:45.335Z",
+  "level": "info",
+  "message": "GET /users - 200 (12ms)",
+  "context": "HttpLogger",
+  "metadata": {
+    "requestId": "req-123",
+    "method": "GET",
+    "url": "/users",
+    "statusCode": 200,
+    "responseTime": 12,
+    "remoteAddress": "127.0.0.1"
+  }
+}
+```
+
+### Pino Format
+
+```json
+{
+  "level": 30,
+  "time": 1642247445123,
+  "pid": 1234,
+  "hostname": "app-server",
+  "req": {
+    "id": "req-123",
+    "method": "GET",
+    "url": "/users",
+    "query": {},
+    "params": {},
+    "headers": {},
+    "remoteAddress": "127.0.0.1"
+  },
+  "res": { "statusCode": 200, "headers": {} },
+  "responseTime": 12,
+  "msg": "request completed"
+}
+```
+
+## API Reference
+
+### LoggerService
+
+The main logging service that provides methods for different log levels.
+
+| Method                                       | Description                         |
+| -------------------------------------------- | ----------------------------------- |
+| `log(options: LogOptions)`                   | Information message                 |
+| `error(options: LogOptions)`                 | Error with trace                    |
+| `warn(options: LogOptions)`                  | Warning message                     |
+| `debug(options: LogOptions)`                 | Debug information                   |
+| `verbose(options: LogOptions)`               | Verbose logging                     |
+| `setContext(context: string)`                | Set context                         |
+| `logHttpRequest(entry: HttpRequestLogEntry)` | Log HTTP request (Pino format only) |
+
+### LogOptions Interface
+
+```typescript
+interface LogOptions {
+  message: string;
+  context?: string;
+  metadata?: Record<string, unknown>;
+  trace?: string;
+}
+```
+
+### Decorators
+
+#### @LogContext
+
+Set context for class or method.
+
+```typescript
+import { LogContext } from "@globalart/nestjs-logger";
+
+@Controller("users")
+@LogContext("UserController")
+export class UserController {
+  @Get()
+  @LogContext("UserController.getAllUsers")
+  async getAllUsers() {
+    // ...
+  }
+}
+```
+
+#### @LogMetadata
+
+Add metadata to logs.
+
+```typescript
+import { LogMetadata } from "@globalart/nestjs-logger";
+
+@Controller("users")
+export class UserController {
+  @Get()
+  @LogMetadata({ operation: "getAllUsers", version: "v1" })
+  async getAllUsers() {
+    // ...
+  }
+}
+```
+
+#### @ExcludeLogging
+
+Exclude logging for controller or method.
+
+```typescript
+import { ExcludeLogging } from "@globalart/nestjs-logger";
+
+@Controller("health")
+export class HealthController {
+  @Get()
+  @ExcludeLogging()
+  async check() {
+    return { status: "ok" };
+  }
+}
+```
+
+### Configuration Options
+
+| Option            | Type        | Default     | Description                       |
+| ----------------- | ----------- | ----------- | --------------------------------- |
+| `level`           | `LogLevel`  | `'info'`    | Logging level                     |
+| `timestamp`       | `boolean`   | `true`      | Show timestamp                    |
+| `colors`          | `boolean`   | `true`      | Colored output                    |
+| `format`          | `LogFormat` | `'text'`    | Output format                     |
+| `context`         | `string`    | `undefined` | Default context                   |
+| `sensitiveFields` | `string[]`  | `[...]`     | Fields to sanitize                |
+| `exclude`         | `string[]`  | `[]`        | URLs to exclude from HTTP logging |
+
+## Architecture
+
+The package is built on Clean Architecture principles with clear separation of concerns:
+
+### Core Components
+
+- **LoggerModule** - Main module with configuration and dependency injection setup
+- **LoggerService** - Primary logging service implementing NestJS LoggerService interface
+- **HttpLoggerInterceptor** - HTTP request logging interceptor with format consistency
+
+### Formatters
+
+- **TextFormatter** - Human-readable text output with colors and timestamps
+- **JsonFormatter** - Structured JSON output for machine processing
+- **PinoFormatter** - Pino-compatible JSON output for high-performance logging
+
+### Utilities
+
+- **ContextResolver** - Automatic context detection from call stack
+- **DataSanitizer** - Sensitive data sanitization for security
+- **RequestIdGenerator** - Unique request ID generation for tracing
+
+### Writers
+
+- **ConsoleWriter** - Console output (extensible for other transports)
+
+### Contracts & Types
+
+- **ILogger** - Logger interface for extensibility
+- **ILogFormatter** - Formatter interface for custom formats
+- **ILogWriter** - Writer interface for custom transports
+- **LogEntry** - Standard log entry structure
+- **HttpRequestLogEntry** - HTTP-specific log entry structure
+
+## Security
+
+The logger automatically sanitizes sensitive fields to prevent data leakage:
+
+- `password`, `pass`
+- `token`, `accessToken`, `refreshToken`
+- `secret`, `key`, `apiKey`
+- `authorization`, `auth`
+- `credential`, `credentials`
+
+You can customize the list of sensitive fields in the configuration:
+
+```typescript
+LoggerModule.forRoot({
+  sensitiveFields: ["password", "secret", "apiKey", "customField"],
+});
+```
+
+## Performance
+
+The logger is optimized for performance with several key features:
+
+- **Minimal allocations** in hot paths
+- **Lazy formatter initialization** to reduce startup time
+- **Optimized context resolution** with caching
+- **Efficient data sanitization** with minimal overhead
+- **Format-specific HTTP logging** optimization
+
+## Customization
+
+### Custom Formatter
+
+You can create custom formatters by extending the BaseFormatter:
+
+```typescript
+import { Injectable } from "@nestjs/common";
+import { BaseFormatter } from "@globalart/nestjs-logger";
+
+@Injectable()
+export class CustomFormatter extends BaseFormatter {
+  format(entry: LogEntry): string {
+    return `[${entry.level.toUpperCase()}] ${entry.message}`;
+  }
+
+  formatHttpRequest(entry: HttpRequestLogEntry): string {
+    return JSON.stringify(entry);
+  }
+}
+```
+
+### Custom Writer
+
+You can implement custom writers for different transports:
+
+```typescript
+import { Injectable } from "@nestjs/common";
+import { ILogWriter } from "@globalart/nestjs-logger";
+
+@Injectable()
+export class FileWriter implements ILogWriter {
+  write(formattedLog: string): void {
+    // Write to file, database, or external service
+  }
+}
+```
+
+## Examples
+
+### Basic Service Logging
+
+```typescript
+import { Injectable } from "@nestjs/common";
+import { LoggerService } from "@globalart/nestjs-logger";
+
+@Injectable()
+export class EmailService {
+  constructor(private readonly logger: LoggerService) {}
+
+  async sendEmail(to: string, subject: string) {
+    this.logger.log({
+      message: "Sending email",
+      metadata: { to, subject },
+    });
+
+    try {
+      // Email sending logic
+      this.logger.log({
+        message: "Email sent successfully",
+        metadata: { to },
+      });
+    } catch (error) {
+      this.logger.error({
+        message: "Failed to send email",
+        trace: error.stack,
+        metadata: { to, subject },
+      });
+      throw error;
+    }
+  }
+}
+```
+
+### Controller with HTTP Logging
+
+```typescript
+import { Controller, Get, Post, Body, UseInterceptors } from "@nestjs/common";
+import {
+  HttpLoggerInterceptor,
+  LogContext,
+  LogMetadata,
+} from "@globalart/nestjs-logger";
+
+@Controller("users")
+@UseInterceptors(HttpLoggerInterceptor)
+@LogContext("UserController")
+export class UserController {
+  @Get()
+  @LogMetadata({ operation: "getAllUsers" })
+  async getAllUsers() {
+    return [];
+  }
+
+  @Post()
+  @LogMetadata({ operation: "createUser" })
+  async createUser(@Body() userData: CreateUserDto) {
+    return { id: 1, ...userData };
+  }
+}
+```
+
+### Advanced Configuration
+
+```typescript
+import { Module } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { LoggerModule } from "@globalart/nestjs-logger";
+
+@Module({
+  imports: [
+    LoggerModule.forRootAsync({
+      useFactory: (configService: ConfigService) => ({
+        level: configService.get("LOG_LEVEL", "info"),
+        format: configService.get("LOG_FORMAT", "text"),
+        colors: !configService.get("PRODUCTION"),
+        timestamp: true,
+        context: "MyApp",
+        sensitiveFields: [
+          "password",
+          "token",
+          "secret",
+          "apiKey",
+          ...configService.get("CUSTOM_SENSITIVE_FIELDS", []),
+        ],
+        exclude: [
+          "/health",
+          "/metrics",
+          "/favicon.ico",
+          ...configService.get("LOG_EXCLUDE_URLS", []),
+        ],
+      }),
+      inject: [ConfigService],
+    }),
+  ],
+})
+export class AppModule {}
+```

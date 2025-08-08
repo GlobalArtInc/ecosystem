@@ -25,6 +25,7 @@
   "scripts": {
     "prebuild": "rimraf lib",
     "build": "tsc",
+    "build:watch": "tsc --watch",
     "prepare": "tsc",
     "dev:yalc": "nodemon --watch src --ext ts --exec 'npm run build && yalc push'",
     "format": "prettier --write \"src/**/*.ts\"",

@@ -8,7 +8,7 @@ import { LoggerModule } from "@globalart/nestjs-logger";
       level: "debug",
       timestamp: true,
       colors: true,
-      format: "pino",
+      format: "text",
     }),
   ],
   controllers: [AppController],

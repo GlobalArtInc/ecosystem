@@ -1,26 +1,27 @@
 # @globalart/nestjs-logger
 
-Профессиональный модуль логирования для NestJS с чистой архитектурой, строгой типизацией и расширяемостью.
+A professional logging module for NestJS with clean architecture, strict typing, and extensibility.
 
-## 🚀 Особенности
+## 🚀 Features
 
-- **Clean Architecture** - разделение ответственности, SOLID принципы
-- **Строгая типизация** - полная типобезопасность TypeScript
-- **Производительность** - оптимизированная архитектура без лишних аллокаций
-- **Расширяемость** - легко добавлять новые форматтеры и транспорты
-- **Тестируемость** - dependency injection, легкое мокирование
-- **Автоматический контекст** - определение класса из стека вызовов
-- **HTTP логирование** - детальное логирование запросов
-- **Безопасность** - автоматическая санитизация чувствительных данных
-- **Цветной вывод** - красивые логи в консоли
+- **Clean Architecture** - separation of concerns, SOLID principles
+- **Strict Typing** - full TypeScript type safety
+- **Performance** - optimized architecture with minimal allocations
+- **Extensibility** - easy to add new formatters and transports
+- **Testability** - dependency injection, easy mocking
+- **Automatic Context** - class detection from call stack
+- **HTTP Logging** - detailed request logging with format consistency
+- **Security** - automatic sanitization of sensitive data
+- **Colored Output** - beautiful console logs
+- **Multiple Formats** - Text, JSON, and Pino support
 
-## 📦 Установка
+## 📦 Installation
 
 ```bash
 npm install @globalart/nestjs-logger
 ```
 
-## 🎯 Быстрый старт
+## 🎯 Quick Start
 
 ```typescript
 import { Module } from '@nestjs/common';
@@ -39,9 +40,9 @@ import { LoggerModule } from '@globalart/nestjs-logger';
 export class AppModule {}
 ```
 
-## 🔧 Конфигурация
+## 🔧 Configuration
 
-### Синхронная конфигурация
+### Synchronous Configuration
 
 ```typescript
 LoggerModule.forRoot({
@@ -50,10 +51,11 @@ LoggerModule.forRoot({
   colors: true,
   format: 'pino',
   sensitiveFields: ['password', 'secret'],
+  exclude: ['/health', '/metrics'],
 })
 ```
 
-### Асинхронная конфигурация
+### Asynchronous Configuration
 
 ```typescript
 LoggerModule.forRootAsync({
@@ -61,14 +63,15 @@ LoggerModule.forRootAsync({
     level: configService.get('LOG_LEVEL', 'info'),
     format: configService.get('LOG_FORMAT', 'text'),
     colors: !configService.get('PRODUCTION'),
+    sensitiveFields: configService.get('SENSITIVE_FIELDS', []),
   }),
   inject: [ConfigService],
 })
 ```
 
-## 📝 Использование
+## 📝 Usage
 
-### В сервисах
+### In Services
 
 ```typescript
 import { Injectable } from '@nestjs/common';
@@ -79,15 +82,23 @@ export class UserService {
   constructor(private readonly logger: LoggerService) {}
 
   async createUser(userData: CreateUserDto) {
-    this.logger.log('Creating new user', undefined, { userId: userData.email });
+    this.logger.log({
+      message: 'Creating new user',
+      metadata: { userId: userData.email }
+    });
     
     try {
       const user = await this.userRepository.save(userData);
-      this.logger.log('User created successfully', undefined, { id: user.id });
+      this.logger.log({
+        message: 'User created successfully',
+        metadata: { id: user.id }
+      });
       return user;
     } catch (error) {
-      this.logger.error('Failed to create user', error.stack, undefined, { 
-        email: userData.email 
+      this.logger.error({
+        message: 'Failed to create user',
+        trace: error.stack,
+        metadata: { email: userData.email }
       });
       throw error;
     }
@@ -95,7 +106,7 @@ export class UserService {
 }
 ```
 
-### HTTP логирование
+### HTTP Logging
 
 ```typescript
 import { Controller, UseInterceptors } from '@nestjs/common';
@@ -105,11 +116,11 @@ import { HttpLoggerInterceptor, LogContext } from '@globalart/nestjs-logger';
 @UseInterceptors(HttpLoggerInterceptor)
 @LogContext('UserController')
 export class UserController {
-  // Все HTTP запросы будут автоматически логироваться
+  // All HTTP requests will be automatically logged
 }
 ```
 
-### Глобальное HTTP логирование
+### Global HTTP Logging
 
 ```typescript
 import { Module } from '@nestjs/common';
@@ -128,14 +139,15 @@ import { LoggerModule, HttpLoggerInterceptor } from '@globalart/nestjs-logger';
 export class AppModule {}
 ```
 
-## 🎨 Форматы вывода
+## 🎨 Output Formats
 
-### Text (по умолчанию)
+### Text Format (Default)
 ```
 [2024-01-15T10:30:45.123Z] [INFO] [UserService] Creating new user {"userId":"123"}
+[2024-01-15T10:30:45.335Z] [INFO] [HttpLogger] GET /users - 200 (12ms)
 ```
 
-### JSON
+### JSON Format
 ```json
 {
   "timestamp": "2024-01-15T10:30:45.123Z",
@@ -144,63 +156,114 @@ export class AppModule {}
   "context": "UserService",
   "metadata": {"userId": "123"}
 }
+{
+  "timestamp": "2024-01-15T10:30:45.335Z",
+  "level": "info",
+  "message": "GET /users - 200 (12ms)",
+  "context": "HttpLogger",
+  "metadata": {
+    "requestId": "req-123",
+    "method": "GET",
+    "url": "/users",
+    "statusCode": 200,
+    "responseTime": 12,
+    "remoteAddress": "127.0.0.1"
+  }
+}
 ```
 
-### Pino (HTTP запросы)
+### Pino Format
 ```json
-{"level":30,"time":1642247445123,"pid":1234,"hostname":"app-server","req":{"id":"req-123","method":"GET","url":"/users","query":{},"params":{},"headers":{},"remoteAddress":"127.0.0.1"},"res":{"statusCode":200,"headers":{}},"responseTime":15,"msg":"request completed"}
+{"level":30,"time":1642247445123,"pid":1234,"hostname":"app-server","req":{"id":"req-123","method":"GET","url":"/users","query":{},"params":{},"headers":{},"remoteAddress":"127.0.0.1"},"res":{"statusCode":200,"headers":{}},"responseTime":12,"msg":"request completed"}
 ```
 
 ## 🎯 API Reference
 
 ### LoggerService
 
-| Метод | Описание |
-|-------|----------|
-| `log(message, context?, metadata?)` | Информационное сообщение |
-| `error(message, trace?, context?, metadata?)` | Ошибка с трейсом |
-| `warn(message, context?, metadata?)` | Предупреждение |
-| `debug(message, context?, metadata?)` | Отладочная информация |
-| `verbose(message, context?, metadata?)` | Подробное логирование |
-| `setContext(context)` | Установка контекста |
+| Method | Description |
+|--------|-------------|
+| `log(options: LogOptions)` | Information message |
+| `error(options: LogOptions)` | Error with trace |
+| `warn(options: LogOptions)` | Warning message |
+| `debug(options: LogOptions)` | Debug information |
+| `verbose(options: LogOptions)` | Verbose logging |
+| `setContext(context: string)` | Set context |
+| `logHttpRequest(entry: HttpRequestLogEntry)` | Log HTTP request (Pino format only) |
 
-### Декораторы
+### LogOptions Interface
 
-- `@LogContext(context)` - Установка контекста для класса/метода
-- `@LogMetadata(metadata)` - Добавление метаданных
+```typescript
+interface LogOptions {
+  message: string;
+  context?: string;
+  metadata?: Record<string, unknown>;
+  trace?: string;
+}
+```
 
-### Конфигурация
+### Decorators
 
-| Опция | Тип | По умолчанию | Описание |
-|-------|-----|--------------|----------|
-| `level` | `LogLevel` | `'info'` | Уровень логирования |
-| `timestamp` | `boolean` | `true` | Показывать время |
-| `colors` | `boolean` | `true` | Цветной вывод |
-| `format` | `LogFormat` | `'text'` | Формат вывода |
-| `context` | `string` | `undefined` | Контекст по умолчанию |
-| `sensitiveFields` | `string[]` | `[...]` | Поля для санитизации |
+- `@LogContext(context: string)` - Set context for class/method
+- `@LogMetadata(metadata: Record<string, unknown>)` - Add metadata to logs
+- `@ExcludeLogging()` - Exclude logging for controller/method
 
-## 🏗️ Архитектура
+### Configuration Options
 
-Пакет построен на принципах Clean Architecture:
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `level` | `LogLevel` | `'info'` | Logging level |
+| `timestamp` | `boolean` | `true` | Show timestamp |
+| `colors` | `boolean` | `true` | Colored output |
+| `format` | `LogFormat` | `'text'` | Output format |
+| `context` | `string` | `undefined` | Default context |
+| `sensitiveFields` | `string[]` | `[...]` | Fields to sanitize |
+| `exclude` | `string[]` | `[]` | URLs to exclude from HTTP logging |
 
-- **Types** - строгая типизация
-- **Contracts** - интерфейсы для расширяемости  
-- **Core** - основная бизнес-логика
-- **Utils** - вспомогательные утилиты
-- **Formatters** - форматирование логов
-- **Writers** - вывод логов
+## 🏗️ Architecture
 
-## 🔒 Безопасность
+The package is built on Clean Architecture principles:
 
-Автоматическая санитизация чувствительных полей:
+### Core Components
+
+- **LoggerModule** - Main module with configuration
+- **LoggerService** - Primary logging service
+- **HttpLoggerInterceptor** - HTTP request logging interceptor
+
+### Formatters
+
+- **TextFormatter** - Human-readable text output
+- **JsonFormatter** - Structured JSON output
+- **PinoFormatter** - Pino-compatible JSON output
+
+### Utilities
+
+- **ContextResolver** - Automatic context detection
+- **DataSanitizer** - Sensitive data sanitization
+- **RequestIdGenerator** - Unique request ID generation
+
+### Writers
+
+- **ConsoleWriter** - Console output (extensible for other transports)
+
+### Contracts & Types
+
+- **ILogger** - Logger interface
+- **ILogFormatter** - Formatter interface
+- **ILogWriter** - Writer interface
+- **LogEntry** - Standard log entry structure
+- **HttpRequestLogEntry** - HTTP-specific log entry structure
+
+## 🔒 Security
+
+Automatic sanitization of sensitive fields:
 - `password`, `pass`
 - `token`, `accessToken`, `refreshToken`
 - `secret`, `key`, `apiKey`
 - `authorization`, `auth`
 - `credential`, `credentials`
 
-## 🧪 Тестирование
+## 🧪 Testing
 
 ```typescript
 import { LoggerService } from '@globalart/nestjs-logger';
@@ -213,7 +276,11 @@ describe('UserService', () => {
     logger = {
       log: jest.fn(),
       error: jest.fn(),
-      // ... другие методы
+      warn: jest.fn(),
+      debug: jest.fn(),
+      verbose: jest.fn(),
+      setContext: jest.fn(),
+      logHttpRequest: jest.fn(),
     } as any;
 
     service = new UserService(logger);
@@ -221,43 +288,77 @@ describe('UserService', () => {
 
   it('should log user creation', () => {
     service.createUser(userData);
-    expect(logger.log).toHaveBeenCalledWith(
-      'Creating new user',
-      undefined,
-      { userId: userData.email }
-    );
+    expect(logger.log).toHaveBeenCalledWith({
+      message: 'Creating new user',
+      metadata: { userId: userData.email }
+    });
   });
 });
 ```
 
-## 🔄 Миграция с v1
+## 🔄 Migration from v1
 
 ```typescript
-// v1 (старый API)
+// v1 (old API)
 import { LoggerModule, LoggerInterceptor } from '@globalart/nestjs-logger';
 
-// v2 (новый API)  
+// v2 (new API)  
 import { LoggerModule, HttpLoggerInterceptor } from '@globalart/nestjs-logger';
 
-// Для совместимости доступны legacy экспорты:
+// Legacy exports available for compatibility:
 import { LegacyLoggerModule, LoggerInterceptor } from '@globalart/nestjs-logger';
 ```
 
-## 📈 Производительность
+## 📈 Performance
 
-- Минимальные аллокации в горячих путях
-- Ленивая инициализация форматтеров
-- Оптимизированное определение контекста
-- Эффективная санитизация данных
+- Minimal allocations in hot paths
+- Lazy formatter initialization
+- Optimized context resolution
+- Efficient data sanitization
+- Format-specific HTTP logging optimization
 
-## 🤝 Вклад в развитие
+## 🎨 Customization
 
-1. Fork репозитория
-2. Создайте feature branch
-3. Внесите изменения
-4. Добавьте тесты
-5. Создайте Pull Request
+### Custom Formatter
 
-## 📄 Лицензия
+```typescript
+import { Injectable } from '@nestjs/common';
+import { BaseFormatter } from '@globalart/nestjs-logger';
+
+@Injectable()
+export class CustomFormatter extends BaseFormatter {
+  format(entry: LogEntry): string {
+    return `[${entry.level.toUpperCase()}] ${entry.message}`;
+  }
+
+  formatHttpRequest(entry: HttpRequestLogEntry): string {
+    return JSON.stringify(entry);
+  }
+}
+```
+
+### Custom Writer
+
+```typescript
+import { Injectable } from '@nestjs/common';
+import { ILogWriter } from '@globalart/nestjs-logger';
+
+@Injectable()
+export class FileWriter implements ILogWriter {
+  write(formattedLog: string): void {
+    // Write to file
+  }
+}
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Create a Pull Request
+
+## 📄 License
 
 MIT License 
