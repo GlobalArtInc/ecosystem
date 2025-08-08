@@ -5,26 +5,45 @@ import { LogEntry, HttpRequestLogEntry } from "../types";
 @Injectable()
 export class JsonFormatter extends BaseFormatter {
   format(entry: LogEntry): string {
-    const logObject = {
-      timestamp: this.formatTimestamp(entry.timestamp),
-      level: entry.level,
-      message: entry.message,
-      ...(entry.context && { context: entry.context }),
-      ...(entry.metadata && { metadata: entry.metadata }),
-      ...(entry.trace && { trace: entry.trace }),
-    };
-
+    const logObject = this.buildLogObject(entry);
     return JSON.stringify(logObject);
   }
 
   formatHttpRequest(entry: HttpRequestLogEntry): string {
     const jsonString = JSON.stringify(entry);
+    return this.options.colors
+      ? this.colorize(jsonString, this.getColorForLevel(entry.level))
+      : jsonString;
+  }
 
-    if (this.options.colors) {
-      const color = this.getColorForLevel(entry.level);
-      return this.colorize(jsonString, color);
+  private buildLogObject(entry: LogEntry): Record<string, unknown> {
+    const baseObject = {
+      timestamp: this.formatTimestamp(entry.timestamp),
+      level: entry.level,
+      message: entry.message,
+    };
+
+    return this.addOptionalFields(baseObject, entry);
+  }
+
+  private addOptionalFields(
+    baseObject: Record<string, unknown>,
+    entry: LogEntry
+  ): Record<string, unknown> {
+    const result = { ...baseObject };
+
+    if (entry.context) {
+      result.context = entry.context;
     }
 
-    return jsonString;
+    if (entry.metadata) {
+      result.metadata = entry.metadata;
+    }
+
+    if (entry.trace) {
+      result.trace = entry.trace;
+    }
+
+    return result;
   }
 }

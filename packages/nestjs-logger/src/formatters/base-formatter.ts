@@ -19,23 +19,24 @@ export abstract class BaseFormatter implements ILogFormatter {
 
   protected getColorForLevel(level: string | number): keyof typeof COLORS {
     if (typeof level === "string") {
-      switch (level) {
-        case "error":
-          return "red";
-        case "warn":
-          return "yellow";
-        case "info":
-          return "green";
-        case "debug":
-          return "blue";
-        case "verbose":
-          return "magenta";
-        default:
-          return "gray";
-      }
+      return this.getColorForStringLevel(level);
     }
+    return this.getColorForNumericLevel(level);
+  }
 
-    // Для числовых уровней (Pino)
+  private getColorForStringLevel(level: string): keyof typeof COLORS {
+    const colorMap: Record<string, keyof typeof COLORS> = {
+      error: "red",
+      warn: "yellow",
+      info: "green",
+      debug: "blue",
+      verbose: "magenta",
+    };
+
+    return colorMap[level] || "gray";
+  }
+
+  private getColorForNumericLevel(level: number): keyof typeof COLORS {
     if (level >= 50) return "red";
     if (level >= 40) return "yellow";
     if (level >= 30) return "green";

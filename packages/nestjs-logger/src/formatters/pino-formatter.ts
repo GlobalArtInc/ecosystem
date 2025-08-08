@@ -10,12 +10,8 @@ export class PinoFormatter extends BaseFormatter {
 
   formatHttpRequest(entry: HttpRequestLogEntry): string {
     const jsonString = JSON.stringify(entry);
-
-    if (this.options.colors) {
-      const color = this.getColorForLevel(entry.level);
-      return this.colorize(jsonString, color);
-    }
-
-    return jsonString;
+    return this.options.colors
+      ? this.colorize(jsonString, this.getColorForLevel(entry.level))
+      : jsonString;
   }
 }
