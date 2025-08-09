@@ -6,6 +6,7 @@ export abstract class BaseFormatter implements ILogFormatter {
   constructor(protected readonly options: FormatterOptions) {}
 
   abstract format(entry: LogEntry): string;
+
   abstract formatHttpRequest(entry: HttpRequestLogEntry): string;
 
   protected formatTimestamp(timestamp: Date): string {

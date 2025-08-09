@@ -11,7 +11,6 @@ export interface ILogger {
   warn(options: LogOptions): void;
   debug(options: LogOptions): void;
   verbose(options: LogOptions): void;
-  setContext(context: string): void;
   logHttpRequest(entry: HttpRequestLogEntry): void;
 }
 

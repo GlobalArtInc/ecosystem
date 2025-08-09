@@ -39,7 +39,6 @@ export class ContextResolver implements IContextResolver {
   }
 
   private extractClassName(line: string): string | null {
-    // Пытаемся найти имя класса в различных форматах
     const patterns = [
       /at\s+(\w+)\./, // at ClassName.method
       /at\s+.*\.(\w+)\s+\(/, // at path.ClassName (
@@ -57,7 +56,6 @@ export class ContextResolver implements IContextResolver {
   }
 
   private isValidClassName(name: string): boolean {
-    // Проверяем, что это валидное имя класса (начинается с заглавной буквы)
     return (
       /^[A-Z][a-zA-Z0-9]*$/.test(name) &&
       name !== "Object" &&

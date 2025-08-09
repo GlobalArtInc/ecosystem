@@ -1,8 +1,10 @@
 import { RequestMethod } from "@nestjs/common";
 
+// Basic Types
 export type LogLevel = "error" | "warn" | "info" | "debug" | "verbose";
 export type LogFormat = "json" | "text" | "pino";
 
+// Log Level Constants
 export const LOG_LEVELS: Record<LogLevel, number> = {
   error: 50,
   warn: 40,
@@ -20,6 +22,7 @@ export const PINO_LEVELS: Record<number, string> = {
   10: "TRACE",
 } as const;
 
+// Core Interfaces
 export interface LogEntry {
   readonly level: LogLevel;
   readonly message: string;
@@ -29,17 +32,14 @@ export interface LogEntry {
   readonly trace?: string;
 }
 
-export interface HttpRequestLogEntry {
-  readonly level: number;
-  readonly time: number;
-  readonly pid: number;
-  readonly hostname: string;
-  readonly req: HttpRequest;
-  readonly res: HttpResponse;
-  readonly responseTime: number;
-  readonly msg: string;
+export interface LogOptions {
+  message: string;
+  context?: string;
+  metadata?: Record<string, unknown>;
+  trace?: string;
 }
 
+// HTTP Logging Interfaces
 export interface HttpRequest {
   readonly id: string;
   readonly method: string;
@@ -57,6 +57,18 @@ export interface HttpResponse {
   readonly headers: Record<string, string>;
 }
 
+export interface HttpRequestLogEntry {
+  readonly level: number;
+  readonly time: number;
+  readonly pid: number;
+  readonly hostname: string;
+  readonly req: HttpRequest;
+  readonly res: HttpResponse;
+  readonly responseTime: number;
+  readonly msg: string;
+}
+
+// Configuration Interfaces
 export interface ExcludeOption {
   method: RequestMethod;
   path: string;
@@ -78,9 +90,36 @@ export interface FormatterOptions {
   readonly context?: string;
 }
 
-export interface LogOptions {
-  message: string;
+// Logger Options Interfaces
+export interface LoggerOptions {
+  level?: LogLevel;
+  timestamp?: boolean;
+  colors?: boolean;
   context?: string;
-  metadata?: Record<string, unknown>;
-  trace?: string;
+  format?: LogFormat;
+  transports?: LoggerTransport[];
+  pino?: PinoOptions;
+}
+
+export interface PinoOptions {
+  level?: string;
+  timestamp?: boolean;
+  base?: boolean;
+  name?: string;
+  enabled?: boolean;
+}
+
+export interface LoggerTransport {
+  name: string;
+  level?: string;
+  format?: unknown;
+  filename?: string;
+  dirname?: string;
+  maxsize?: number;
+  maxFiles?: number;
+}
+
+// Utility Types
+export interface LoggerMetadata {
+  [key: string]: unknown;
 }
