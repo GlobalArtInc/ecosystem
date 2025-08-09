@@ -33,9 +33,9 @@ export interface LogEntry {
 }
 
 export interface LogOptions {
-  message: string;
+  message: any;
   context?: string;
-  metadata?: Record<string, unknown>;
+  metadata?: any;
   trace?: string;
 }
 
