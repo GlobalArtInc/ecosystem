@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, RequestMethod } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { LoggerModule } from "@globalart/nestjs-logger";
 

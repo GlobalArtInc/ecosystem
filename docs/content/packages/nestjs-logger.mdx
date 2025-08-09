@@ -53,13 +53,19 @@ export class AppModule {}
 ### Synchronous Configuration
 
 ```typescript
+import { RequestMethod } from "@nestjs/common";
+
 LoggerModule.forRoot({
   level: "debug",
   timestamp: true,
   colors: true,
   format: "pino",
   sensitiveFields: ["password", "secret"],
-  exclude: ["/health", "/metrics"],
+  exclude: [
+    { method: RequestMethod.GET, path: "/health" },
+    { method: RequestMethod.GET, path: "/metrics" },
+    { method: RequestMethod.ALL, path: "/favicon.ico" },
+  ],
 });
 ```
 
@@ -234,6 +240,23 @@ interface LogOptions {
 }
 ```
 
+### ExcludeOption Interface
+
+Configuration for excluding specific HTTP requests from logging.
+
+```typescript
+interface ExcludeOption {
+  method: RequestMethod;
+  path: string;
+}
+```
+
+The `path` field supports wildcard patterns using `*`. Examples:
+
+- `"/api/v*/health"` - matches `/api/v1/health`, `/api/v2/health`, etc.
+- `"/users/*"` - matches any path starting with `/users/`
+- `"/static/*"` - matches any static file path
+
 ### Decorators
 
 #### @LogContext
@@ -288,17 +311,100 @@ export class HealthController {
 }
 ```
 
+## Excluding HTTP Requests
+
+You can exclude specific HTTP requests from logging using the `exclude` configuration option. This is useful for health checks, metrics endpoints, and other requests that don't need to be logged.
+
+### Basic Exclusion
+
+```typescript
+import { RequestMethod } from "@nestjs/common";
+import { LoggerModule } from "@globalart/nestjs-logger";
+
+LoggerModule.forRoot({
+  exclude: [
+    { method: RequestMethod.GET, path: "/health" },
+    { method: RequestMethod.GET, path: "/metrics" },
+  ],
+});
+```
+
+### Using RequestMethod.ALL
+
+To exclude a path for all HTTP methods:
+
+```typescript
+exclude: [
+  { method: RequestMethod.ALL, path: "/favicon.ico" },
+  { method: RequestMethod.ALL, path: "/robots.txt" },
+];
+```
+
+### Wildcard Patterns
+
+The `path` field supports wildcard patterns using `*`:
+
+```typescript
+exclude: [
+  // Exclude all API health endpoints
+  { method: RequestMethod.GET, path: "/api/*/health" },
+  // Exclude all static files
+  { method: RequestMethod.ALL, path: "/static/*" },
+  // Exclude versioned endpoints
+  { method: RequestMethod.ALL, path: "/api/v*/status" },
+];
+```
+
+### Real-world Example
+
+```typescript
+import { Module, RequestMethod } from "@nestjs/common";
+import { LoggerModule } from "@globalart/nestjs-logger";
+
+@Module({
+  imports: [
+    LoggerModule.forRoot({
+      level: "info",
+      format: "json",
+      exclude: [
+        // Health checks
+        { method: RequestMethod.GET, path: "/health" },
+        { method: RequestMethod.GET, path: "/health/ready" },
+        { method: RequestMethod.GET, path: "/health/live" },
+
+        // Metrics and monitoring
+        { method: RequestMethod.GET, path: "/metrics" },
+        { method: RequestMethod.GET, path: "/prometheus" },
+
+        // Static assets
+        { method: RequestMethod.ALL, path: "/favicon.ico" },
+        { method: RequestMethod.ALL, path: "/robots.txt" },
+        { method: RequestMethod.GET, path: "/static/*" },
+
+        // API documentation (if you don't want to log these)
+        { method: RequestMethod.GET, path: "/api-docs" },
+        { method: RequestMethod.GET, path: "/api-docs/*" },
+
+        // Versioned health endpoints
+        { method: RequestMethod.GET, path: "/api/v*/health" },
+      ],
+    }),
+  ],
+})
+export class AppModule {}
+```
+
 ### Configuration Options
 
-| Option            | Type        | Default     | Description                       |
-| ----------------- | ----------- | ----------- | --------------------------------- |
-| `level`           | `LogLevel`  | `'info'`    | Logging level                     |
-| `timestamp`       | `boolean`   | `true`      | Show timestamp                    |
-| `colors`          | `boolean`   | `true`      | Colored output                    |
-| `format`          | `LogFormat` | `'text'`    | Output format                     |
-| `context`         | `string`    | `undefined` | Default context                   |
-| `sensitiveFields` | `string[]`  | `[...]`     | Fields to sanitize                |
-| `exclude`         | `string[]`  | `[]`        | URLs to exclude from HTTP logging |
+| Option            | Type              | Default     | Description                           |
+| ----------------- | ----------------- | ----------- | ------------------------------------- |
+| `level`           | `LogLevel`        | `'info'`    | Logging level                         |
+| `timestamp`       | `boolean`         | `true`      | Show timestamp                        |
+| `colors`          | `boolean`         | `true`      | Colored output                        |
+| `format`          | `LogFormat`       | `'text'`    | Output format                         |
+| `context`         | `string`          | `undefined` | Default context                       |
+| `sensitiveFields` | `string[]`        | `[...]`     | Fields to sanitize                    |
+| `exclude`         | `ExcludeOption[]` | `[]`        | HTTP requests to exclude from logging |
 
 ## Architecture
 
@@ -467,7 +573,7 @@ export class UserController {
 ### Advanced Configuration
 
 ```typescript
-import { Module } from "@nestjs/common";
+import { Module, RequestMethod } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { LoggerModule } from "@globalart/nestjs-logger";
 
@@ -488,10 +594,12 @@ import { LoggerModule } from "@globalart/nestjs-logger";
           ...configService.get("CUSTOM_SENSITIVE_FIELDS", []),
         ],
         exclude: [
-          "/health",
-          "/metrics",
-          "/favicon.ico",
-          ...configService.get("LOG_EXCLUDE_URLS", []),
+          { method: RequestMethod.GET, path: "/health" },
+          { method: RequestMethod.GET, path: "/metrics" },
+          { method: RequestMethod.ALL, path: "/favicon.ico" },
+          { method: RequestMethod.GET, path: "/status" },
+          // Wildcard patterns are supported
+          { method: RequestMethod.ALL, path: "/api/v*/health" },
         ],
       }),
       inject: [ConfigService],

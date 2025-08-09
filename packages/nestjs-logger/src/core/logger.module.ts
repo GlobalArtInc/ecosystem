@@ -7,7 +7,7 @@ import { ConsoleWriter } from "../writers/console-writer";
 import { ContextResolver } from "../utils/context-resolver";
 import { DataSanitizer } from "../utils/data-sanitizer";
 import { RequestIdGenerator } from "../utils/request-id-generator";
-import { LoggerConfiguration } from "../types";
+import { ExcludeOption, LoggerConfiguration } from "../types";
 import { LOGGER_CONFIG_TOKEN, DEFAULT_LOGGER_CONFIG } from "../constants";
 
 export interface LoggerModuleOptions {
@@ -17,7 +17,7 @@ export interface LoggerModuleOptions {
   context?: string;
   format?: "json" | "text" | "pino";
   sensitiveFields?: string[];
-  exclude?: string[];
+  exclude?: ExcludeOption[];
 }
 
 export interface LoggerModuleAsyncOptions {

@@ -4,6 +4,7 @@ import {
   ExecutionContext,
   CallHandler,
   Inject,
+  RequestMethod,
 } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { tap, catchError } from "rxjs/operators";
@@ -39,7 +40,8 @@ export class HttpLoggerInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
 
-    if (this.shouldExcludeUrl(request.url)) {
+    const requestMethod = this.getRequestMethod(request.method);
+    if (this.shouldExcludeRequest(requestMethod, request.url)) {
       return next.handle();
     }
 
@@ -194,15 +196,40 @@ export class HttpLoggerInterceptor implements NestInterceptor {
     return this.dataSanitizer.sanitize(sanitized) as Record<string, string>;
   }
 
-  private shouldExcludeUrl(url: string): boolean {
-    return this.config.exclude.some((excludeUrl) => {
-      if (excludeUrl.includes("*")) {
-        const pattern = excludeUrl.replace(/\*/g, ".*");
-        const regex = new RegExp(`^${pattern}$`);
-        return regex.test(url);
+  private getRequestMethod(method: string): RequestMethod {
+    switch (method.toUpperCase()) {
+      case "GET":
+        return RequestMethod.GET;
+      case "POST":
+        return RequestMethod.POST;
+      case "PUT":
+        return RequestMethod.PUT;
+      case "DELETE":
+        return RequestMethod.DELETE;
+      case "PATCH":
+        return RequestMethod.PATCH;
+      case "OPTIONS":
+        return RequestMethod.OPTIONS;
+      case "HEAD":
+        return RequestMethod.HEAD;
+      default:
+        return RequestMethod.ALL;
+    }
+  }
+
+  private shouldExcludeRequest(method: RequestMethod, path: string): boolean {
+    return this.config.exclude.some((excludeOption) => {
+      if (excludeOption.method !== method) {
+        return false;
       }
 
-      return url === excludeUrl;
+      if (excludeOption.path.includes("*")) {
+        const pattern = excludeOption.path.replace(/\*/g, ".*");
+        const regex = new RegExp(`^${pattern}$`);
+        return regex.test(path);
+      }
+
+      return path === excludeOption.path;
     });
   }
 }

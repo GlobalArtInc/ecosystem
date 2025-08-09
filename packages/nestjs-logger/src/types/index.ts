@@ -1,3 +1,5 @@
+import { RequestMethod } from "@nestjs/common";
+
 export type LogLevel = "error" | "warn" | "info" | "debug" | "verbose";
 export type LogFormat = "json" | "text" | "pino";
 
@@ -55,6 +57,11 @@ export interface HttpResponse {
   readonly headers: Record<string, string>;
 }
 
+export interface ExcludeOption {
+  method: RequestMethod;
+  path: string;
+}
+
 export interface LoggerConfiguration {
   readonly level: LogLevel;
   readonly timestamp: boolean;
@@ -62,7 +69,7 @@ export interface LoggerConfiguration {
   readonly context?: string;
   readonly format: LogFormat;
   readonly sensitiveFields: readonly string[];
-  readonly exclude: readonly string[];
+  readonly exclude: readonly ExcludeOption[];
 }
 
 export interface FormatterOptions {
