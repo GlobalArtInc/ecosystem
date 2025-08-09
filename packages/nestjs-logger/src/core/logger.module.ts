@@ -8,7 +8,12 @@ import { ContextResolver } from "../utils/context-resolver";
 import { DataSanitizer } from "../utils/data-sanitizer";
 import { RequestIdGenerator } from "../utils/request-id-generator";
 import { ExcludeOption, LoggerConfiguration } from "../types";
-import { LOGGER_CONFIG_TOKEN, DEFAULT_LOGGER_CONFIG } from "../constants";
+import {
+  LOGGER_CONFIG_TOKEN,
+  LOGGER_SERVICE_TOKEN,
+  DEFAULT_LOGGER_CONFIG,
+} from "../constants";
+import { InjectLogger } from "./logger.di-tokens";
 
 export interface LoggerModuleOptions {
   level?: "error" | "warn" | "info" | "debug" | "verbose";
@@ -36,7 +41,7 @@ export class LoggerModule {
     return {
       module: LoggerModule,
       providers,
-      exports: [LoggerService, HttpLoggerInterceptor],
+      exports: [LOGGER_SERVICE_TOKEN, HttpLoggerInterceptor],
       global: true,
     };
   }
@@ -56,7 +61,7 @@ export class LoggerModule {
     return {
       module: LoggerModule,
       providers,
-      exports: [LoggerService, HttpLoggerInterceptor],
+      exports: [LOGGER_SERVICE_TOKEN, HttpLoggerInterceptor],
       global: true,
     };
   }
@@ -96,7 +101,7 @@ export class LoggerModule {
         inject: [LOGGER_CONFIG_TOKEN],
       },
       {
-        provide: LoggerService,
+        provide: LOGGER_SERVICE_TOKEN,
         useFactory: (
           config: LoggerConfiguration,
           formatterFactory: FormatterFactory,
@@ -136,7 +141,7 @@ export class LoggerModule {
           );
         },
         inject: [
-          LoggerService,
+          LOGGER_SERVICE_TOKEN,
           DataSanitizer,
           RequestIdGenerator,
           LOGGER_CONFIG_TOKEN,

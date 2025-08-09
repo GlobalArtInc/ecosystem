@@ -91,11 +91,14 @@ LoggerModule.forRootAsync({
 
 ```typescript
 import { Injectable } from "@nestjs/common";
-import { LoggerService } from "@globalart/nestjs-logger";
+import { InjectLogger, LoggerService } from "@globalart/nestjs-logger";
 
 @Injectable()
 export class UserService {
-  constructor(private readonly logger: LoggerService) {}
+  constructor(
+    @InjectLogger()
+    private readonly logger: LoggerService
+  ) {}
 
   async createUser(userData: CreateUserDto) {
     this.logger.log({
@@ -311,6 +314,30 @@ export class HealthController {
 }
 ```
 
+#### @InjectLogger
+
+Convenient decorator for injecting LoggerService.
+
+```typescript
+import { Injectable } from "@nestjs/common";
+import { InjectLogger, LoggerService } from "@globalart/nestjs-logger";
+
+@Injectable()
+export class UserService {
+  constructor(
+    @InjectLogger()
+    private readonly logger: LoggerService
+  ) {}
+
+  async createUser(userData: CreateUserDto) {
+    this.logger.log({
+      message: "Creating new user",
+      metadata: { email: userData.email },
+    });
+  }
+}
+```
+
 ## Excluding HTTP Requests
 
 You can exclude specific HTTP requests from logging using the `exclude` configuration option. This is useful for health checks, metrics endpoints, and other requests that don't need to be logged.
@@ -512,11 +539,14 @@ export class FileWriter implements ILogWriter {
 
 ```typescript
 import { Injectable } from "@nestjs/common";
-import { LoggerService } from "@globalart/nestjs-logger";
+import { InjectLogger, LoggerService } from "@globalart/nestjs-logger";
 
 @Injectable()
 export class EmailService {
-  constructor(private readonly logger: LoggerService) {}
+  constructor(
+    @InjectLogger()
+    private readonly logger: LoggerService
+  ) {}
 
   async sendEmail(to: string, subject: string) {
     this.logger.log({
