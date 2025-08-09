@@ -7,6 +7,8 @@ export {
 export { InjectLogger } from "./core/logger.di-tokens";
 export { LoggerService } from "./core/logger.service";
 export { HttpLoggerInterceptor } from "./core/http-logger.interceptor";
+export { ContextLoggerFactory } from "./factories/context-logger.factory";
+export { ContextCollector } from "./utils/context-collector";
 export { LogContext, LogMetadata, ExcludeLogging } from "./decorators";
 
 // Types

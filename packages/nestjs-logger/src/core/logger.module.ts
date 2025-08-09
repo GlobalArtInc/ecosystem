@@ -3,6 +3,7 @@ import { Reflector } from "@nestjs/core";
 import { LoggerService } from "./logger.service";
 import { HttpLoggerInterceptor } from "./http-logger.interceptor";
 import { FormatterFactory } from "../factories/formatter.factory";
+import { DynamicContextLoggerFactory } from "../factories/dynamic-context-logger.factory";
 import { ConsoleWriter } from "../writers/console-writer";
 import { ContextResolver } from "../utils/context-resolver";
 import { DataSanitizer } from "../utils/data-sanitizer";
@@ -11,9 +12,14 @@ import { ExcludeOption, LoggerConfiguration } from "../types";
 import {
   LOGGER_CONFIG_TOKEN,
   LOGGER_SERVICE_TOKEN,
+  DYNAMIC_CONTEXT_LOGGER_FACTORY_TOKEN,
   DEFAULT_LOGGER_CONFIG,
 } from "../constants";
-import { InjectLogger } from "./logger.di-tokens";
+import {
+  InjectLogger,
+  getAllContextTokens,
+  getContextLoggerToken,
+} from "./logger.di-tokens";
 
 export interface LoggerModuleOptions {
   level?: "error" | "warn" | "info" | "debug" | "verbose";
@@ -37,11 +43,17 @@ export class LoggerModule {
   static forRoot(options: LoggerModuleOptions = {}): DynamicModule {
     const config = this.createConfiguration(options);
     const providers = this.createProviders(config);
+    const contextProviders = this.createDynamicContextProviders();
 
     return {
       module: LoggerModule,
-      providers,
-      exports: [LOGGER_SERVICE_TOKEN, HttpLoggerInterceptor],
+      providers: [...providers, ...contextProviders],
+      exports: [
+        LOGGER_SERVICE_TOKEN,
+        HttpLoggerInterceptor,
+        DYNAMIC_CONTEXT_LOGGER_FACTORY_TOKEN,
+        ...contextProviders.map((p: any) => p.provide),
+      ],
       global: true,
     };
   }
@@ -57,11 +69,17 @@ export class LoggerModule {
     };
 
     const providers = [configProvider, ...this.createCoreProviders()];
+    const contextProviders = this.createDynamicContextProviders();
 
     return {
       module: LoggerModule,
-      providers,
-      exports: [LOGGER_SERVICE_TOKEN, HttpLoggerInterceptor],
+      providers: [...providers, ...contextProviders],
+      exports: [
+        LOGGER_SERVICE_TOKEN,
+        HttpLoggerInterceptor,
+        DYNAMIC_CONTEXT_LOGGER_FACTORY_TOKEN,
+        ...contextProviders.map((p: any) => p.provide),
+      ],
       global: true,
     };
   }
@@ -99,6 +117,10 @@ export class LoggerModule {
         useFactory: (config: LoggerConfiguration) =>
           new DataSanitizer(config.sensitiveFields),
         inject: [LOGGER_CONFIG_TOKEN],
+      },
+      {
+        provide: DYNAMIC_CONTEXT_LOGGER_FACTORY_TOKEN,
+        useClass: DynamicContextLoggerFactory,
       },
       {
         provide: LOGGER_SERVICE_TOKEN,
@@ -148,5 +170,15 @@ export class LoggerModule {
         ],
       },
     ];
+  }
+
+  private static createDynamicContextProviders(): Provider[] {
+    const contextNames = getAllContextTokens();
+    return contextNames.map((context) => ({
+      provide: getContextLoggerToken(context),
+      useFactory: (factory: DynamicContextLoggerFactory) =>
+        factory.createLogger(context),
+      inject: [DYNAMIC_CONTEXT_LOGGER_FACTORY_TOKEN],
+    }));
   }
 }

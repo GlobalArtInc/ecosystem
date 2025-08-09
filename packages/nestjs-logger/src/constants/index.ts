@@ -1,5 +1,10 @@
 export const LOGGER_CONFIG_TOKEN = Symbol("LOGGER_CONFIG");
 export const LOGGER_SERVICE_TOKEN = Symbol("LOGGER_SERVICE");
+export const LOGGER_CONTEXT_SERVICE_TOKEN = (context: string) =>
+  Symbol(`LOGGER_SERVICE_${context}`);
+export const DYNAMIC_CONTEXT_LOGGER_FACTORY_TOKEN = Symbol(
+  "DYNAMIC_CONTEXT_LOGGER_FACTORY"
+);
 export const LOGGER_CONTEXT_METADATA = Symbol("LOGGER_CONTEXT");
 export const LOGGER_METADATA_METADATA = Symbol("LOGGER_METADATA");
 export const LOGGER_EXCLUDE_METADATA = Symbol("LOGGER_EXCLUDE");

@@ -5,7 +5,7 @@ import { LoggerService } from "@globalart/nestjs-logger";
 @Controller()
 export class AppController {
   constructor(
-    @InjectLogger()
+    @InjectLogger(AppController.name)
     private readonly logger: LoggerService
   ) {}
 
