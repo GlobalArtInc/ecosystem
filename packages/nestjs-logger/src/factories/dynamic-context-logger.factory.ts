@@ -34,7 +34,7 @@ export class DynamicContextLoggerFactory {
       this.writer,
       this.contextResolver
     );
-    this.co
+    logger.setContext(context);
 
     this.loggerCache.set(context, logger);
     return logger;
