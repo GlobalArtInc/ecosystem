@@ -9,6 +9,13 @@ import {
 import { Observable } from "rxjs";
 import { tap, catchError } from "rxjs/operators";
 import { Reflector } from "@nestjs/core";
+// Опциональный импорт для GraphQL
+let GqlExecutionContext: any;
+try {
+  GqlExecutionContext = require("@nestjs/graphql").GqlExecutionContext;
+} catch {
+  // GraphQL модуль не установлен
+}
 import { LoggerService } from "./logger.service";
 import { IDataSanitizer, IRequestIdGenerator } from "../contracts";
 import {
@@ -37,8 +44,18 @@ export class HttpLoggerInterceptor implements NestInterceptor {
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+    const contextType = context.getType<string>();
+
+    if (contextType === "graphql") {
+      return this.handleGraphQLRequest(context, next);
+    }
+
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
+
+    if (!request || !request.method) {
+      return next.handle();
+    }
 
     const requestMethod = this.getRequestMethod(request.method);
     if (this.shouldExcludeRequest(requestMethod, request.url)) {
@@ -102,6 +119,75 @@ export class HttpLoggerInterceptor implements NestInterceptor {
         throw error;
       })
     );
+  }
+
+  private handleGraphQLRequest(
+    context: ExecutionContext,
+    next: CallHandler
+  ): Observable<unknown> {
+    if (!GqlExecutionContext) {
+      return next.handle();
+    }
+
+    try {
+      const gqlContext = GqlExecutionContext.create(context);
+      const info = gqlContext.getInfo();
+      const args = gqlContext.getArgs();
+      const startTime = Date.now();
+      const requestId = this.requestIdGenerator.generate();
+
+      const operationType = info.operation.operation;
+      const operationName = info.operation.name?.value || "Anonymous";
+      const fieldName = info.fieldName;
+
+      this.logger.log({
+        message: `GraphQL ${operationType}: ${operationName}.${fieldName}`,
+        context: "GraphQL",
+        metadata: {
+          requestId,
+          operationType,
+          operationName,
+          fieldName,
+          args: this.sanitizeGraphQLArgs(args),
+        },
+      });
+
+      return next.handle().pipe(
+        tap((result) => {
+          const responseTime = Date.now() - startTime;
+          this.logger.log({
+            message: `GraphQL ${operationType} completed: ${operationName}.${fieldName} (${responseTime}ms)`,
+            context: "GraphQL",
+            metadata: {
+              requestId,
+              operationType,
+              operationName,
+              fieldName,
+              responseTime,
+              resultSize: this.getGraphQLResultSize(result),
+            },
+          });
+        }),
+        catchError((error) => {
+          const responseTime = Date.now() - startTime;
+          this.logger.error({
+            message: `GraphQL ${operationType} failed: ${operationName}.${fieldName} (${responseTime}ms)`,
+            context: "GraphQL",
+            metadata: {
+              requestId,
+              operationType,
+              operationName,
+              fieldName,
+              responseTime,
+              error: error.message,
+            },
+          });
+          throw error;
+        })
+      );
+    } catch (gqlError) {
+      return next.handle();
+    }
   }
 
   private createHttpLogEntry(
@@ -231,5 +317,29 @@ export class HttpLoggerInterceptor implements NestInterceptor {
 
       return path === excludeOption.path;
     });
+  }
+
+  private sanitizeGraphQLArgs(args: any): any {
+    if (!args || typeof args !== "object") {
+      return args;
+    }
+
+    const sanitized = { ...args };
+
+    if (sanitized.input && sanitized.input.password) {
+      sanitized.input = { ...sanitized.input, password: "[HIDDEN]" };
+    }
+
+    return this.dataSanitizer.sanitize(sanitized);
+  }
+
+  private getGraphQLResultSize(result: any): string {
+    if (Array.isArray(result)) {
+      return `${result.length} items`;
+    }
+    if (result && typeof result === "object") {
+      return "1 object";
+    }
+    return "primitive";
   }
 }
