@@ -97,6 +97,9 @@ export class HttpLoggerInterceptor implements NestInterceptor {
         }
       }),
       catchError((error) => {
+        const errorMessage = this.extractErrorMessage(error);
+        const errorTrace = this.extractErrorTrace(error);
+
         if (this.config.format === "pino") {
           const entry = this.createHttpLogEntry(
             request,
@@ -104,17 +107,33 @@ export class HttpLoggerInterceptor implements NestInterceptor {
             requestId,
             startTime,
             50,
-            "request failed"
+            errorMessage || "request failed"
           );
           this.logger.logHttpRequest(entry);
-        } else {
-          const entry = this.createLogEntry(
+
+          const baseEntry = this.createLogEntry(
             request,
             response,
             requestId,
             startTime
           );
-          this.logger.error(entry);
+          this.logger.error({
+            ...baseEntry,
+            message: errorMessage || baseEntry.message,
+            trace: errorTrace,
+          });
+        } else {
+          const baseEntry = this.createLogEntry(
+            request,
+            response,
+            requestId,
+            startTime
+          );
+          this.logger.error({
+            ...baseEntry,
+            message: errorMessage || baseEntry.message,
+            trace: errorTrace,
+          });
         }
         throw error;
       })
@@ -170,8 +189,13 @@ export class HttpLoggerInterceptor implements NestInterceptor {
         }),
         catchError((error) => {
           const responseTime = Date.now() - startTime;
+          const errorMessage = this.extractErrorMessage(error);
+          const errorTrace = this.extractErrorTrace(error);
+
           this.logger.error({
-            message: `GraphQL ${operationType} failed: ${operationName}.${fieldName} (${responseTime}ms)`,
+            message:
+              errorMessage ||
+              `GraphQL ${operationType} failed: ${operationName}.${fieldName} (${responseTime}ms)`,
             context: "GraphQL",
             metadata: {
               requestId,
@@ -179,8 +203,8 @@ export class HttpLoggerInterceptor implements NestInterceptor {
               operationName,
               fieldName,
               responseTime,
-              error: error.message,
             },
+            trace: errorTrace,
           });
           throw error;
         })
@@ -341,5 +365,50 @@ export class HttpLoggerInterceptor implements NestInterceptor {
       return "1 object";
     }
     return "primitive";
+  }
+
+  private extractErrorMessage(error: unknown): string | undefined {
+    if (!error) return undefined;
+
+    // Nest HttpException
+    if (typeof (error as any).getResponse === "function") {
+      const resp = (error as any).getResponse();
+      if (typeof resp === "string") return resp;
+      if (resp && typeof resp === "object") {
+        return (
+          (resp as any).message || (resp as any).error || (error as any).message
+        );
+      }
+    }
+
+    // GraphQL/Apollo ошибки
+    if ((error as any).extensions && (error as any).extensions.exception) {
+      const ex = (error as any).extensions.exception;
+      return ex.message || (error as any).message;
+    }
+
+    return (error as any).message;
+  }
+
+  private extractErrorTrace(error: unknown): string | undefined {
+    if (!error) return undefined;
+
+    // Nest HttpException
+    if (typeof (error as any).getResponse === "function") {
+      const ex = error as any;
+      return ex.stack || ex.trace || undefined;
+    }
+
+    // GraphQL/Apollo ошибки
+    if ((error as any).extensions && (error as any).extensions.exception) {
+      const ex = (error as any).extensions.exception;
+      return ex.stacktrace
+        ? Array.isArray(ex.stacktrace)
+          ? ex.stacktrace.join("\n")
+          : String(ex.stacktrace)
+        : ex.stack || undefined;
+    }
+
+    return (error as any).stack;
   }
 }
