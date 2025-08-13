@@ -48,11 +48,4 @@ export class PaginationQueryDto {
   )
   @IsIn(["ASC", "DESC"], { message: "sortBy must be ASC or DESC" })
   sortBy?: string;
-
-  @ApiPropertyOptional({ type: Number, description: "page" })
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number;
 }

@@ -4,6 +4,14 @@ import {
   FindManyOptions,
   FindOptionsOrder,
   Repository,
+  ILike,
+  Like,
+  MoreThan,
+  MoreThanOrEqual,
+  LessThan,
+  LessThanOrEqual,
+  In,
+  Not,
 } from "typeorm";
 import { PaginationConfig, PaginationResult } from "../types";
 import { PaginationQueryDto } from "../dtos/pagination-query.dto";
@@ -23,14 +31,10 @@ export class PaginationService<TEntity> {
     query: PaginationQueryDto = {},
     options: FindManyOptions<TEntity> = {}
   ): Promise<PaginationResult<TEntity>> {
-    const page = Math.max(1, Number(query.page) || 1);
     const requestedLimit = Number(query.limit) || this.config.defaultLimit;
     const limit = Math.min(Math.max(1, requestedLimit), this.config.maxLimit);
 
-    const hasOffset = query.offset !== undefined && query.offset !== null;
-    const offset = hasOffset
-      ? Math.max(0, Number(query.offset) || 0)
-      : (page - 1) * limit;
+    const offset = Math.max(0, Number(query.offset) || 0);
 
     const order: FindOptionsOrder<TEntity> | undefined = this.buildOrder(query);
 
@@ -45,7 +49,7 @@ export class PaginationService<TEntity> {
     });
 
     const totalPages = Math.max(1, Math.ceil(total / limit));
-    const currentPage = hasOffset ? Math.floor(offset / limit) + 1 : page;
+    const currentPage = Math.floor(offset / limit) + 1;
 
     return {
       items,
@@ -74,8 +78,8 @@ export class PaginationService<TEntity> {
     const where: Record<string, any> = {};
 
     for (const raw of query.filter) {
-      const [field, op, value] = String(raw).split(":");
-      if (!field || !value) continue;
+      const [field, op, value] = String(raw).split("||");
+      if (!field || value === undefined) continue;
       const normalizedOp = (op || "eq").toLowerCase();
 
       switch (normalizedOp) {
@@ -83,28 +87,28 @@ export class PaginationService<TEntity> {
           where[field] = value;
           break;
         case "ne":
-          where[field] = { $ne: value } as any;
+          where[field] = Not(value as any);
           break;
         case "like":
-          where[field] = { $like: `%${value}%` } as any;
+          where[field] = Like(`%${value}%`);
           break;
         case "ilike":
-          where[field] = { $ilike: `%${value}%` } as any;
+          where[field] = ILike(`%${value}%` as any);
           break;
         case "gt":
-          where[field] = { $gt: value } as any;
+          where[field] = MoreThan(value as any);
           break;
         case "gte":
-          where[field] = { $gte: value } as any;
+          where[field] = MoreThanOrEqual(value as any);
           break;
         case "lt":
-          where[field] = { $lt: value } as any;
+          where[field] = LessThan(value as any);
           break;
         case "lte":
-          where[field] = { $lte: value } as any;
+          where[field] = LessThanOrEqual(value as any);
           break;
         case "in":
-          where[field] = { $in: value.split(",") } as any;
+          where[field] = In(String(value).split(",") as any[]);
           break;
         default:
           where[field] = value;
