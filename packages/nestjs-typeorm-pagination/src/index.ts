@@ -1,15 +1,5 @@
-// Core
-export { PaginationModule } from "./core/pagination.module";
-export { PaginationService } from "./core/pagination.service";
-
-// Decorators
-export { Paginate } from "./decorators";
-
-// Types
+export * from "./core/pagination.module";
+export * from "./core/pagination.service";
+export * from "./decorators";
+export * from "./dtos/pagination-query.dto";
 export * from "./types";
-
-// DTOs
-export { PaginationQueryDto } from "./dtos/pagination-query.dto";
-
-// Swagger
-export * from "./swagger";

@@ -1,29 +1,21 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
 
 export class PaginationQueryDto {
-  @ApiPropertyOptional({ type: Number, description: "Limit of items per page" })
+  @ApiPropertyOptional({ type: Number, description: "limit" })
   limit?: number;
 
-  @ApiPropertyOptional({
-    type: Number,
-    description: "Offset of the first item",
-  })
+  @ApiPropertyOptional({ type: Number, description: "offset" })
   offset?: number;
 
-  @ApiPropertyOptional({
-    type: String,
-    isArray: true,
-    description:
-      "Filters in format field||$operator||value. E.g.: product||$eq||book, createdAt||$between||2022-12-12,2023-12-12",
-  })
+  @ApiPropertyOptional({ type: [String], description: "filter" })
   filter?: string[];
 
-  @ApiPropertyOptional({ type: String, description: "Sort field" })
+  @ApiPropertyOptional({ type: String, description: "orderBy" })
   orderBy?: string;
 
-  @ApiPropertyOptional({
-    type: String,
-    description: "Sort direction (asc|desc)",
-  })
+  @ApiPropertyOptional({ type: String, description: "sortBy" })
   sortBy?: string;
+
+  @ApiPropertyOptional({ type: Number, description: "page" })
+  page?: number;
 }
