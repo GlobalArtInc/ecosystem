@@ -25,7 +25,7 @@ export class PaginationModule {
       module: PaginationModule,
       providers,
       exports: providers.map((p: any) => p.provide || p),
-      global: false,
+      global: true,
     };
   }
 
