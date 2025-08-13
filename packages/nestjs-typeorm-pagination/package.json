@@ -1,6 +1,6 @@
 {
   "name": "@globalart/nestjs-typeorm-pagination",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "author": "GlobalArt, Inc",
   "license": "MIT",
   "main": "lib/index.js",
