@@ -1,2 +1,2 @@
-export type MultiPartFile<T extends string> = Storage.MultipartFile;
-export type MultiPartFiles<T extends string> = Storage.MultipartFile[];
+export type MultiPartFile = Storage.MultipartFile;
+export type MultiPartFiles = Storage.MultipartFile[];
