@@ -42,9 +42,9 @@ export class AppController {
     @Body()
     body: dto,
     @UploadedFile("file")
-    singleFile: MultiPartFile<"file">,
-    @UploadedFiles()
-    allFiles: MultiPartFile<"file">
+    singleFile: MultiPartFile,
+    @UploadedFiles("file")
+    allFiles: MultiPartFile[]
   ) {
     console.log("Single file:", singleFile);
     console.log("All files:", allFiles);
