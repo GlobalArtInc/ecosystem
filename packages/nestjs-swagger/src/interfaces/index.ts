@@ -12,8 +12,9 @@ export interface SwaggerDocumentationErrorStatus {
 
 export interface SwaggerDocumentationOptions
   extends SwaggerDocumentationErrorStatus {
+  endpointSummary: string;
   endpointDescription?: string;
-  endpointSummary?: string;
+  operationId?: string;
   // eslint-disable-next-line @typescript-eslint/ban-types
   responseDto?: any;
   isArray?: boolean;

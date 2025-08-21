@@ -17,11 +17,17 @@ import {
 import { API_RESPONSE_DESCRIPTION } from "../constants";
 import { PaginatedResponseDto } from "../dtos";
 import { SwaggerDocumentationOptions } from "../interfaces";
+import { createHash } from "crypto";
 
 // SwaggerDocumentation is a decorator function to generate Swagger documentation for endpoints based on the provided options.
 export const SwaggerDocumentation = (data: SwaggerDocumentationOptions) => {
+  const operationId =
+    data.operationId ||
+    createHash("md5").update(`${data.endpointSummary}`).digest("hex");
+
   const decorators = [
     ApiOperation({
+      operationId,
       description: data.endpointDescription,
       summary: data.endpointSummary,
     }),
@@ -31,7 +37,7 @@ export const SwaggerDocumentation = (data: SwaggerDocumentationOptions) => {
     decorators.push(
       ApiBadRequestResponse({
         description: data.error400Description,
-      }),
+      })
     );
   }
 
@@ -39,7 +45,7 @@ export const SwaggerDocumentation = (data: SwaggerDocumentationOptions) => {
     decorators.push(
       ApiUnauthorizedResponse({
         description: data.error401Description,
-      }),
+      })
     );
   }
 
@@ -47,7 +53,7 @@ export const SwaggerDocumentation = (data: SwaggerDocumentationOptions) => {
     decorators.push(
       ApiForbiddenResponse({
         description: data.error403Description,
-      }),
+      })
     );
   }
 
@@ -55,7 +61,7 @@ export const SwaggerDocumentation = (data: SwaggerDocumentationOptions) => {
     decorators.push(
       ApiNotFoundResponse({
         description: data.error404Description,
-      }),
+      })
     );
   }
 
@@ -63,7 +69,7 @@ export const SwaggerDocumentation = (data: SwaggerDocumentationOptions) => {
     decorators.push(
       ApiConflictResponse({
         description: data.error409Description,
-      }),
+      })
     );
   }
 
@@ -71,7 +77,7 @@ export const SwaggerDocumentation = (data: SwaggerDocumentationOptions) => {
     decorators.push(
       ApiUnprocessableEntityResponse({
         description: data.error422Description,
-      }),
+      })
     );
   }
 
@@ -79,7 +85,7 @@ export const SwaggerDocumentation = (data: SwaggerDocumentationOptions) => {
     decorators.push(
       ApiTooManyRequestsResponse({
         description: data.error429Description,
-      }),
+      })
     );
   }
 
@@ -87,7 +93,7 @@ export const SwaggerDocumentation = (data: SwaggerDocumentationOptions) => {
     decorators.push(
       ApiInternalServerErrorResponse({
         description: data.error500Description,
-      }),
+      })
     );
   }
 
@@ -95,7 +101,7 @@ export const SwaggerDocumentation = (data: SwaggerDocumentationOptions) => {
     decorators.push(
       ApiServiceUnavailableResponse({
         description: data.error503Description,
-      }),
+      })
     );
   }
 
@@ -119,7 +125,7 @@ export const SwaggerDocumentation = (data: SwaggerDocumentationOptions) => {
         },
         description: API_RESPONSE_DESCRIPTION,
       }),
-      ApiExtraModels(data.responseDto, PaginatedResponseDto),
+      ApiExtraModels(data.responseDto, PaginatedResponseDto)
     );
   } else if (data.responseDto) {
     decorators.push(
@@ -132,13 +138,13 @@ export const SwaggerDocumentation = (data: SwaggerDocumentationOptions) => {
           : { $ref: getSchemaPath(data.responseDto) },
         description: API_RESPONSE_DESCRIPTION,
       }),
-      ApiExtraModels(data.responseDto),
+      ApiExtraModels(data.responseDto)
     );
   } else {
     decorators.push(
       ApiOkResponse({
         description: API_RESPONSE_DESCRIPTION,
-      }),
+      })
     );
   }
 
