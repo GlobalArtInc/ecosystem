@@ -33,8 +33,8 @@
     "test": "jest --runInBand --passWithNoTests",
     "test:cov": "jest --coverage --passWithNoTests",
     "coveralls": "yarn run test:cov --coverageReporters=text-lcov | coveralls",
-    "build": "rm -rf ./dist && tsc && cp src/globals.d.ts dist/",
-    "build:watch": "tsc --watch",
+    "build": "rm -rf ./dist && tsdown && cp src/globals.d.ts dist/",
+    "build:watch": "tsdown --watch",
     "prepublishOnly": "npm run build",
     "publish:dev": "npm publish --access public --tag dev",
     "publish:npm": "release-it"
@@ -62,6 +62,7 @@
     "rxjs": "^7.8.2",
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
+    "tsdown": "0.14.2",
     "typescript": "^5.9.2"
   },
   "publishConfig": {

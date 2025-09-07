@@ -471,6 +471,9 @@ importers:
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@24.3.0)(typescript@5.9.2)
+      tsdown:
+        specifier: 0.14.2
+        version: 0.14.2(typescript@5.9.2)
       typescript:
         specifier: ^5.9.2
         version: 5.9.2
@@ -526,6 +529,9 @@ importers:
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@24.3.0)(typescript@5.9.2)
+      tsdown:
+        specifier: 0.14.2
+        version: 0.14.2(typescript@5.9.2)
       typescript:
         specifier: ^5.9.2
         version: 5.9.2
@@ -584,6 +590,9 @@ importers:
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@24.3.0)(typescript@5.9.2)
+      tsdown:
+        specifier: 0.14.2
+        version: 0.14.2(typescript@5.9.2)
       typeorm:
         specifier: 0.3.26
         version: 0.3.26(reflect-metadata@0.2.2)(ts-node@10.9.2)
@@ -642,6 +651,9 @@ importers:
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@24.3.0)(typescript@5.9.2)
+      tsdown:
+        specifier: 0.14.2
+        version: 0.14.2(typescript@5.9.2)
       typeorm:
         specifier: 0.3.26
         version: 0.3.26(reflect-metadata@0.2.2)(ts-node@10.9.2)
@@ -724,6 +736,9 @@ importers:
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@24.3.0)(typescript@5.9.2)
+      tsdown:
+        specifier: 0.14.2
+        version: 0.14.2(typescript@5.9.2)
       typeorm:
         specifier: ^0.3.25
         version: 0.3.25(pg@8.16.3)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2)

@@ -1,17 +1,17 @@
 import { Injectable, LoggerService as NestLoggerService } from "@nestjs/common";
-import {
-  ILogger,
-  ILogFormatter,
-  ILogWriter,
+import type {
   IContextResolver,
-} from "../contracts";
-import {
-  LogEntry,
+  ILogFormatter,
+  ILogger,
+  ILogWriter,
+} from "../contracts/index";
+import type {
   HttpRequestLogEntry,
+  LogEntry,
   LoggerConfiguration,
   LogLevel,
   LogOptions,
-} from "../types";
+} from "../types/index";
 
 @Injectable()
 export class LoggerService implements NestLoggerService, ILogger {

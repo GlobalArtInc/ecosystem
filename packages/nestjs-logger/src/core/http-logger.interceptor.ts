@@ -1,14 +1,25 @@
 import {
+  CallHandler,
+  ExecutionContext,
+  Inject,
   Injectable,
   NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-  Inject,
   RequestMethod,
 } from "@nestjs/common";
-import { Observable } from "rxjs";
-import { tap, catchError } from "rxjs/operators";
 import { Reflector } from "@nestjs/core";
+import { hostname } from "os";
+import { Observable } from "rxjs";
+import { catchError, tap } from "rxjs/operators";
+import { LOGGER_CONFIG_TOKEN, LOGGER_EXCLUDE_METADATA } from "../constants";
+import type { IDataSanitizer, IRequestIdGenerator } from "../contracts/index";
+import type {
+  HttpRequest,
+  HttpRequestLogEntry,
+  HttpResponse,
+  LoggerConfiguration,
+  LogOptions,
+} from "../types/index";
+import { LoggerService } from "./logger.service";
 // Опциональный импорт для GraphQL
 let GqlExecutionContext: any;
 try {
@@ -16,19 +27,6 @@ try {
 } catch {
   // GraphQL модуль не установлен
 }
-import { LoggerService } from "./logger.service";
-import { IDataSanitizer, IRequestIdGenerator } from "../contracts";
-import {
-  HttpRequestLogEntry,
-  HttpRequest,
-  HttpResponse,
-  LoggerConfiguration,
-  LogEntry,
-  LogLevel,
-  LogOptions,
-} from "../types";
-import { LOGGER_CONFIG_TOKEN, LOGGER_EXCLUDE_METADATA } from "../constants";
-import { hostname } from "os";
 
 @Injectable()
 export class HttpLoggerInterceptor implements NestInterceptor {

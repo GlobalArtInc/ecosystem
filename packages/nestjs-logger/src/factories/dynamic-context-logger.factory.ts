@@ -1,10 +1,10 @@
-import { Injectable, Inject } from "@nestjs/common";
-import { LoggerService } from "../core/logger.service";
-import { FormatterFactory } from "./formatter.factory";
-import { ConsoleWriter } from "../writers/console-writer";
-import { ContextResolver } from "../utils/context-resolver";
-import { LoggerConfiguration } from "../types";
+import { Inject, Injectable } from "@nestjs/common";
 import { LOGGER_CONFIG_TOKEN } from "../constants";
+import { LoggerService } from "../core/logger.service";
+import type { LoggerConfiguration } from "../types/index";
+import { ContextResolver } from "../utils/context-resolver";
+import { ConsoleWriter } from "../writers/console-writer";
+import { FormatterFactory } from "./formatter.factory";
 
 @Injectable()
 export class DynamicContextLoggerFactory {

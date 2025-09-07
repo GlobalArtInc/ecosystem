@@ -24,8 +24,8 @@
   ],
   "scripts": {
     "prebuild": "rimraf lib",
-    "build": "tsc",
-    "build:watch": "tsc --watch",
+    "build": "tsdown",
+    "build:watch": "tsdown --watch",
     "prepare": "tsc",
     "dev:yalc": "nodemon --watch src --ext ts --exec 'npm run build && yalc push'",
     "format": "prettier --write \"src/**/*.ts\"",
@@ -61,6 +61,7 @@
     "sqlite3": "^5.1.7",
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
+    "tsdown": "0.14.2",
     "typeorm": "^0.3.25",
     "typescript": "^5.9.2"
   },
