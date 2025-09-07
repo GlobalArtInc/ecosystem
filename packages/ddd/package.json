@@ -1,0 +1,57 @@
+{
+  "name": "@globalart/ddd",
+  "version": "1.0.0",
+  "description": "A advanced DDD for NestJS",
+  "author": {
+    "name": "GlobalArt, Inc"
+  },
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GlobalArtInc/nestjs-toolkit.git#main"
+  },
+  "keywords": [
+    "ddd"
+  ],
+  "scripts": {
+    "format": "prettier --write \"**/*.ts\"",
+    "test": "jest --runInBand --passWithNoTests",
+    "test:cov": "jest --coverage --passWithNoTests",
+    "coveralls": "yarn run test:cov --coverageReporters=text-lcov | coveralls",
+    "build": "tsdown",
+    "build:watch": "tsdown --watch",
+    "prepublishOnly": "npm run build",
+    "publish:dev": "npm publish --access public --tag dev",
+    "publish:npm": "release-it"
+  },
+  "devDependencies": {
+    "tsdown": "0.14.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "date-fns": "4.1.0",
+    "dequal": "2.0.3",
+    "lodash": "^4.17.21",
+    "nanoid": "5.1.5",
+    "oxide.ts": "1.1.0",
+    "ts-pattern": "5.8.0",
+    "uuid": "12.0.0",
+    "zod": "4.1.5"
+  }
+}
