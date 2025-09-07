@@ -8,15 +8,15 @@ const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
 const isPreview = process.env.NODE_ENV === 'preview';
 
 const config: Config = {
-  title: 'NestJS Toolkit',
+  title: 'GlobalArt Ecosystem',
   favicon: 'img/favicon.ico',
   
 
-  url: 'https://nestjs-toolkit.js.org',
+  url: 'https://globalart.js.org',
   baseUrl: '/',
 
   organizationName: 'GlobalArtInc',
-  projectName: 'nestjs-toolkit', 
+  projectName: 'globalart-ecosystem', 
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -30,7 +30,7 @@ const config: Config = {
         debug: isDev,
         docs: {
 					sidebarPath: require.resolve('./sidebars.js'),
-					editUrl: 'https://github.com/GlobalArtInc/nestjs-toolkit/tree/main/docs',
+					editUrl: 'https://github.com/GlobalArtInc/ecosystem/tree/main/docs',
 					path: 'content',
 					routeBasePath: '/',
 					showLastUpdateAuthor: false,
@@ -53,9 +53,9 @@ const config: Config = {
       respectPrefersColorScheme: false,
     },
     navbar: {
-      title: 'NestJS Toolkit',
+      title: 'GlobalArt Ecosystem',
       logo: {
-        alt: 'NestJS Toolkit',
+        alt: 'GlobalArt Ecosystem',
         src: 'img/logo.svg',
       },
       items: [
@@ -66,7 +66,7 @@ const config: Config = {
           label: 'Introduction',
         },
         {
-          href: 'https://github.com/GlobalArtInc/nestjs-toolkit',
+          href: 'https://github.com/GlobalArtInc/ecosystem',
           label: 'GitHub',
           position: 'right',
         },

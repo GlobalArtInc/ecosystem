@@ -62,4 +62,4 @@ We welcome contributions! Please see our contributing guidelines for more inform
 
 ## License
 
-MIT License - see the [LICENSE](https://github.com/GlobalArtInc/nestjs-toolkit/blob/main/LICENSE) file for details.
+MIT License - see the [LICENSE](https://github.com/GlobalArtInc/ecosystem/blob/main/LICENSE) file for details.

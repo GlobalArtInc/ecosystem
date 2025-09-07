@@ -1,5 +1,5 @@
 {
-  "name": "nestjs-toolkit",
+  "name": "@globalart/ecosystem",
   "private": true,
   "scripts": {
     "bootstrap": "pnpm install",
@@ -29,7 +29,7 @@
   "packageManager": "pnpm@8.15.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/GlobalArtInc/nestjs-toolkit.git"
+    "url": "git+https://github.com/GlobalArtInc/ecosystem.git"
   },
   "keywords": [
     "nestjs",

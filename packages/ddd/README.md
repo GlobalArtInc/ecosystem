@@ -10,7 +10,7 @@ npm install @globalart/ddd
 
 ## Documentation
 
-📖 **[Complete documentation and usage examples](https://nestjs-toolkit.js.org/packages/ddd)**
+📖 **[Complete documentation and usage examples](https://globalart.js.org/packages/ddd)**
 
 The documentation includes:
 - Detailed guides for all components

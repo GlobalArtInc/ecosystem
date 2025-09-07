@@ -11,7 +11,7 @@
   "description": "Pagination and filtering helper method for TypeORM repostiories or query builders using Nest.js framework.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/GlobalArtInc/nestjs-toolkit/tree/main/packages/nestjs-typeorm-pagination"
+    "url": "https://github.com/GlobalArtInc/ecosystem/tree/main/packages/nestjs-typeorm-pagination"
   },
   "keywords": [
     "nestjs",
