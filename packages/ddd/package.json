@@ -39,6 +39,7 @@
     "publish:npm": "release-it"
   },
   "devDependencies": {
+    "release-it": "19.0.4",
     "tsdown": "0.14.2"
   },
   "publishConfig": {
