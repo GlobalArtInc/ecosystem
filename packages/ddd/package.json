@@ -1,6 +1,6 @@
 {
   "name": "@globalart/ddd",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A advanced DDD for NestJS",
   "author": {
     "name": "GlobalArt, Inc"
