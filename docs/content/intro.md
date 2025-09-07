@@ -2,13 +2,13 @@
 sidebar_position: 1
 ---
 
-# NestJS Toolkit
+# GlobalArt Ecosystem
 
 A comprehensive toolkit for NestJS applications that provides essential utilities and decorators to simplify common development tasks.
 
 ## Overview
 
-NestJS Toolkit is a collection of packages designed to enhance your NestJS development experience. Each package focuses on a specific area of functionality, providing clean, well-tested, and production-ready solutions.
+GlobalArt Ecosystem is a collection of packages designed to enhance your NestJS development experience. Each package focuses on a specific area of functionality, providing clean, well-tested, and production-ready solutions.
 
 ## Available Packages
 

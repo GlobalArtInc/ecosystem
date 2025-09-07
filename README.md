@@ -1,4 +1,4 @@
-# NestJS Toolkit
+# GlobalArt Ecosystem
 
 Monorepo with tools for NestJS
 
