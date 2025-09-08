@@ -4,7 +4,7 @@ import { themes as prismThemes } from 'prism-react-renderer';
 
 const config: Config = {
   title: 'GlobalArt Ecosystem',
-  tagline: 'Comprehensive NestJS toolkit for modern web development',
+  tagline: 'Comprehensive bundles for development',
   favicon: 'img/favicon.ico',
   
   url: 'https://globalart.js.org',
