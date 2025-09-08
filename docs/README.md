@@ -1,41 +1,34 @@
-# Website
+# GlobalArt Ecosystem Documentation
 
-This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator.
+Professional documentation site for the GlobalArt Ecosystem built with [Docusaurus](https://docusaurus.io/).
 
-## Installation
-
-```bash
-yarn
-```
-
-## Local Development
+## Development
 
 ```bash
-yarn start
+# Install dependencies
+npm install
+
+# Start development server
+npm start
+
+# Build for production
+npm run build
 ```
 
-This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
+## Structure
 
-## Build
+- `/content/` - Documentation content in MDX format
+- `/src/` - Custom React components and styling
+- `/static/` - Static assets (images, icons, etc.)
 
-```bash
-yarn build
-```
+## Contributing
 
-This command generates static content into the `build` directory and can be served using any static contents hosting service.
+When adding new documentation:
+
+1. Create MDX files in the appropriate `/content/` directory
+2. Update `sidebars.ts` if adding new sections
+3. Follow the existing style and structure conventions
 
 ## Deployment
 
-Using SSH:
-
-```bash
-USE_SSH=true yarn deploy
-```
-
-Not using SSH:
-
-```bash
-GIT_USER=<Your GitHub username> yarn deploy
-```
-
-If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
+The site is automatically deployed to GitHub Pages on push to the main branch.

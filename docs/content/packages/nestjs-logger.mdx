@@ -1,10 +1,10 @@
 ---
-sidebar_position: 2
+sidebar_position: 4
 ---
 
-# @globalart/nestjs-logger
+# NestJS Logger
 
-A professional logging module for NestJS with clean architecture, strict typing, and extensibility.
+Professional logging module for NestJS with clean architecture, multiple formats, and built-in security features.
 
 ## Installation
 
@@ -14,20 +14,17 @@ npm install @globalart/nestjs-logger
 
 ## Overview
 
-This package provides a comprehensive logging solution for NestJS applications with support for multiple output formats, automatic HTTP request logging, and built-in security features. Built on Clean Architecture principles, it offers excellent performance, extensibility, and developer experience.
+This package provides a comprehensive logging solution for NestJS applications with support for multiple output formats, automatic HTTP request logging, and built-in security features. Built on Clean Architecture principles, it offers excellent performance and extensibility.
 
 ## Key Features
 
-- 🏗️ **Clean Architecture** - separation of concerns, SOLID principles
-- 🔒 **Type Safety** - full TypeScript type safety
-- ⚡ **Performance** - optimized architecture with minimal allocations
-- 🔧 **Extensibility** - easy to add new formatters and transports
-- 🧪 **Testability** - dependency injection, easy mocking
-- 🎯 **Automatic Context** - class detection from call stack
-- 🌐 **HTTP Logging** - detailed request logging with format consistency
-- 🛡️ **Security** - automatic sanitization of sensitive data
-- 🎨 **Colored Output** - beautiful console logs
-- 📊 **Multiple Formats** - Text, JSON, and Pino support
+- **Clean Architecture** - Separation of concerns with SOLID principles
+- **Type Safety** - Full TypeScript support with IntelliSense
+- **Performance Optimized** - Minimal allocations and efficient queries
+- **Multiple Formats** - Text, JSON, and Pino output support
+- **HTTP Logging** - Automatic request/response logging
+- **Security** - Automatic sanitization of sensitive data
+- **Extensible** - Easy to add custom formatters and transports
 
 ## Quick Start
 
@@ -50,7 +47,7 @@ export class AppModule {}
 
 ## Configuration
 
-### Synchronous Configuration
+### Basic Configuration
 
 ```typescript
 import { RequestMethod } from "@nestjs/common";
@@ -59,17 +56,16 @@ LoggerModule.forRoot({
   level: "debug",
   timestamp: true,
   colors: true,
-  format: "pino",
+  format: "json",
   sensitiveFields: ["password", "secret"],
   exclude: [
     { method: RequestMethod.GET, path: "/health" },
-    { method: RequestMethod.GET, path: "/metrics" },
     { method: RequestMethod.ALL, path: "/favicon.ico" },
   ],
 });
 ```
 
-### Asynchronous Configuration
+### Async Configuration
 
 ```typescript
 import { ConfigService } from "@nestjs/config";
@@ -85,9 +81,9 @@ LoggerModule.forRootAsync({
 });
 ```
 
-## Usage
+## Usage Examples
 
-### In Services
+### Service Logging
 
 ```typescript
 import { Injectable } from "@nestjs/common";
@@ -103,7 +99,7 @@ export class UserService {
   async createUser(userData: CreateUserDto) {
     this.logger.log({
       message: "Creating new user",
-      metadata: { userId: userData.email },
+      metadata: { email: userData.email },
     });
 
     try {
@@ -163,7 +159,7 @@ export class AppModule {}
 ### Text Format (Default)
 
 ```
-[2024-01-15T10:30:45.123Z] [INFO] [UserService] Creating new user {"userId":"123"}
+[2024-01-15T10:30:45.123Z] [INFO] [UserService] Creating new user {"email":"user@example.com"}
 [2024-01-15T10:30:45.335Z] [INFO] [HttpLogger] GET /users - 200 (12ms)
 ```
 
@@ -175,21 +171,7 @@ export class AppModule {}
   "level": "info",
   "message": "Creating new user",
   "context": "UserService",
-  "metadata": {"userId": "123"}
-}
-{
-  "timestamp": "2024-01-15T10:30:45.335Z",
-  "level": "info",
-  "message": "GET /users - 200 (12ms)",
-  "context": "HttpLogger",
-  "metadata": {
-    "requestId": "req-123",
-    "method": "GET",
-    "url": "/users",
-    "statusCode": 200,
-    "responseTime": 12,
-    "remoteAddress": "127.0.0.1"
-  }
+  "metadata": {"email": "user@example.com"}
 }
 ```
 
@@ -205,12 +187,9 @@ export class AppModule {}
     "id": "req-123",
     "method": "GET",
     "url": "/users",
-    "query": {},
-    "params": {},
-    "headers": {},
     "remoteAddress": "127.0.0.1"
   },
-  "res": { "statusCode": 200, "headers": {} },
+  "res": { "statusCode": 200 },
   "responseTime": 12,
   "msg": "request completed"
 }
@@ -218,18 +197,15 @@ export class AppModule {}
 
 ## API Reference
 
-### LoggerService
-
-The main logging service that provides methods for different log levels.
+### LoggerService Methods
 
 | Method                                       | Description                         |
-| -------------------------------------------- | ----------------------------------- |
+|----------------------------------------------|-------------------------------------|
 | `log(options: LogOptions)`                   | Information message                 |
-| `error(options: LogOptions)`                 | Error with trace                    |
+| `error(options: LogOptions)`                 | Error with stack trace              |
 | `warn(options: LogOptions)`                  | Warning message                     |
 | `debug(options: LogOptions)`                 | Debug information                   |
 | `verbose(options: LogOptions)`               | Verbose logging                     |
-| `logHttpRequest(entry: HttpRequestLogEntry)` | Log HTTP request (Pino format only) |
 
 ### LogOptions Interface
 
@@ -242,67 +218,56 @@ interface LogOptions {
 }
 ```
 
-### ExcludeOption Interface
+### Configuration Options
 
-Configuration for excluding specific HTTP requests from logging.
+| Option            | Type              | Default     | Description                           |
+|-------------------|-------------------|-------------|---------------------------------------|
+| `level`           | `LogLevel`        | `'info'`    | Logging level                         |
+| `timestamp`       | `boolean`         | `true`      | Show timestamp                        |
+| `colors`          | `boolean`         | `true`      | Colored output                        |
+| `format`          | `LogFormat`       | `'text'`    | Output format                         |
+| `context`         | `string`          | `undefined` | Default context                       |
+| `sensitiveFields` | `string[]`        | `[...]`     | Fields to sanitize                    |
+| `exclude`         | `ExcludeOption[]` | `[]`        | HTTP requests to exclude from logging |
 
-```typescript
-interface ExcludeOption {
-  method: RequestMethod;
-  path: string;
-}
-```
+## Decorators
 
-The `path` field supports wildcard patterns using `*`. Examples:
+### @LogContext
 
-- `"/api/v*/health"` - matches `/api/v1/health`, `/api/v2/health`, etc.
-- `"/users/*"` - matches any path starting with `/users/`
-- `"/static/*"` - matches any static file path
-
-### Decorators
-
-#### @LogContext
-
-Set context for class or method.
+Set context for class or method:
 
 ```typescript
-import { LogContext } from "@globalart/nestjs-logger";
-
 @Controller("users")
 @LogContext("UserController")
 export class UserController {
   @Get()
   @LogContext("UserController.getAllUsers")
   async getAllUsers() {
-    // ...
+    // Context will be "UserController.getAllUsers"
   }
 }
 ```
 
-#### @LogMetadata
+### @LogMetadata
 
-Add metadata to logs.
+Add metadata to logs:
 
 ```typescript
-import { LogMetadata } from "@globalart/nestjs-logger";
-
 @Controller("users")
 export class UserController {
   @Get()
   @LogMetadata({ operation: "getAllUsers", version: "v1" })
   async getAllUsers() {
-    // ...
+    // Metadata will be included in all logs
   }
 }
 ```
 
-#### @ExcludeLogging
+### @ExcludeLogging
 
-Exclude logging for controller or method.
+Exclude specific endpoints from logging:
 
 ```typescript
-import { ExcludeLogging } from "@globalart/nestjs-logger";
-
 @Controller("health")
 export class HealthController {
   @Get()
@@ -313,212 +278,73 @@ export class HealthController {
 }
 ```
 
-#### @InjectLogger
-
-Convenient decorator for injecting LoggerService.
-
-```typescript
-import { Injectable } from "@nestjs/common";
-import { InjectLogger, LoggerService } from "@globalart/nestjs-logger";
-
-@Injectable()
-export class UserService {
-  constructor(
-    @InjectLogger()
-    private readonly logger: LoggerService
-  ) {}
-
-  async createUser(userData: CreateUserDto) {
-    this.logger.log({
-      message: "Creating new user",
-      metadata: { email: userData.email },
-    });
-  }
-}
-```
-
 ## Excluding HTTP Requests
 
-You can exclude specific HTTP requests from logging using the `exclude` configuration option. This is useful for health checks, metrics endpoints, and other requests that don't need to be logged.
-
-### Basic Exclusion
+Configure which requests to exclude from logging:
 
 ```typescript
-import { RequestMethod } from "@nestjs/common";
-import { LoggerModule } from "@globalart/nestjs-logger";
-
 LoggerModule.forRoot({
   exclude: [
+    // Health checks
     { method: RequestMethod.GET, path: "/health" },
     { method: RequestMethod.GET, path: "/metrics" },
+    
+    // Static assets
+    { method: RequestMethod.ALL, path: "/favicon.ico" },
+    { method: RequestMethod.ALL, path: "/robots.txt" },
+    
+    // Wildcard patterns
+    { method: RequestMethod.GET, path: "/api/*/health" },
+    { method: RequestMethod.ALL, path: "/static/*" },
   ],
 });
 ```
 
-### Using RequestMethod.ALL
+## Security Features
 
-To exclude a path for all HTTP methods:
+### Automatic Data Sanitization
 
-```typescript
-exclude: [
-  { method: RequestMethod.ALL, path: "/favicon.ico" },
-  { method: RequestMethod.ALL, path: "/robots.txt" },
-];
-```
-
-### Wildcard Patterns
-
-The `path` field supports wildcard patterns using `*`:
-
-```typescript
-exclude: [
-  // Exclude all API health endpoints
-  { method: RequestMethod.GET, path: "/api/*/health" },
-  // Exclude all static files
-  { method: RequestMethod.ALL, path: "/static/*" },
-  // Exclude versioned endpoints
-  { method: RequestMethod.ALL, path: "/api/v*/status" },
-];
-```
-
-### Real-world Example
-
-```typescript
-import { Module, RequestMethod } from "@nestjs/common";
-import { LoggerModule } from "@globalart/nestjs-logger";
-
-@Module({
-  imports: [
-    LoggerModule.forRoot({
-      level: "info",
-      format: "json",
-      exclude: [
-        // Health checks
-        { method: RequestMethod.GET, path: "/health" },
-        { method: RequestMethod.GET, path: "/health/ready" },
-        { method: RequestMethod.GET, path: "/health/live" },
-
-        // Metrics and monitoring
-        { method: RequestMethod.GET, path: "/metrics" },
-        { method: RequestMethod.GET, path: "/prometheus" },
-
-        // Static assets
-        { method: RequestMethod.ALL, path: "/favicon.ico" },
-        { method: RequestMethod.ALL, path: "/robots.txt" },
-        { method: RequestMethod.GET, path: "/static/*" },
-
-        // API documentation (if you don't want to log these)
-        { method: RequestMethod.GET, path: "/api-docs" },
-        { method: RequestMethod.GET, path: "/api-docs/*" },
-
-        // Versioned health endpoints
-        { method: RequestMethod.GET, path: "/api/v*/health" },
-      ],
-    }),
-  ],
-})
-export class AppModule {}
-```
-
-### Configuration Options
-
-| Option            | Type              | Default     | Description                           |
-| ----------------- | ----------------- | ----------- | ------------------------------------- |
-| `level`           | `LogLevel`        | `'info'`    | Logging level                         |
-| `timestamp`       | `boolean`         | `true`      | Show timestamp                        |
-| `colors`          | `boolean`         | `true`      | Colored output                        |
-| `format`          | `LogFormat`       | `'text'`    | Output format                         |
-| `context`         | `string`          | `undefined` | Default context                       |
-| `sensitiveFields` | `string[]`        | `[...]`     | Fields to sanitize                    |
-| `exclude`         | `ExcludeOption[]` | `[]`        | HTTP requests to exclude from logging |
-
-## Architecture
-
-The package is built on Clean Architecture principles with clear separation of concerns:
-
-### Core Components
-
-- **LoggerModule** - Main module with configuration and dependency injection setup
-- **LoggerService** - Primary logging service implementing NestJS LoggerService interface
-- **HttpLoggerInterceptor** - HTTP request logging interceptor with format consistency
-
-### Formatters
-
-- **TextFormatter** - Human-readable text output with colors and timestamps
-- **JsonFormatter** - Structured JSON output for machine processing
-- **PinoFormatter** - Pino-compatible JSON output for high-performance logging
-
-### Utilities
-
-- **ContextResolver** - Automatic context detection from call stack
-- **DataSanitizer** - Sensitive data sanitization for security
-- **RequestIdGenerator** - Unique request ID generation for tracing
-
-### Writers
-
-- **ConsoleWriter** - Console output (extensible for other transports)
-
-### Contracts & Types
-
-- **ILogger** - Logger interface for extensibility
-- **ILogFormatter** - Formatter interface for custom formats
-- **ILogWriter** - Writer interface for custom transports
-- **LogEntry** - Standard log entry structure
-- **HttpRequestLogEntry** - HTTP-specific log entry structure
-
-## Security
-
-The logger automatically sanitizes sensitive fields to prevent data leakage:
+The logger automatically sanitizes sensitive fields:
 
 - `password`, `pass`
-- `token`, `accessToken`, `refreshToken`
+- `token`, `accessToken`, `refreshToken` 
 - `secret`, `key`, `apiKey`
 - `authorization`, `auth`
 - `credential`, `credentials`
 
-You can customize the list of sensitive fields in the configuration:
+### Custom Sensitive Fields
 
 ```typescript
 LoggerModule.forRoot({
-  sensitiveFields: ["password", "secret", "apiKey", "customField"],
+  sensitiveFields: ["password", "secret", "customField"],
 });
 ```
 
-## Performance
-
-The logger is optimized for performance with several key features:
+## Performance Features
 
 - **Minimal allocations** in hot paths
-- **Lazy formatter initialization** to reduce startup time
+- **Lazy initialization** to reduce startup time
 - **Optimized context resolution** with caching
 - **Efficient data sanitization** with minimal overhead
-- **Format-specific HTTP logging** optimization
+- **Format-specific optimizations** for different output types
 
 ## Customization
 
 ### Custom Formatter
 
-You can create custom formatters by extending the BaseFormatter:
-
 ```typescript
 import { Injectable } from "@nestjs/common";
-import { BaseFormatter } from "@globalart/nestjs-logger";
+import { BaseFormatter, LogEntry } from "@globalart/nestjs-logger";
 
 @Injectable()
 export class CustomFormatter extends BaseFormatter {
   format(entry: LogEntry): string {
     return `[${entry.level.toUpperCase()}] ${entry.message}`;
   }
-
-  formatHttpRequest(entry: HttpRequestLogEntry): string {
-    return JSON.stringify(entry);
-  }
 }
 ```
 
 ### Custom Writer
-
-You can implement custom writers for different transports:
 
 ```typescript
 import { Injectable } from "@nestjs/common";
@@ -532,108 +358,11 @@ export class FileWriter implements ILogWriter {
 }
 ```
 
-## Examples
+## Best Practices
 
-### Basic Service Logging
-
-```typescript
-import { Injectable } from "@nestjs/common";
-import { InjectLogger, LoggerService } from "@globalart/nestjs-logger";
-
-@Injectable()
-export class EmailService {
-  constructor(
-    @InjectLogger()
-    private readonly logger: LoggerService
-  ) {}
-
-  async sendEmail(to: string, subject: string) {
-    this.logger.log({
-      message: "Sending email",
-      metadata: { to, subject },
-    });
-
-    try {
-      // Email sending logic
-      this.logger.log({
-        message: "Email sent successfully",
-        metadata: { to },
-      });
-    } catch (error) {
-      this.logger.error({
-        message: "Failed to send email",
-        trace: error.stack,
-        metadata: { to, subject },
-      });
-      throw error;
-    }
-  }
-}
-```
-
-### Controller with HTTP Logging
-
-```typescript
-import { Controller, Get, Post, Body, UseInterceptors } from "@nestjs/common";
-import {
-  HttpLoggerInterceptor,
-  LogContext,
-  LogMetadata,
-} from "@globalart/nestjs-logger";
-
-@Controller("users")
-@UseInterceptors(HttpLoggerInterceptor)
-@LogContext("UserController")
-export class UserController {
-  @Get()
-  @LogMetadata({ operation: "getAllUsers" })
-  async getAllUsers() {
-    return [];
-  }
-
-  @Post()
-  @LogMetadata({ operation: "createUser" })
-  async createUser(@Body() userData: CreateUserDto) {
-    return { id: 1, ...userData };
-  }
-}
-```
-
-### Advanced Configuration
-
-```typescript
-import { Module, RequestMethod } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { LoggerModule } from "@globalart/nestjs-logger";
-
-@Module({
-  imports: [
-    LoggerModule.forRootAsync({
-      useFactory: (configService: ConfigService) => ({
-        level: configService.get("LOG_LEVEL", "info"),
-        format: configService.get("LOG_FORMAT", "text"),
-        colors: !configService.get("PRODUCTION"),
-        timestamp: true,
-        context: "MyApp",
-        sensitiveFields: [
-          "password",
-          "token",
-          "secret",
-          "apiKey",
-          ...configService.get("CUSTOM_SENSITIVE_FIELDS", []),
-        ],
-        exclude: [
-          { method: RequestMethod.GET, path: "/health" },
-          { method: RequestMethod.GET, path: "/metrics" },
-          { method: RequestMethod.ALL, path: "/favicon.ico" },
-          { method: RequestMethod.GET, path: "/status" },
-          // Wildcard patterns are supported
-          { method: RequestMethod.ALL, path: "/api/v*/health" },
-        ],
-      }),
-      inject: [ConfigService],
-    }),
-  ],
-})
-export class AppModule {}
-```
+- **Use Structured Logging** - Include relevant metadata in your log entries
+- **Set Appropriate Log Levels** - Use debug/verbose for development, info/warn/error for production
+- **Exclude Health Checks** - Prevent log spam from monitoring endpoints
+- **Sanitize Sensitive Data** - Configure sensitive fields to prevent data leakage
+- **Use Context** - Set meaningful context names for better log organization
+- **Performance Monitoring** - Use HTTP logging to monitor API performance

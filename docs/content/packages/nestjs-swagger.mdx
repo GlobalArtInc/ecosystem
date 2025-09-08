@@ -2,9 +2,9 @@
 sidebar_position: 1
 ---
 
-# @globalart/nestjs-swagger
+# NestJS Swagger
 
-A simple documentation builder for NestJS Swagger module that simplifies creating OpenAPI documentation for your REST APIs.
+Streamline OpenAPI documentation generation with intuitive decorators and pre-configured error descriptions.
 
 ## Installation
 
@@ -14,16 +14,14 @@ npm install @globalart/nestjs-swagger
 
 ## Overview
 
-This package provides a convenient `SwaggerDocumentation` decorator for automatic Swagger documentation generation in NestJS applications. It significantly simplifies the process of adding documentation to your endpoints by providing a unified interface for describing operations and possible errors.
+The `@globalart/nestjs-swagger` package provides a unified `SwaggerDocumentation` decorator that simplifies endpoint documentation in NestJS applications. It eliminates boilerplate code while ensuring consistent API documentation across your application.
 
 ## Key Features
 
-- 📝 Simple decorator for endpoint documentation
-- 🔧 Pre-configured descriptions for standard HTTP errors
-- 📊 Support for paginated responses
-- 🎯 Support for arrays in responses
-- 📋 Automatic schema generation for DTOs
-- 🛡️ Full TypeScript typing
+- **Simple Decorator** - Single decorator for complete endpoint documentation
+- **Pre-configured Errors** - Standard HTTP error descriptions included
+- **Response Types** - Support for arrays, pagination, and custom DTOs
+- **Type Safety** - Full TypeScript support with IntelliSense
 
 ## Quick Start
 
@@ -35,9 +33,8 @@ import { SwaggerDocumentation, ERROR_DESCRIPTIONS } from '@globalart/nestjs-swag
 export class UsersController {
   @Get()
   @SwaggerDocumentation({
-    endpointDescription: 'Get list of all users',
-    endpointSummary: 'List users',
-    error400Description: ERROR_DESCRIPTIONS.BAD_REQUEST,
+    endpointDescription: 'Retrieve all users from the system',
+    endpointSummary: 'Get users',
     error401Description: ERROR_DESCRIPTIONS.UNAUTHORIZED,
     error500Description: ERROR_DESCRIPTIONS.INTERNAL_SERVER_ERROR
   })
@@ -49,45 +46,31 @@ export class UsersController {
 
 ## API Reference
 
-### SwaggerDocumentation
+### SwaggerDocumentation Options
 
-Decorator for automatic Swagger documentation generation.
+| Parameter             | Type       | Required | Description                          |
+|-----------------------|------------|----------|--------------------------------------|
+| `endpointDescription` | `string`   | ✅       | Detailed endpoint description        |
+| `endpointSummary`     | `string`   | ✅       | Brief endpoint summary               |
+| `responseDto`         | `Function` | ❌       | Response DTO class                   |
+| `isArray`             | `boolean`  | ❌       | Response is an array                 |
+| `isPaginated`         | `boolean`  | ❌       | Response is paginated                |
+| `error[code]Description` | `string` | ❌    | Custom error descriptions            |
 
-#### Parameters
-
-| Parameter             | Type       | Description                          |
-| --------------------- | ---------- | ------------------------------------ |
-| `endpointDescription` | `string`   | Detailed endpoint description        |
-| `endpointSummary`     | `string`   | Brief endpoint description           |
-| `responseDto`         | `Function` | DTO class for response               |
-| `isArray`             | `boolean`  | Indicates that response is an array  |
-| `isPaginated`         | `boolean`  | Indicates that response is paginated |
-| `error400Description` | `string`   | 400 error description                |
-| `error401Description` | `string`   | 401 error description                |
-| `error403Description` | `string`   | 403 error description                |
-| `error404Description` | `string`   | 404 error description                |
-| `error409Description` | `string`   | 409 error description                |
-| `error422Description` | `string`   | 422 error description                |
-| `error429Description` | `string`   | 429 error description                |
-| `error500Description` | `string`   | 500 error description                |
-| `error503Description` | `string`   | 503 error description                |
-
-### ERROR_DESCRIPTIONS
-
-Object with pre-configured error descriptions:
+### Pre-configured Error Descriptions
 
 ```typescript
-export const ERROR_DESCRIPTIONS = {
+ERROR_DESCRIPTIONS = {
   BAD_REQUEST: "Invalid request data or parameters",
-  UNAUTHORIZED: "Authentication required", 
-  FORBIDDEN: "Access denied",
+  UNAUTHORIZED: "Authentication required",
+  FORBIDDEN: "Access denied", 
   NOT_FOUND: "Resource not found",
-  CONFLICT: "Resource already exists or conflict detected",
+  CONFLICT: "Resource conflict detected",
   UNPROCESSABLE_ENTITY: "Validation error",
-  RATE_LIMIT_EXCEEDED: "Rate limit exceeded. Too many requests",
+  RATE_LIMIT_EXCEEDED: "Rate limit exceeded",
   INTERNAL_SERVER_ERROR: "Internal server error",
-  SERVICE_UNAVAILABLE: "Service temporarily unavailable"
-};
+  SERVICE_UNAVAILABLE: "Service unavailable"
+}
 ```
 
 ## Usage Examples
@@ -102,34 +85,29 @@ import { SwaggerDocumentation, ERROR_DESCRIPTIONS } from '@globalart/nestjs-swag
 export class AppController {
   @Get('hello')
   @SwaggerDocumentation({
-    endpointDescription: 'Simple greeting endpoint',
-    endpointSummary: 'Greeting',
-    error400Description: ERROR_DESCRIPTIONS.BAD_REQUEST,
-    error401Description: ERROR_DESCRIPTIONS.UNAUTHORIZED,
-    error403Description: ERROR_DESCRIPTIONS.FORBIDDEN,
-    error404Description: ERROR_DESCRIPTIONS.NOT_FOUND,
-    error429Description: ERROR_DESCRIPTIONS.RATE_LIMIT_EXCEEDED,
+    endpointDescription: 'Returns a greeting message',
+    endpointSummary: 'Get greeting',
     error500Description: ERROR_DESCRIPTIONS.INTERNAL_SERVER_ERROR
   })
   async hello() {
-    return 'Hello World';
+    return { message: 'Hello World' };
   }
 }
 ```
 
-### Using with DTO
+### Response DTOs
 
 ```typescript
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UserDto {
-  @ApiProperty()
+  @ApiProperty({ example: 1 })
   id: number;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'John Doe' })
   name: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'john@example.com' })
   email: string;
 }
 
@@ -137,33 +115,33 @@ export class UserDto {
 export class UsersController {
   @Get(':id')
   @SwaggerDocumentation({
-    endpointDescription: 'Get user by ID',
-    endpointSummary: 'Get user',
+    endpointDescription: 'Retrieve user by unique identifier',
+    endpointSummary: 'Get user by ID',
     responseDto: UserDto,
     error404Description: ERROR_DESCRIPTIONS.NOT_FOUND,
     error500Description: ERROR_DESCRIPTIONS.INTERNAL_SERVER_ERROR
   })
-  async getUserById(@Param('id') id: number) {
-    // user retrieval logic
+  async getUserById(@Param('id') id: number): Promise<UserDto> {
+    return this.userService.findById(id);
   }
 }
 ```
 
-### Working with Arrays
+### Array Responses
 
 ```typescript
 @Controller('users')
 export class UsersController {
   @Get()
   @SwaggerDocumentation({
-    endpointDescription: 'Get list of all users',
-    endpointSummary: 'List users',
+    endpointDescription: 'Retrieve all users in the system',
+    endpointSummary: 'List all users',
     responseDto: UserDto,
     isArray: true,
     error500Description: ERROR_DESCRIPTIONS.INTERNAL_SERVER_ERROR
   })
-  async getAllUsers() {
-    // user list retrieval logic
+  async getAllUsers(): Promise<UserDto[]> {
+    return this.userService.findAll();
   }
 }
 ```
@@ -175,40 +153,36 @@ export class UsersController {
 export class UsersController {
   @Get()
   @SwaggerDocumentation({
-    endpointDescription: 'Get paginated list of users',
-    endpointSummary: 'Paginated user list',
+    endpointDescription: 'Retrieve users with pagination support',
+    endpointSummary: 'Get paginated users',
     responseDto: UserDto,
     isPaginated: true,
     error400Description: ERROR_DESCRIPTIONS.BAD_REQUEST,
     error500Description: ERROR_DESCRIPTIONS.INTERNAL_SERVER_ERROR
   })
-  async getPaginatedUsers(@Query() query: PaginationDto) {
-    // pagination logic
+  async getPaginatedUsers(@Query() query: PaginationDto): Promise<PaginatedResponse<UserDto>> {
+    return this.userService.findPaginated(query);
   }
 }
 ```
 
 ## Paginated Response Structure
 
-When using `isPaginated: true`, the response is automatically wrapped in the structure:
+When using `isPaginated: true`, responses follow this structure:
 
 ```typescript
-{
-  data: T[],        // array of objects of the specified DTO
-  totalCount: number,  // total number of records
-  offset: number,      // offset
-  limit: number        // limit of records per page
+interface PaginatedResponse<T> {
+  data: T[];           // Array of items
+  totalCount: number;  // Total records
+  offset: number;      // Current offset
+  limit: number;       // Items per page
 }
 ```
 
 ## Best Practices
 
-1. **Use consistent error descriptions**: Leverage the pre-configured `ERROR_DESCRIPTIONS` for consistency across your API.
-
-2. **Provide meaningful descriptions**: Write clear and descriptive endpoint descriptions that help API consumers understand the purpose and behavior.
-
-3. **Use DTOs for responses**: Always define DTOs for your responses to ensure proper schema generation in Swagger.
-
-4. **Handle all relevant errors**: Document all possible error scenarios that your endpoint might encounter.
-
-5. **Use pagination for large datasets**: When returning potentially large datasets, use the `isPaginated` option to provide a consistent pagination structure.
+- **Consistent Errors** - Use `ERROR_DESCRIPTIONS` for standardized error messages
+- **Clear Descriptions** - Write descriptive summaries and detailed descriptions
+- **Type Safety** - Always define response DTOs with proper typing
+- **Relevant Errors** - Document only the errors your endpoint actually returns
+- **Pagination** - Use `isPaginated` for endpoints returning large datasets

@@ -2,33 +2,26 @@
 sidebar_position: 3
 ---
 
-# @globalart/nestjs-microservices
+# NestJS Microservices
 
-A simple microservices builder for NestJS that provides convenient decorators for different transport patterns.
+Simplified decorators for multiple transport patterns in NestJS microservices with full type safety.
 
 ## Installation
 
-```bash
+```bash npm2yarn
 npm install @globalart/nestjs-microservices
 ```
 
-or
-
-```bash
-yarn add @globalart/nestjs-microservices
-```
-
-## Description
+## Overview
 
 This package provides convenient decorators for different transport patterns in NestJS microservices. It simplifies the process of creating message handlers for various transport protocols by providing dedicated decorators for each transport type.
 
 ## Key Features
 
-- 🚀 Simple decorators for different transport patterns
-- 🔧 Support for TCP, Redis, MQTT, gRPC, NATS, RabbitMQ, and Kafka
-- 📋 Type-safe message handling
-- 🛡️ Full TypeScript typing
-- 🎯 Easy to use and integrate
+- **Multiple Transports** - Support for TCP, Redis, MQTT, gRPC, NATS, RabbitMQ, and Kafka
+- **Type Safety** - Full TypeScript support with proper typing
+- **Simple API** - Intuitive decorators that reduce boilerplate code
+- **Easy Integration** - Drop-in replacement for standard NestJS message patterns
 
 ## Quick Start
 
@@ -45,25 +38,17 @@ export class UserController {
 }
 ```
 
-## API Reference
+## Available Decorators
 
-### Transport Pattern Decorators
-
-| Decorator | Transport | Description |
-|-----------|-----------|-------------|
-| `TcpPattern` | TCP | TCP message pattern decorator |
-| `RedisPattern` | Redis | Redis message pattern decorator |
-| `MqttPattern` | MQTT | MQTT message pattern decorator |
-| `GrpcPattern` | gRPC | gRPC message pattern decorator |
-| `NatsPattern` | NATS | NATS message pattern decorator |
-| `RabbitMqPattern` | RabbitMQ | RabbitMQ message pattern decorator |
-| `KafkaPattern` | Kafka | Kafka message pattern decorator |
-
-#### Parameters
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `name` | `string` | Pattern name for message routing |
+| Decorator         | Transport | Description                    |
+|-------------------|-----------|--------------------------------|
+| `TcpPattern`      | TCP       | TCP message pattern decorator  |
+| `RedisPattern`    | Redis     | Redis message pattern decorator|
+| `MqttPattern`     | MQTT      | MQTT message pattern decorator |
+| `GrpcPattern`     | gRPC      | gRPC message pattern decorator |
+| `NatsPattern`     | NATS      | NATS message pattern decorator |
+| `RabbitMqPattern` | RabbitMQ  | RabbitMQ message pattern decorator |
+| `KafkaPattern`    | Kafka     | Kafka message pattern decorator |
 
 ## Usage Examples
 
@@ -213,14 +198,24 @@ interface UserCreatedEvent {
   userId: string;
   email: string;
   name: string;
+  timestamp: Date;
 }
 
 @Controller()
 export class UserController {
   @TcpPattern('user.created')
-  async handleUserCreated(data: UserCreatedEvent) {
+  async handleUserCreated(data: UserCreatedEvent): Promise<void> {
     // data is fully typed as UserCreatedEvent
-    return this.userService.processUser(data);
+    console.log(`Processing user: ${data.name} (${data.email})`);
+    await this.userService.processUser(data);
   }
 }
-``` 
+```
+
+## Best Practices
+
+- **Use Descriptive Patterns** - Choose clear, hierarchical pattern names like `user.created` or `order.payment.processed`
+- **Type Your Events** - Always define interfaces for your event data to ensure type safety
+- **Handle Errors Gracefully** - Implement proper error handling in your message handlers
+- **Use Appropriate Transport** - Choose the right transport for your use case (TCP for RPC, Kafka for events, etc.)
+- **Keep Handlers Simple** - Message handlers should be lightweight and delegate to services
