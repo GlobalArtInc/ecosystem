@@ -15,14 +15,6 @@
     "noFallthroughCasesInSwitch": true,
     "moduleResolution": "node",
     "baseUrl": "./",
-    "paths": {
-      "@globalart/nestjs-swagger": [
-        "./packages/nestjs-swagger/src"
-      ],
-      "@globalart/nestjs-typeorm-pagination": [
-        "packages/nestjs-typeorm-pagination/src"
-      ]
-    },
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
@@ -31,7 +23,6 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
   },
-  "include": [],
   "exclude": [
     "node_modules",
     "dist",
