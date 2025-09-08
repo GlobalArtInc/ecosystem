@@ -5,7 +5,7 @@ import { themes as prismThemes } from 'prism-react-renderer';
 const config: Config = {
   title: 'GlobalArt Ecosystem',
   tagline: 'Comprehensive bundles for development',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/favicon.svg',
   
   url: 'https://globalart.js.org',
   baseUrl: '/',
@@ -16,10 +16,11 @@ const config: Config = {
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
 
-  i18n: {
-    defaultLocale: 'en',
-    locales: ['en'],
-  },
+  // todo...
+  // i18n: {
+  //   defaultLocale: 'en',
+  //   locales: ['en'],
+  // },
 
   presets: [
     [

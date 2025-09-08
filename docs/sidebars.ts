@@ -8,6 +8,7 @@ const sidebars: SidebarsConfig = {
       label: 'Packages',
       collapsible: false,
       items: [
+        'packages/index',
         'packages/nestjs-swagger',
         'packages/nestjs-typeorm-pagination',
         'packages/nestjs-microservices',
