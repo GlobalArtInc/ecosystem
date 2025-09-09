@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "release-it": "19.0.4",
-    "tsdown": "0.14.2"
+    "tsdown": "0.15.0"
   },
   "publishConfig": {
     "access": "public"
