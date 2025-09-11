@@ -9,6 +9,10 @@ export class BoolVO extends ValueObject<boolean> {
     return this.props.value;
   }
 
+  public static fromBoolean(value: boolean) {
+    return new BoolVO(value);
+  }
+
   public static True(): BoolVO {
     return new BoolVO(true);
   }

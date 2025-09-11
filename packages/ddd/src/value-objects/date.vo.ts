@@ -10,6 +10,10 @@ export class DateVO extends ValueObject<Date> {
     return this.props.value;
   }
 
+  public static fromDate(value: Date) {
+    return new DateVO(value);
+  }
+
   public static now(): DateVO {
     return new DateVO(Date.now());
   }
