@@ -39,6 +39,7 @@
     "publish:npm": "release-it"
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.19",
     "release-it": "19.0.4",
     "tsdown": "0.15.1"
   },
