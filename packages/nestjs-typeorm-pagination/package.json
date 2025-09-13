@@ -3,8 +3,7 @@
   "version": "1.0.5",
   "author": "GlobalArt, Inc",
   "license": "MIT",
-  "main": "lib/index.js",
-  "typings": "lib/index.d.ts",
+  "type": "module",
   "files": [
     "lib/**/*"
   ],
@@ -22,6 +21,13 @@
     "filtering",
     "search"
   ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "prebuild": "rimraf lib",
     "build": "tsdown",

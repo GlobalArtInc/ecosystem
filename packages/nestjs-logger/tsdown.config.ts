@@ -6,7 +6,7 @@ export default defineConfig({
   format: ["esm"],
   dts: true,
   sourcemap: true,
-  clean: false,
+  clean: true,
   treeshake: true,
   target: "es2024",
 });
