@@ -49,7 +49,7 @@ export const filterRoorFilter = <T extends z.ZodType>(filters: [T, ...T[]]) => {
     z.object({
       conjunction: conjunctions,
       children: z.union([group, filter]).array().nonempty().optional(),
-    }),
+    })
   );
 
   const filterOrGroup = filter.or(group);
@@ -77,7 +77,7 @@ const group: z.ZodType<IGroup> = z.lazy(() =>
   z.object({
     conjunction: conjunctions,
     children: z.union([group, filter]).array().nonempty().optional(),
-  }),
+  })
 );
 
 const filterOrGroup = filter.or(group);
@@ -94,13 +94,13 @@ export type IRootFilter<Filter extends IFilter = IFilter> =
   | IFilterOrGroupList<Filter>;
 
 export const isGroup = (
-  filterOrGroup: IFilterOrGroup,
+  filterOrGroup: IFilterOrGroup
 ): filterOrGroup is IGroup => {
   return Reflect.has(filterOrGroup, "conjunction");
 };
 
 export const isFilter = (
-  filterOrGroup: IFilterOrGroup,
+  filterOrGroup: IFilterOrGroup
 ): filterOrGroup is IFilter => {
   return (
     Reflect.has(filterOrGroup, "type") && Reflect.has(filterOrGroup, "operator")
@@ -120,7 +120,7 @@ export const operatorsMap: Record<IFieldType, IOperator[]> = {
 };
 
 const convertStringFilter = (
-  filter: IStringFilter,
+  filter: IStringFilter
 ): Option<BaseFilterSpecification> => {
   if (filter.value === undefined) {
     return None;
@@ -132,8 +132,8 @@ const convertStringFilter = (
         new StringEqual(
           filter.field,
           new StringFieldValue(filter.value),
-          filter.relation,
-        ),
+          filter.relation
+        )
       );
     }
     case "$neq": {
@@ -141,36 +141,36 @@ const convertStringFilter = (
         new StringNotEqual(
           filter.field,
           new StringFieldValue(filter.value),
-          filter.relation,
-        ),
+          filter.relation
+        )
       );
     }
     case "$contains": {
       return Some(
-        new StringContain(filter.field, new StringFieldValue(filter.value)),
+        new StringContain(filter.field, new StringFieldValue(filter.value))
       );
     }
     case "$not_contains": {
       return Some(
         new StringContain(
           filter.field,
-          new StringFieldValue(filter.value),
-        ).not() as unknown as BaseFilterSpecification,
+          new StringFieldValue(filter.value)
+        ).not() as unknown as BaseFilterSpecification
       );
     }
     case "$starts_with": {
       return Some(
-        new StringStartsWith(filter.field, new StringFieldValue(filter.value)),
+        new StringStartsWith(filter.field, new StringFieldValue(filter.value))
       );
     }
     case "$ends_with": {
       return Some(
-        new StringEndsWith(filter.field, new StringFieldValue(filter.value)),
+        new StringEndsWith(filter.field, new StringFieldValue(filter.value))
       );
     }
     case "$regex": {
       return Some(
-        new StringRegex(filter.field, new StringFieldValue(filter.value)),
+        new StringRegex(filter.field, new StringFieldValue(filter.value))
       );
     }
     case "$is_empty": {
@@ -179,8 +179,8 @@ const convertStringFilter = (
     case "$is_not_empty": {
       return Some(
         new StringEmpty(
-          filter.field,
-        ).not() as unknown as BaseFilterSpecification,
+          filter.field
+        ).not() as unknown as BaseFilterSpecification
       );
     }
 
@@ -190,7 +190,7 @@ const convertStringFilter = (
 };
 
 const convertNumberFilter = (
-  filter: INumberFilter,
+  filter: INumberFilter
 ): Option<BaseFilterSpecification> => {
   if (filter === undefined) {
     return None;
@@ -199,38 +199,38 @@ const convertNumberFilter = (
   switch (filter.operator) {
     case "$eq":
       return Some(
-        new NumberEqual(filter.field, new NumberFieldValue(filter.value)),
+        new NumberEqual(filter.field, new NumberFieldValue(filter.value))
       );
     case "$neq": {
       // @ts-ignore
       return Some(
-        new NumberEqual(filter.field, new NumberFieldValue(filter.value)).not(),
+        new NumberEqual(filter.field, new NumberFieldValue(filter.value)).not()
       );
     }
     case "$gt": {
       return Some(
-        new NumberGreaterThan(filter.field, new NumberFieldValue(filter.value)),
+        new NumberGreaterThan(filter.field, new NumberFieldValue(filter.value))
       );
     }
     case "$gte": {
       return Some(
         new NumberGreaterThanOrEqual(
           filter.field,
-          new NumberFieldValue(filter.value),
-        ),
+          new NumberFieldValue(filter.value)
+        )
       );
     }
     case "$lt": {
       return Some(
-        new NumberLessThan(filter.field, new NumberFieldValue(filter.value)),
+        new NumberLessThan(filter.field, new NumberFieldValue(filter.value))
       );
     }
     case "$lte": {
       return Some(
         new NumberLessThanOrEqual(
           filter.field,
-          new NumberFieldValue(filter.value),
-        ),
+          new NumberFieldValue(filter.value)
+        )
       );
     }
     case "$is_empty": {
@@ -246,7 +246,7 @@ const convertNumberFilter = (
 };
 
 const convertDateFilter = (
-  filter: IDateFilter,
+  filter: IDateFilter
 ): Option<BaseFilterSpecification> => {
   if (filter === undefined) {
     return None;
@@ -258,8 +258,8 @@ const convertDateFilter = (
         new DateEqual(
           filter.field,
           DateFieldValue.fromNullableString(filter.value as string),
-          filter.relation,
-        ),
+          filter.relation
+        )
       );
     }
     case "$between": {
@@ -267,8 +267,8 @@ const convertDateFilter = (
         new DateBetween(
           filter.field,
           new Date((filter.value as [string, string])[0]),
-          new Date((filter.value as [string, string])[1]),
-        ),
+          new Date((filter.value as [string, string])[1])
+        )
       );
     }
   }
@@ -284,12 +284,12 @@ const convertFilter = (filter: IFilter): Option<BaseFilterSpecification> => {
 };
 
 const convertFilterOrGroup = (
-  filterOrGroup: IFilterOrGroup,
+  filterOrGroup: IFilterOrGroup
 ): Option<BaseFilterSpecification> => {
   if (isGroup(filterOrGroup)) {
     return convertFilterOrGroupList(
       filterOrGroup.children,
-      filterOrGroup.conjunction,
+      filterOrGroup.conjunction
     );
   } else if (isFilter(filterOrGroup)) {
     return convertFilter(filterOrGroup);
@@ -300,7 +300,7 @@ const convertFilterOrGroup = (
 
 const convertFilterOrGroupList = (
   filterOrGroupList: IFilterOrGroupList = [],
-  conjunction: IConjunction = "$and",
+  conjunction: IConjunction = "$and"
 ): Option<BaseFilterSpecification> => {
   let spec: Option<BaseFilterSpecification> = None;
   for (const filter of filterOrGroupList) {
@@ -337,7 +337,7 @@ const convertFilterOrGroupList = (
 };
 
 export const convertFilterSpec = (
-  filter: IRootFilter,
+  filter: IRootFilter
 ): Option<BaseFilterSpecification> => {
   if (Array.isArray(filter)) {
     return convertFilterOrGroupList(filter);
