@@ -2,7 +2,14 @@ import { Ok, type Result } from "oxide.ts";
 import { type IFilterBaseVisitor } from "../filter-specification-visitor.base";
 import { BaseFilterSpecification } from "../filter-specification.base";
 import { NumberFieldValue } from "../fields/number/number-field-value";
-import { isNil, isNumber } from "lodash";
+
+function isNil(value: unknown): value is null | undefined {
+  return value === null || value === undefined;
+}
+
+function isNumber(value: unknown): value is number {
+  return typeof value === "number";
+}
 
 export class NumberEqual extends BaseFilterSpecification<
   unknown,

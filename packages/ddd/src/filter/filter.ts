@@ -1,4 +1,3 @@
-import { isEmpty } from "lodash";
 import { None, Some, type Option } from "oxide.ts";
 import { match } from "ts-pattern";
 import { z } from "zod";
@@ -346,4 +345,16 @@ export const convertFilterSpec = (
   return convertFilterOrGroup(filter);
 };
 
-export const isEmptyFilter = (filter: IRootFilter) => isEmpty(filter);
+function isEmptyNative(value: unknown): boolean {
+  if (value == null) return true;
+  if (Array.isArray(value)) return value.length === 0;
+  if (typeof value === "object") {
+    for (const _ in value as object) {
+      return false;
+    }
+    return true;
+  }
+  return false;
+}
+
+export const isEmptyFilter = (filter: IRootFilter) => isEmptyNative(filter);
