@@ -1,4 +1,4 @@
-import { ValueObject } from './value-object';
+import { ValueObject } from "./value-object";
 
 export abstract class ID extends ValueObject<number> {
   constructor(value: number) {

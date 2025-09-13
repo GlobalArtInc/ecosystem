@@ -1,5 +1,5 @@
-import { dequal } from 'dequal';
-import { convertPropsToObject } from '../utils.js';
+import { dequal } from "dequal";
+import { convertPropsToObject } from "../utils.js";
 export type Primitives = string | number | boolean | null;
 export interface DomainPrimitive<T extends Primitives | Date> {
   value: T;
@@ -32,8 +32,10 @@ export abstract class ValueObject<T = any> {
     return Object.freeze(propsCopy);
   }
 
-  private isDomainPrimitive(obj: unknown): obj is DomainPrimitive<T & (Primitives | Date)> {
-    if (Object.prototype.hasOwnProperty.call(obj, 'value')) {
+  private isDomainPrimitive(
+    obj: unknown,
+  ): obj is DomainPrimitive<T & (Primitives | Date)> {
+    if (Object.prototype.hasOwnProperty.call(obj, "value")) {
       return true;
     }
 

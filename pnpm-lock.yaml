@@ -497,6 +497,9 @@ importers:
       oxide.ts:
         specifier: 1.1.0
         version: 1.1.0
+      prettier:
+        specifier: ^3.6.2
+        version: 3.6.2
       ts-pattern:
         specifier: 5.8.0
         version: 5.8.0
@@ -15069,7 +15072,6 @@ packages:
     resolution: {integrity: sha512-I7AIg5boAr5R0FFtJ6rCfD+LFsWHp81dolrFD8S79U9tb8Az2nGrJncnMSnys+bpQJfRUzqs9hnA81OAA3hCuQ==}
     engines: {node: '>=14'}
     hasBin: true
-    dev: true
 
   /pretty-error@4.0.0:
     resolution: {integrity: sha512-AoJ5YMAcXKYxKhuJGdcvse+Voc6v1RgnsR3nWcYU7q4t6z0Q6T86sv5Zq8VIRbOWWFpvdGE83LtdSMNd+6Y0xw==}

@@ -8,6 +8,6 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   treeshake: true,
-  target: "es2024",
+  target: "es2022",
   external: ["oxide.ts"],
 });

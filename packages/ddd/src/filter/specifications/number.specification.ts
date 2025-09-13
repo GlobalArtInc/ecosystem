@@ -1,10 +1,13 @@
-import { Ok, type Result } from 'oxide.ts';
-import { type IFilterBaseVisitor } from '../filter-specification-visitor.base';
-import { BaseFilterSpecification } from '../filter-specification.base';
-import { NumberFieldValue } from '../fields/number/number-field-value';
-import { isNil, isNumber } from 'lodash';
+import { Ok, type Result } from "oxide.ts";
+import { type IFilterBaseVisitor } from "../filter-specification-visitor.base";
+import { BaseFilterSpecification } from "../filter-specification.base";
+import { NumberFieldValue } from "../fields/number/number-field-value";
+import { isNil, isNumber } from "lodash";
 
-export class NumberEqual extends BaseFilterSpecification<unknown, NumberFieldValue> {
+export class NumberEqual extends BaseFilterSpecification<
+  unknown,
+  NumberFieldValue
+> {
   isSatisfiedBy(value: unknown): boolean {
     return value instanceof NumberFieldValue && value.equals(this.value);
   }
@@ -16,7 +19,10 @@ export class NumberEqual extends BaseFilterSpecification<unknown, NumberFieldVal
   }
 }
 
-export class NumberGreaterThan extends BaseFilterSpecification<unknown, NumberFieldValue> {
+export class NumberGreaterThan extends BaseFilterSpecification<
+  unknown,
+  NumberFieldValue
+> {
   isSatisfiedBy(value: unknown): boolean {
     if (!(value instanceof NumberFieldValue)) {
       return false;
@@ -37,7 +43,10 @@ export class NumberGreaterThan extends BaseFilterSpecification<unknown, NumberFi
   }
 }
 
-export class NumberLessThan extends BaseFilterSpecification<unknown, NumberFieldValue> {
+export class NumberLessThan extends BaseFilterSpecification<
+  unknown,
+  NumberFieldValue
+> {
   isSatisfiedBy(value: unknown): boolean {
     if (!(value instanceof NumberFieldValue)) {
       return false;
@@ -55,7 +64,10 @@ export class NumberLessThan extends BaseFilterSpecification<unknown, NumberField
   }
 }
 
-export class NumberGreaterThanOrEqual extends BaseFilterSpecification<unknown, NumberFieldValue> {
+export class NumberGreaterThanOrEqual extends BaseFilterSpecification<
+  unknown,
+  NumberFieldValue
+> {
   isSatisfiedBy(value: unknown): boolean {
     if (!(value instanceof NumberFieldValue)) {
       return false;
@@ -76,7 +88,10 @@ export class NumberGreaterThanOrEqual extends BaseFilterSpecification<unknown, N
   }
 }
 
-export class NumberLessThanOrEqual extends BaseFilterSpecification<unknown, NumberFieldValue> {
+export class NumberLessThanOrEqual extends BaseFilterSpecification<
+  unknown,
+  NumberFieldValue
+> {
   isSatisfiedBy(value: unknown): boolean {
     if (!(value instanceof NumberFieldValue)) {
       return false;
@@ -94,7 +109,10 @@ export class NumberLessThanOrEqual extends BaseFilterSpecification<unknown, Numb
   }
 }
 
-export class NumberEmpty extends BaseFilterSpecification<unknown, NumberFieldValue> {
+export class NumberEmpty extends BaseFilterSpecification<
+  unknown,
+  NumberFieldValue
+> {
   constructor(public readonly field: string) {
     super(field, new NumberFieldValue(null));
   }

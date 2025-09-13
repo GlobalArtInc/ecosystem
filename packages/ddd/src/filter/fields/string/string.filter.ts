@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { baseFilter } from '../../base.filter';
+import { z } from "zod";
+import { baseFilter } from "../../base.filter";
 import {
   $eq,
   $neq,
@@ -10,7 +10,7 @@ import {
   $regex,
   $is_empty,
   $is_not_empty,
-} from '../../operators';
+} from "../../operators";
 
 export const stringFilterOperators = z.union([
   $eq,
@@ -27,7 +27,7 @@ export const stringFilterOperators = z.union([
 export const stringFilterValue = z.string().nullable();
 export const stringFilter = z
   .object({
-    type: z.literal('string'),
+    type: z.literal("string"),
     operator: stringFilterOperators,
     value: stringFilterValue,
   })

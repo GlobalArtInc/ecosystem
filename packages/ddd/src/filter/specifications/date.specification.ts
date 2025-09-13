@@ -1,10 +1,21 @@
-import { Ok, type Result } from 'oxide.ts';
-import { DateFieldValue } from '../fields/date/date-field-value';
-import { type IFilterBaseVisitor } from '../filter-specification-visitor.base';
-import { BaseFilterSpecification } from '../filter-specification.base';
-import { isAfter, isBefore, isEqual, isToday, isTomorrow, isWithinInterval, isYesterday } from 'date-fns';
+import { Ok, type Result } from "oxide.ts";
+import { DateFieldValue } from "../fields/date/date-field-value";
+import { type IFilterBaseVisitor } from "../filter-specification-visitor.base";
+import { BaseFilterSpecification } from "../filter-specification.base";
+import {
+  isAfter,
+  isBefore,
+  isEqual,
+  isToday,
+  isTomorrow,
+  isWithinInterval,
+  isYesterday,
+} from "date-fns";
 
-export class DateEqual extends BaseFilterSpecification<unknown, DateFieldValue> {
+export class DateEqual extends BaseFilterSpecification<
+  unknown,
+  DateFieldValue
+> {
   isSatisfiedBy(value: unknown): boolean {
     return value instanceof DateFieldValue && value.equals(this.value);
   }
@@ -16,7 +27,10 @@ export class DateEqual extends BaseFilterSpecification<unknown, DateFieldValue> 
   }
 }
 
-export class DateGreaterThan extends BaseFilterSpecification<unknown, DateFieldValue> {
+export class DateGreaterThan extends BaseFilterSpecification<
+  unknown,
+  DateFieldValue
+> {
   isSatisfiedBy(value: unknown): boolean {
     if (!(value instanceof DateFieldValue)) {
       return false;
@@ -34,7 +48,10 @@ export class DateGreaterThan extends BaseFilterSpecification<unknown, DateFieldV
   }
 }
 
-export class DateLessThan extends BaseFilterSpecification<unknown, DateFieldValue> {
+export class DateLessThan extends BaseFilterSpecification<
+  unknown,
+  DateFieldValue
+> {
   isSatisfiedBy(value: unknown): boolean {
     if (!(value instanceof DateFieldValue)) {
       return false;
@@ -53,7 +70,10 @@ export class DateLessThan extends BaseFilterSpecification<unknown, DateFieldValu
   }
 }
 
-export class DateGreaterThanOrEqual extends BaseFilterSpecification<unknown, DateFieldValue> {
+export class DateGreaterThanOrEqual extends BaseFilterSpecification<
+  unknown,
+  DateFieldValue
+> {
   isSatisfiedBy(value: unknown): boolean {
     if (!(value instanceof DateFieldValue)) {
       return false;
@@ -72,7 +92,10 @@ export class DateGreaterThanOrEqual extends BaseFilterSpecification<unknown, Dat
   }
 }
 
-export class DateLessThanOrEqual extends BaseFilterSpecification<unknown, DateFieldValue> {
+export class DateLessThanOrEqual extends BaseFilterSpecification<
+  unknown,
+  DateFieldValue
+> {
   isSatisfiedBy(value: unknown): boolean {
     if (!(value instanceof DateFieldValue)) {
       return false;
@@ -91,7 +114,10 @@ export class DateLessThanOrEqual extends BaseFilterSpecification<unknown, DateFi
   }
 }
 
-export class DateIsToday extends BaseFilterSpecification<unknown, DateFieldValue> {
+export class DateIsToday extends BaseFilterSpecification<
+  unknown,
+  DateFieldValue
+> {
   isSatisfiedBy(value: unknown): boolean {
     if (!(value instanceof DateFieldValue)) {
       return false;
@@ -109,7 +135,10 @@ export class DateIsToday extends BaseFilterSpecification<unknown, DateFieldValue
   }
 }
 
-export class DateIsTomorrow extends BaseFilterSpecification<unknown, DateFieldValue> {
+export class DateIsTomorrow extends BaseFilterSpecification<
+  unknown,
+  DateFieldValue
+> {
   isSatisfiedBy(value: unknown): boolean {
     if (!(value instanceof DateFieldValue)) {
       return false;
@@ -127,7 +156,10 @@ export class DateIsTomorrow extends BaseFilterSpecification<unknown, DateFieldVa
   }
 }
 
-export class DateIsYesterday extends BaseFilterSpecification<unknown, DateFieldValue> {
+export class DateIsYesterday extends BaseFilterSpecification<
+  unknown,
+  DateFieldValue
+> {
   isSatisfiedBy(value: unknown): boolean {
     if (!(value instanceof DateFieldValue)) {
       return false;
@@ -145,7 +177,10 @@ export class DateIsYesterday extends BaseFilterSpecification<unknown, DateFieldV
   }
 }
 
-export class DateBetween extends BaseFilterSpecification<unknown, DateFieldValue> {
+export class DateBetween extends BaseFilterSpecification<
+  unknown,
+  DateFieldValue
+> {
   constructor(
     public field: string,
     public dateStart: Date,
@@ -162,7 +197,10 @@ export class DateBetween extends BaseFilterSpecification<unknown, DateFieldValue
 
     const date = value.unpack();
 
-    return !!date && isWithinInterval(date, { start: this.dateStart, end: this.dateEnd });
+    return (
+      !!date &&
+      isWithinInterval(date, { start: this.dateStart, end: this.dateEnd })
+    );
   }
 
   accept(v: IFilterBaseVisitor): Result<void, string> {

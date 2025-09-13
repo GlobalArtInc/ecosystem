@@ -1,4 +1,4 @@
-import { type ISpecVisitor } from '../specification';
+import { type ISpecVisitor } from "../specification";
 import {
   type DateBetween,
   type DateEqual,
@@ -9,7 +9,7 @@ import {
   type DateIsYesterday,
   type DateLessThan,
   type DateLessThanOrEqual,
-} from './specifications/date.specification';
+} from "./specifications/date.specification";
 import {
   type NumberEmpty,
   type NumberEqual,
@@ -17,7 +17,7 @@ import {
   type NumberGreaterThanOrEqual,
   type NumberLessThan,
   type NumberLessThanOrEqual,
-} from './specifications/number.specification';
+} from "./specifications/number.specification";
 import {
   type StringContain,
   type StringEmpty,
@@ -26,7 +26,7 @@ import {
   type StringNotEqual,
   type StringRegex,
   type StringStartsWith,
-} from './specifications/string.specification';
+} from "./specifications/string.specification";
 
 interface IFilterSpecBaseVisitor {
   idEqual(): void;
@@ -75,4 +75,6 @@ interface IFilterValueBaseVisitor {
   jsonEmpty(): void;
 }
 
-export type IFilterBaseVisitor = IFilterSpecBaseVisitor & IFilterValueBaseVisitor & ISpecVisitor;
+export type IFilterBaseVisitor = IFilterSpecBaseVisitor &
+  IFilterValueBaseVisitor &
+  ISpecVisitor;

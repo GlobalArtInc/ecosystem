@@ -1,6 +1,7 @@
-import { v4 } from 'uuid';
+import { v4 } from "uuid";
 
-export type CommandProps<T> = Omit<T, 'correlationId' | 'commandId'> & Partial<Command>;
+export type CommandProps<T> = Omit<T, "correlationId" | "commandId"> &
+  Partial<Command>;
 
 export abstract class Command {
   public readonly commandId: string;

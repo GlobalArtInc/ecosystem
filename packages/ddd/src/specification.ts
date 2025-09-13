@@ -1,19 +1,24 @@
-import type { Option, Result } from 'oxide.ts';
-import { None, Ok, Some } from 'oxide.ts';
+import type { Option, Result } from "oxide.ts";
+import { None, Ok, Some } from "oxide.ts";
 
 export interface ISpecVisitor {
   or(left: ISpecification, right: ISpecification): this;
   not(): this;
 }
 
-export interface ISpecification<T = any, V extends ISpecVisitor = ISpecVisitor> {
+export interface ISpecification<
+  T = any,
+  V extends ISpecVisitor = ISpecVisitor,
+> {
   isSatisfiedBy(t: T): boolean;
   mutate(t: T): Result<T, string>;
   accept(v: V): Result<void, string>;
 }
 
-export abstract class CompositeSpecification<T = any, V extends ISpecVisitor = ISpecVisitor>
-  implements ISpecification<T, V>
+export abstract class CompositeSpecification<
+  T = any,
+  V extends ISpecVisitor = ISpecVisitor,
+> implements ISpecification<T, V>
 {
   abstract isSatisfiedBy(t: T): boolean;
   abstract mutate(t: T): Result<T, string>;
@@ -86,7 +91,7 @@ class Not<T, V extends ISpecVisitor> extends CompositeSpecification<T, V> {
   }
 
   mutate(): Result<T, string> {
-    throw new Error('[Not.mutate] Method not implemented.');
+    throw new Error("[Not.mutate] Method not implemented.");
   }
 
   accept(v: V): Result<void, string> {
@@ -112,7 +117,9 @@ export const and = <T, V extends ISpecVisitor>(
 export const andOptions = <T, V extends ISpecVisitor>(
   ...specs: Option<CompositeSpecification<T, V>>[]
 ): Option<CompositeSpecification<T, V>> => {
-  return and(...specs.filter((spec) => spec.isSome()).map((spec) => spec.unwrap()));
+  return and(
+    ...specs.filter((spec) => spec.isSome()).map((spec) => spec.unwrap()),
+  );
 };
 
 export const or = <T, V extends ISpecVisitor>(

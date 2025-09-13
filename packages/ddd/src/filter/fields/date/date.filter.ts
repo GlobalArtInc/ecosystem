@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 import {
   $between,
   $eq,
@@ -11,8 +11,8 @@ import {
   $lt,
   $lte,
   $neq,
-} from '../../operators';
-import { baseFilter } from '../../base.filter';
+} from "../../operators";
+import { baseFilter } from "../../base.filter";
 
 export const dateFilterOperators = z.union([
   $eq,
@@ -34,7 +34,7 @@ export const dateFilterValue = z
   .or(z.tuple([z.string(), z.string()]));
 export const dateFilter = z
   .object({
-    type: z.literal('date'),
+    type: z.literal("date"),
     operator: dateFilterOperators,
     value: dateFilterValue,
   })

@@ -1,4 +1,4 @@
-import { ValueObject } from './value-object.js';
+import { ValueObject } from "./value-object.js";
 
 export class StringVO extends ValueObject<string> {
   constructor(value: string) {
@@ -14,6 +14,6 @@ export class StringVO extends ValueObject<string> {
   }
 
   public static empty(): StringVO {
-    return new StringVO('');
+    return new StringVO("");
   }
 }

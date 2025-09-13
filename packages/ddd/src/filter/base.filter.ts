@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const baseFilter = z.object({
   field: z.string().min(1),

@@ -1,7 +1,11 @@
-import { v4 } from 'uuid';
-import { z } from 'zod';
+import { v4 } from "uuid";
+import { z } from "zod";
 
-export const eventSchema = <TName extends string, TPayload extends z.ZodTypeAny, TMeta extends z.ZodTypeAny>(
+export const eventSchema = <
+  TName extends string,
+  TPayload extends z.ZodTypeAny,
+  TMeta extends z.ZodTypeAny,
+>(
   name: TName,
   payload: TPayload,
   meta: TMeta,

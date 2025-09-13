@@ -1,4 +1,4 @@
-import { ValueObject } from './value-object.js';
+import { ValueObject } from "./value-object.js";
 
 export class BoolVO extends ValueObject<boolean> {
   constructor(value: boolean) {

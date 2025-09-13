@@ -1,4 +1,4 @@
-import { type BaseEvent } from './event';
+import { type BaseEvent } from "./event";
 
 export abstract class AggregateRoot<E extends BaseEvent> {
   #domainEvents: E[] = [];
@@ -16,6 +16,8 @@ export abstract class AggregateRoot<E extends BaseEvent> {
   }
 
   removeEvents(events: E[]) {
-    this.#domainEvents = this.#domainEvents.filter((event) => !events.includes(event));
+    this.#domainEvents = this.#domainEvents.filter(
+      (event) => !events.includes(event),
+    );
   }
 }

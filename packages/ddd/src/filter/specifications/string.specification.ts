@@ -1,9 +1,12 @@
-import { Ok, type Result } from 'oxide.ts';
-import { StringFieldValue } from '../fields/string/string-field-value';
-import { type IFilterBaseVisitor } from '../filter-specification-visitor.base';
-import { BaseFilterSpecification } from '../filter-specification.base';
+import { Ok, type Result } from "oxide.ts";
+import { StringFieldValue } from "../fields/string/string-field-value";
+import { type IFilterBaseVisitor } from "../filter-specification-visitor.base";
+import { BaseFilterSpecification } from "../filter-specification.base";
 
-export class StringEqual extends BaseFilterSpecification<unknown, StringFieldValue> {
+export class StringEqual extends BaseFilterSpecification<
+  unknown,
+  StringFieldValue
+> {
   isSatisfiedBy(value: unknown): boolean {
     return value instanceof StringFieldValue && this.value.equals(value);
   }
@@ -15,7 +18,10 @@ export class StringEqual extends BaseFilterSpecification<unknown, StringFieldVal
   }
 }
 
-export class StringNotEqual extends BaseFilterSpecification<unknown, StringFieldValue> {
+export class StringNotEqual extends BaseFilterSpecification<
+  unknown,
+  StringFieldValue
+> {
   isSatisfiedBy(value: unknown): boolean {
     return value instanceof StringFieldValue && this.value.equals(value);
   }
@@ -27,7 +33,10 @@ export class StringNotEqual extends BaseFilterSpecification<unknown, StringField
   }
 }
 
-export class StringContain extends BaseFilterSpecification<unknown, StringFieldValue> {
+export class StringContain extends BaseFilterSpecification<
+  unknown,
+  StringFieldValue
+> {
   isSatisfiedBy(value: unknown): boolean {
     if (!(value instanceof StringFieldValue)) {
       return false;
@@ -46,7 +55,10 @@ export class StringContain extends BaseFilterSpecification<unknown, StringFieldV
   }
 }
 
-export class StringStartsWith extends BaseFilterSpecification<unknown, StringFieldValue> {
+export class StringStartsWith extends BaseFilterSpecification<
+  unknown,
+  StringFieldValue
+> {
   isSatisfiedBy(value: unknown): boolean {
     if (!(value instanceof StringFieldValue)) {
       return false;
@@ -65,7 +77,10 @@ export class StringStartsWith extends BaseFilterSpecification<unknown, StringFie
   }
 }
 
-export class StringEndsWith extends BaseFilterSpecification<unknown, StringFieldValue> {
+export class StringEndsWith extends BaseFilterSpecification<
+  unknown,
+  StringFieldValue
+> {
   isSatisfiedBy(value: unknown): boolean {
     if (!(value instanceof StringFieldValue)) {
       return false;
@@ -84,7 +99,10 @@ export class StringEndsWith extends BaseFilterSpecification<unknown, StringField
   }
 }
 
-export class StringRegex extends BaseFilterSpecification<unknown, StringFieldValue> {
+export class StringRegex extends BaseFilterSpecification<
+  unknown,
+  StringFieldValue
+> {
   isSatisfiedBy(value: unknown): boolean {
     if (!(value instanceof StringFieldValue)) {
       return false;
@@ -103,7 +121,10 @@ export class StringRegex extends BaseFilterSpecification<unknown, StringFieldVal
   }
 }
 
-export class StringEmpty extends BaseFilterSpecification<unknown, StringFieldValue> {
+export class StringEmpty extends BaseFilterSpecification<
+  unknown,
+  StringFieldValue
+> {
   constructor(field: string) {
     super(field, new StringFieldValue(null));
   }

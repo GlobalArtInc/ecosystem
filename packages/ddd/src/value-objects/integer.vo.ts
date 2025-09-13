@@ -1,4 +1,4 @@
-import { ValueObject } from './value-object.js';
+import { ValueObject } from "./value-object.js";
 
 export class IntegerVO extends ValueObject<number> {
   constructor(value: number) {

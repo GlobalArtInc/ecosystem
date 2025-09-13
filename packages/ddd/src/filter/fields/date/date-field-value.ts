@@ -1,6 +1,6 @@
-import { FieldValueBase } from '../field-value.base';
-import { type IFieldValueVisitor } from '../field-value.visitor';
-import { type IDateFieldValue } from './date-field.type';
+import { FieldValueBase } from "../field-value.base";
+import { type IFieldValueVisitor } from "../field-value.visitor";
+import { type IDateFieldValue } from "./date-field.type";
 
 export class DateFieldValue extends FieldValueBase<IDateFieldValue> {
   constructor(value: IDateFieldValue) {

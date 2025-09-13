@@ -1,5 +1,5 @@
-import { IPagination } from './pagination';
-import { type ISorting } from './sort';
+import { IPagination } from "./pagination";
+import { type ISorting } from "./sort";
 
 export interface IRepositoryOption {
   pagination?: IPagination;

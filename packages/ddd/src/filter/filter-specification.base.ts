@@ -1,11 +1,11 @@
-import { type IFilterBaseVisitor } from './filter-specification-visitor.base';
-import { CompositeSpecification } from '../specification';
-import { type Result } from 'oxide.ts';
+import { type IFilterBaseVisitor } from "./filter-specification-visitor.base";
+import { CompositeSpecification } from "../specification";
+import { type Result } from "oxide.ts";
 
-export abstract class BaseFilterSpecification<E = unknown, V = unknown> extends CompositeSpecification<
-  E,
-  IFilterBaseVisitor
-> {
+export abstract class BaseFilterSpecification<
+  E = unknown,
+  V = unknown,
+> extends CompositeSpecification<E, IFilterBaseVisitor> {
   constructor(
     public readonly field: string,
     public readonly value: V,
@@ -15,6 +15,6 @@ export abstract class BaseFilterSpecification<E = unknown, V = unknown> extends 
   }
 
   mutate(t: E): Result<E, string> {
-    throw new Error('Method not implemented.');
+    throw new Error("Method not implemented.");
   }
 }
