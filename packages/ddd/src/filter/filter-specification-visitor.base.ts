@@ -1,5 +1,5 @@
 import { type ISpecVisitor } from "../specification";
-import { BooleanEqual, BooleanNotEqual } from "./specifications/boolean.specification";
+import { type BooleanEqual, type BooleanNotEqual } from "./specifications/boolean.specification";
 import {
   type DateBetween,
   type DateEqual,

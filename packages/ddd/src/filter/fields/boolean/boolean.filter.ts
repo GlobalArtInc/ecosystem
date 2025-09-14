@@ -2,16 +2,12 @@ import { z } from "zod";
 import { baseFilter } from "../../base.filter";
 import {
   $eq,
-  $neq,
-  $contains,
-  $not_contains,
+  $neq
 } from "../../operators";
 
 export const booleanFilterOperators = z.union([
   $eq,
   $neq,
-  $contains,
-  $not_contains,
 ]);
 
 export const booleanFilterValue = z.boolean().nullable();

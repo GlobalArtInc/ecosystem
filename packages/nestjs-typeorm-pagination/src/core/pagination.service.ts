@@ -3,20 +3,21 @@ import {
   EntityTarget,
   FindManyOptions,
   FindOptionsOrder,
-  Repository,
   ILike,
+  In,
+  LessThan,
+  LessThanOrEqual,
   Like,
   MoreThan,
   MoreThanOrEqual,
-  LessThan,
-  LessThanOrEqual,
-  In,
   Not,
+  ObjectLiteral,
+  Repository,
 } from "typeorm";
-import { PaginationConfig, PaginationResult } from "../types";
 import { PaginationQueryDto } from "../dtos/pagination-query.dto";
+import { PaginationConfig, PaginationResult } from "../types";
 
-export class PaginationService<TEntity> {
+export class PaginationService<TEntity extends ObjectLiteral> {
   private readonly repository: Repository<TEntity>;
 
   constructor(

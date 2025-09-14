@@ -1,12 +1,12 @@
 import { DynamicModule, Module, Provider } from "@nestjs/common";
-import { DataSource, EntityTarget } from "typeorm";
-import { PaginationService } from "./pagination.service";
-import { PaginationModuleOptions, PaginationConfig } from "../types";
+import { DataSource, EntityTarget, ObjectLiteral } from "typeorm";
 import {
   DEFAULT_PAGINATION_CONFIG,
   PAGINATION_CONFIG_TOKEN,
 } from "../constants";
 import { getPaginationToken } from "../decorators";
+import { PaginationConfig, PaginationModuleOptions } from "../types";
+import { PaginationService } from "./pagination.service";
 
 export interface PaginationModuleAsyncOptions {
   useFactory: (
@@ -49,7 +49,7 @@ export class PaginationModule {
     };
   }
 
-  static forFeature<TEntity>(entity: EntityTarget<TEntity>): DynamicModule {
+  static forFeature<TEntity extends ObjectLiteral>(entity: EntityTarget<TEntity>): DynamicModule {
     const provider: Provider = {
       provide: getPaginationToken(entity as any),
       useFactory: (dataSource: DataSource, config: PaginationConfig) =>
