@@ -1,4 +1,5 @@
 import { type ISpecVisitor } from "../specification";
+import { BooleanEqual, BooleanNotEqual } from "./specifications/boolean.specification";
 import {
   type DateBetween,
   type DateEqual,
@@ -41,6 +42,9 @@ interface IFilterValueBaseVisitor {
   stringEndsWith(s: StringEndsWith): void;
   stringRegex(s: StringRegex): void;
   stringEmpty(s: StringEmpty): void;
+
+  booleanEqual(s: BooleanEqual): void;
+  booleanNotEqual(s: BooleanNotEqual): void;
 
   like(): void;
 

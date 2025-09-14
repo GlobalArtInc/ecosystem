@@ -2,7 +2,7 @@ import { None, Some, type Option } from "oxide.ts";
 import { match } from "ts-pattern";
 import { z } from "zod";
 import { conjunctions, type IConjunction } from "./conjunction";
-import { booleanFilter, IBooleanFilter } from "./fields";
+import { BooleanFieldValue, booleanFilter, IBooleanFilter } from "./fields";
 import { DateFieldValue } from "./fields/date/date-field-value";
 import { dateFilter, type IDateFilter } from "./fields/date/date.filter";
 import { NumberFieldValue } from "./fields/number/number-field-value";
@@ -18,6 +18,7 @@ import {
   type IStringFilter,
 } from "./fields/string/string.filter";
 import { type BaseFilterSpecification } from "./filter-specification.base";
+import { BooleanEqual, BooleanNotEqual } from "./specifications/boolean.specification";
 import { DateBetween, DateEqual } from "./specifications/date.specification";
 import {
   NumberEmpty,
@@ -252,6 +253,17 @@ const convertBooleanFilter = (
   if (filter === undefined) {
     return None;
   }
+
+  switch (filter.operator) {
+    case '$eq': {
+      return Some(new BooleanEqual(filter.field, new BooleanFieldValue(filter.value)));
+    }
+    case '$neq': {
+      return Some(new BooleanNotEqual(filter.field, new BooleanFieldValue(filter.value)));
+    }
+  }
+
+  return Some(new BooleanEqual(filter.field, new BooleanFieldValue(filter.value)));
 };
 
 const convertDateFilter = (
