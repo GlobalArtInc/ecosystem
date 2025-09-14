@@ -293,6 +293,8 @@ const convertDateFilter = (
       );
     }
   }
+
+  return None;
 };
 
 const convertFilter = (filter: IFilter): Option<BaseFilterSpecification> => {

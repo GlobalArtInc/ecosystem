@@ -1,7 +1,3 @@
-import { Ok, type Result } from "oxide.ts";
-import { DateFieldValue } from "../fields/date/date-field-value";
-import { type IFilterBaseVisitor } from "../filter-specification-visitor.base";
-import { BaseFilterSpecification } from "../filter-specification.base";
 import {
   isAfter,
   isBefore,
@@ -11,6 +7,10 @@ import {
   isWithinInterval,
   isYesterday,
 } from "date-fns";
+import { Ok, type Result } from "oxide.ts";
+import { DateFieldValue } from "../fields/date/date-field-value";
+import { type IFilterBaseVisitor } from "../filter-specification-visitor.base";
+import { BaseFilterSpecification } from "../filter-specification.base";
 
 export class DateEqual extends BaseFilterSpecification<
   unknown,
@@ -187,7 +187,7 @@ export class DateBetween extends BaseFilterSpecification<
     public dateEnd: Date,
     public relation?: string,
   ) {
-    super(field, null, relation);
+    super(field, new DateFieldValue(dateStart), relation);
   }
 
   isSatisfiedBy(value: unknown): boolean {
