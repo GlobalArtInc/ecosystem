@@ -2,6 +2,7 @@ import { None, Some, type Option } from "oxide.ts";
 import { match } from "ts-pattern";
 import { z } from "zod";
 import { conjunctions, type IConjunction } from "./conjunction";
+import { booleanFilter, IBooleanFilter } from "./fields";
 import { DateFieldValue } from "./fields/date/date-field-value";
 import { dateFilter, type IDateFilter } from "./fields/date/date.filter";
 import { NumberFieldValue } from "./fields/number/number-field-value";
@@ -62,6 +63,7 @@ const filter = z.discriminatedUnion("type", [
   numberFilter,
   stringFilter,
   dateFilter,
+  booleanFilter,
 ]);
 
 export type IFilter = z.infer<typeof filter>;
@@ -244,6 +246,14 @@ const convertNumberFilter = (
   }
 };
 
+const convertBooleanFilter = (
+  filter: IBooleanFilter
+): Option<BaseFilterSpecification> => {
+  if (filter === undefined) {
+    return None;
+  }
+};
+
 const convertDateFilter = (
   filter: IDateFilter
 ): Option<BaseFilterSpecification> => {
@@ -279,6 +289,7 @@ const convertFilter = (filter: IFilter): Option<BaseFilterSpecification> => {
     .with({ type: "number" }, (f) => convertNumberFilter(f))
     .with({ type: "string" }, (f) => convertStringFilter(f))
     .with({ type: "date" }, (f) => convertDateFilter(f))
+    .with({ type: "boolean" }, (f) => convertBooleanFilter(f))
     .otherwise(() => None);
 };
 
