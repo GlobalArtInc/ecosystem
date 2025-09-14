@@ -1,0 +1,16 @@
+import z from 'zod';
+
+export const query{{pascalCase name}}Schema = z.object({
+  id: z.number(),
+});
+export type IQuery{{pascalCase name}} = z.infer<typeof query{{pascalCase name}}Schema>;
+
+export const create{{pascalCase name}}Schema = z.object({
+  id: z.number(),
+});
+export type ICreate{{pascalCase name}}Internal = z.infer<typeof create{{pascalCase name}}Schema>;
+
+export const update{{pascalCase name}}Schema = z.object({
+  id: z.number(),
+});
+export type IUpdate{{pascalCase name}}Internal = z.infer<typeof update{{pascalCase name}}Schema>;

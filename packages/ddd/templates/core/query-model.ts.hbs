@@ -1,0 +1,14 @@
+import { Option } from 'oxide.ts';
+import { IQuery{{pascalCase name}} } from './{{kebabCase name}}.schema';
+import { I{{pascalCase name}}Spec } from './specifications';
+import { BaseFilterSpecification, IRepositoryOption, PaginatedRepositoryMethodResult } from '@globalart/ddd';
+
+export interface I{{pascalCase name}}QueryModel {
+  findOneById(id: number): Promise<Option<IQuery{{pascalCase name}}>>;
+  findOne(spec: I{{pascalCase name}}Spec): Promise<Option<IQuery{{pascalCase name}}>>;
+  find(spec: I{{pascalCase name}}Spec): Promise<IQuery{{pascalCase name}}[]>;
+  findWithFilter(
+    spec: Option<BaseFilterSpecification>,
+    options: IRepositoryOption,
+  ): Promise<PaginatedRepositoryMethodResult<IQuery{{pascalCase name}}>>;
+}

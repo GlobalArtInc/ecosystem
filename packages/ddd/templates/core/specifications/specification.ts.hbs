@@ -1,0 +1,28 @@
+import { CompositeSpecification, ID } from '@globalart/ddd';
+import { Ok, Result } from 'oxide.ts';
+import { {{pascalCase name}} } from '../{{kebabCase name}}';
+import { I{{pascalCase name}}SpecVisitor } from './interface';
+
+export class With{{pascalCase name}}Id extends CompositeSpecification<{{pascalCase name}}, I{{pascalCase name}}SpecVisitor> {
+  constructor(public readonly value: number) {
+    super();
+  }
+
+  static fromExistingNumber(value: number): With{{pascalCase name}}Id {
+    return new With{{pascalCase name}}Id(value);
+  }
+
+  isSatisfiedBy(t: {{pascalCase name}}): boolean {
+    return t.id.equals(new ID(this.value));
+  }
+
+  mutate(t: {{pascalCase name}}): Result<{{pascalCase name}}, string> {
+    t.id = new ID(this.value);
+    return Ok(t);
+  }
+
+  accept(v: I{{pascalCase name}}SpecVisitor): Result<void, string> {
+    v.idEqual(this);
+    return Ok(undefined);
+  }
+}
