@@ -4,7 +4,7 @@
   "private": true,
   "description": "Example application demonstrating @globalart/nestjs-logger usage",
   "scripts": {
-    "build": "nest build",
+    "build:prod": "nest build",
     "format": "prettier --write \"src/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
