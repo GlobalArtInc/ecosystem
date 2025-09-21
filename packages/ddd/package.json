@@ -35,7 +35,7 @@
     "build": "tsdown",
     "build:watch": "tsdown --watch",
     "prepublishOnly": "npm run build",
-    "publish:dev": "npm publish --access public --tag dev",
+    "publish:dev": "npm version prerelease --preid=dev && npm publish --tag dev --access public",
     "publish:npm": "release-it"
   },
   "publishConfig": {
