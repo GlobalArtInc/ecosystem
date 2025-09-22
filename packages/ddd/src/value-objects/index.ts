@@ -5,3 +5,6 @@ export * from "./nanoid.vo";
 export * from "./integer.vo";
 export * from "./string.vo";
 export * from "./value-object";
+export * from "./uuid.vo";
+export * from "./email.vo";
+export * from "./color.vo";
