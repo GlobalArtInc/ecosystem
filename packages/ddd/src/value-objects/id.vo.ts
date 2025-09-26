@@ -1,11 +1,11 @@
-import { ValueObject } from "./value-object";
+import { ValueObject, ValueObjectProps } from "./value-object";
 
-export abstract class ID extends ValueObject<number> {
-  constructor(value: number) {
-    super({ value });
+export abstract class ID<T = number> extends ValueObject<T> {
+  constructor(value: T) {
+    super({ value } as ValueObjectProps<T>);
   }
 
-  public get value(): number {
-    return this.props.value;
+  public get value(): T {
+    return this.unpack();
   }
 }

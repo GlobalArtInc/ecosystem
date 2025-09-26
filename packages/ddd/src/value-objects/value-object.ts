@@ -1,11 +1,13 @@
 import { dequal } from "dequal";
 import { convertPropsToObject } from "../utils.js";
-export type Primitives = string | number | boolean | null;
+export type Primitives = string | number | boolean | unknown | null;
 export interface DomainPrimitive<T extends Primitives | Date> {
   value: T;
 }
 
-type ValueObjectProps<T> = T extends Primitives | Date ? DomainPrimitive<T> : T;
+export type ValueObjectProps<T> = T extends Primitives | Date
+  ? DomainPrimitive<T>
+  : T;
 
 export abstract class ValueObject<T = any> {
   constructor(protected readonly props: ValueObjectProps<T>) {}
@@ -33,7 +35,7 @@ export abstract class ValueObject<T = any> {
   }
 
   private isDomainPrimitive(
-    obj: unknown,
+    obj: unknown
   ): obj is DomainPrimitive<T & (Primitives | Date)> {
     if (Object.prototype.hasOwnProperty.call(obj, "value")) {
       return true;
