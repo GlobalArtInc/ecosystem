@@ -1,6 +1,6 @@
 import { dequal } from "dequal";
 import { convertPropsToObject } from "../utils.js";
-export type Primitives = string | number | boolean | unknown | null;
+export type Primitives = string | number | boolean | null;
 export interface DomainPrimitive<T extends Primitives | Date> {
   value: T;
 }
