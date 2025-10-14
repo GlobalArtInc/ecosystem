@@ -1,6 +1,6 @@
 import { ValueObject, ValueObjectProps } from "./value-object";
 
-export abstract class ID<T = number> extends ValueObject<T> {
+export abstract class ID<T = any> extends ValueObject<T> {
   constructor(value: T) {
     super({ value } as ValueObjectProps<T>);
   }
