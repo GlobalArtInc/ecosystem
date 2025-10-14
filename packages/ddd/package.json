@@ -52,7 +52,7 @@
     "zod": "4.1.12"
   },
   "devDependencies": {
-    "release-it": "19.0.4",
+    "release-it": "19.0.5",
     "tsdown": "0.15.6"
   }
 }
