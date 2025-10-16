@@ -19,4 +19,5 @@ export interface SwaggerDocumentationOptions
   responseDto?: any;
   isArray?: boolean;
   isPaginated?: boolean;
+  deprecated?: boolean;
 }

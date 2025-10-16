@@ -30,6 +30,7 @@ export const SwaggerDocumentation = (data: SwaggerDocumentationOptions) => {
       operationId,
       description: data.endpointDescription,
       summary: data.endpointSummary,
+      deprecated: data.deprecated,
     }),
   ];
 
