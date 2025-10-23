@@ -1,24 +1,48 @@
 {
   "name": "@globalart/passport",
   "version": "1.0.0",
-  "main": "dist/index.js",
+  "author": {
+    "name": "GlobalArt, Inc"
+  },
+  "license": "MIT",
   "type": "module",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
   "scripts": {
-    "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "format": "prettier --write \"**/*.ts\"",
+    "test": "jest --runInBand --passWithNoTests",
+    "test:cov": "jest --coverage --passWithNoTests",
+    "coveralls": "yarn run test:cov --coverageReporters=text-lcov | coveralls",
+    "build": "tsdown",
+    "build:watch": "tsdown --watch",
+    "prepublishOnly": "npm run build",
+    "publish:dev": "npm publish --access public --tag dev",
+    "publish:npm": "release-it"
   },
   "keywords": ["openid-connect", "oauth2", "authentication", "globalart"],
-  "author": "",
-  "license": "ISC",
   "description": "OpenID Connect strategy for GlobalArt SSO integration",
   "devDependencies": {
     "@types/node": "^24.9.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "release-it": "19.0.4"
   },
   "dependencies": {
     "openid-connect": "^1.2.4",
     "node-fetch": "^3.3.2",
     "url": "0.11.4"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
