@@ -1,6 +1,6 @@
 {
   "name": "@globalart/passport",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "GlobalArt, Inc"
   },
@@ -29,7 +29,12 @@
     "publish:dev": "npm publish --access public --tag dev",
     "publish:npm": "release-it"
   },
-  "keywords": ["openid-connect", "oauth2", "authentication", "globalart"],
+  "keywords": [
+    "openid-connect",
+    "oauth2",
+    "authentication",
+    "globalart"
+  ],
   "description": "OpenID Connect strategy for GlobalArt SSO integration",
   "devDependencies": {
     "@types/node": "^24.9.1",
