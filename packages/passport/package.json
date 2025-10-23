@@ -1,0 +1,24 @@
+{
+  "name": "@globalart/passport",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["openid-connect", "oauth2", "authentication", "globalart"],
+  "author": "",
+  "license": "ISC",
+  "description": "OpenID Connect strategy for GlobalArt SSO integration",
+  "devDependencies": {
+    "@types/node": "^24.9.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "openid-connect": "^1.2.4",
+    "node-fetch": "^3.3.2",
+    "url": "0.11.4"
+  }
+}
