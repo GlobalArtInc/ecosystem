@@ -41,12 +41,15 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "release-it": "19.0.5",
-    "tsdown": "0.15.9"
+    "tsdown": "0.15.9",
+    "@types/passport": "^1.0.17"
   },
   "dependencies": {
     "openid-connect": "^1.2.4",
     "node-fetch": "^3.3.2",
-    "url": "0.11.4"
+    "url": "0.11.4",
+    "passport": "^0.7.0",
+    "express": "^5.1.0"
   },
   "publishConfig": {
     "access": "public"
