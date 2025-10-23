@@ -106,14 +106,10 @@ async function handleCallback(
 
     console.log("\n👤 Getting user information...");
     const userInfo = await strategy.getUserInfo(tokenResponse.access_token);
-
     console.log("✅ User information:");
     console.log(`Subject ID: ${userInfo.sub}`);
     console.log(`Email: ${userInfo.email || "Not specified"}`);
     console.log(`Name: ${userInfo.name || "Not specified"}`);
-    console.log(`Email Verified: ${userInfo.email_verified || false}`);
-    console.log(`Given Name: ${userInfo.given_name || "Not specified"}`);
-    console.log(`Family Name: ${userInfo.family_name || "Not specified"}`);
 
     if (tokenResponse.refresh_token) {
       console.log("\n🔄 Testing token refresh...");
@@ -137,10 +133,9 @@ async function revokeTokenExample(accessToken: string) {
   console.log("\n🗑️ Revoking token...");
 
   const strategy = new GlobalArtStrategy({
-    clientId: "your-client-id",
-    clientSecret: "your-client-secret",
-    redirectUri: "http://localhost:3000/auth/callback",
-    discoveryUrl: "https://sso.globalart.dev/.well-known/openid-configuration",
+    clientId: CLIENT_ID,
+    clientSecret: CLIENT_SECRET,
+    redirectUri: REDIRECT_URI,
   });
 
   try {
