@@ -35,7 +35,8 @@
     "@types/node": "^24.9.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
-    "release-it": "19.0.4"
+    "release-it": "19.0.4",
+    "tsdown": "0.15.9"
   },
   "dependencies": {
     "openid-connect": "^1.2.4",
