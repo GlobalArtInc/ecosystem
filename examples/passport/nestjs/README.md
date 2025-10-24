@@ -1,39 +1,39 @@
-# Passport NestJS Example с управлением сессиями
+# Passport NestJS Example with Session Management
 
-Это приложение NestJS демонстрирует интеграцию Passport.js с управлением сессиями.
+This NestJS application demonstrates integration of Passport.js with session management.
 
-## Возможности
+## Features
 
-- Авторизация через GlobalArt
-- Сохранение пользовательских данных в сессии
-- Защищенные маршруты с проверкой сессии
-- Управление сессиями (создание, проверка, удаление)
+- Authorization via GlobalArt
+- Storing user data in the session
+- Protected routes with session validation
+- Session management (creation, validation, deletion)
 
 ## API Endpoints
 
-- `GET /login` - Начать процесс авторизации
-- `GET /callback` - Callback после авторизации
-- `GET /profile` - Получить данные пользователя (требует авторизации)
-- `POST /logout` - Выйти из системы (требует авторизации)
-- `GET /status` - Проверить статус авторизации
+- `GET /login` - Start the authorization process
+- `GET /callback` - Callback after authorization
+- `GET /profile` - Get user data (requires authorization)
+- `POST /logout` - Log out (requires authorization)
+- `GET /status` - Check authentication status
 
-## Запуск
+## Getting Started
 
-1. Установите зависимости:
+1. Install dependencies:
 ```bash
 npm install
 ```
 
-2. Запустите сервер разработки:
+2. Start the development server:
 ```bash
 npm run start:dev
 ```
 
-3. Откройте браузер и перейдите по адресу `http://localhost:4500`
+3. Open your browser and go to `http://localhost:4500`
 
-## Использование
+## Usage
 
-1. Перейдите на `/login` для начала авторизации
-2. После успешной авторизации данные пользователя сохранятся в сессии
-3. Используйте `/profile` для получения данных пользователя
-4. Используйте `/logout` для выхода из системы
+1. Go to `/login` to start the authorization process
+2. After successful authorization, user data will be saved in the session
+3. Use `/profile` to retrieve user data
+4. Use `/logout` to log out

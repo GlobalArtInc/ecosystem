@@ -5,7 +5,6 @@ import { SessionService } from "./session.service";
 import { SessionGuard } from "./session.guard";
 
 @Module({
-  imports: [],
   controllers: [AppController],
   providers: [GlobalArtAuthStrategy, SessionService, SessionGuard],
 })
