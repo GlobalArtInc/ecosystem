@@ -4,10 +4,12 @@ import type {
   TokenResponse,
   UserInfo,
   AuthorizationUrlOptions,
-} from "./types";
+  AccessTokenUserInfo,
+} from "./globalart-passport.types";
 import fetch from "node-fetch";
 import { URLSearchParams } from "url";
 import { Buffer } from "buffer";
+import { GlobalArtPassportMapper } from "./globalart-passport.mapper";
 
 export class GlobalArtStrategy {
   private config: OpenIDConnectConfig | null = null;
@@ -15,7 +17,7 @@ export class GlobalArtStrategy {
 
   constructor(options: OpenIDConnectStrategyOptions) {
     this.options = {
-      scope: "openid profile email",
+      scope: ["openid", "profile", "email"],
       responseType: "code",
       responseMode: "query",
       discoveryUrl:
@@ -57,7 +59,7 @@ export class GlobalArtStrategy {
       client_id: this.options.clientId,
       redirect_uri: this.options.redirectUri,
       response_type: this.options.responseType!,
-      scope: this.options.scope!,
+      scope: this.options.scope!.join(" "),
       ...(this.options.responseMode && {
         response_mode: this.options.responseMode,
       }),
@@ -178,8 +180,9 @@ export class GlobalArtStrategy {
           `Failed to get user info: ${response.status} ${errorText}`
         );
       }
+      const userInfo = (await response.json()) as AccessTokenUserInfo;
 
-      return (await response.json()) as UserInfo;
+      return GlobalArtPassportMapper.toUserInfo(userInfo);
     } catch (error) {
       throw new Error(
         `Failed to get user info: ${

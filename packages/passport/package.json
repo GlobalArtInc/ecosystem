@@ -1,6 +1,6 @@
 {
   "name": "@globalart/passport",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": {
     "name": "GlobalArt, Inc"
   },
@@ -42,7 +42,9 @@
     "typescript": "^5.9.3",
     "release-it": "19.0.5",
     "tsdown": "0.15.9",
-    "@types/passport": "^1.0.17"
+    "@types/passport": "^1.0.17",
+    "prettier": "^3.6.2",
+    "@types/express": "^5.0.0"
   },
   "dependencies": {
     "openid-connect": "^1.2.4",

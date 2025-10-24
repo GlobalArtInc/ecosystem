@@ -1,6 +1,10 @@
 import { Strategy } from "passport";
-import { GlobalArtStrategy } from "./GlobalArtStrategy";
-import type { OpenIDConnectStrategyOptions } from "./types";
+import { GlobalArtStrategy } from "./globalart-passport-auth.strategy";
+import { Request, Response } from "express";
+import type {
+  OpenIDConnectStrategyOptions,
+  UserInfo,
+} from "./globalart-passport.types";
 
 interface AuthenticateOptions {
   state?: string;
@@ -19,21 +23,21 @@ export class PassportGlobalArtStrategy extends Strategy {
   public name = "globalart";
 
   private verifyFn: (
-    req: any,
+    req: Request,
     accessToken: string,
     refreshToken: string | undefined,
-    profile: any,
-    done: (error: any, user?: any) => void
+    profile: UserInfo,
+    done: (error: Error | null, user?: UserInfo) => void
   ) => void;
 
   constructor(
     options: PassportGlobalArtOptions,
     verify: (
-      req: any,
+      req: Request,
       accessToken: string,
       refreshToken: string | undefined,
-      profile: any,
-      done: (error: any, user?: any) => void
+      profile: UserInfo,
+      done: (error: Error | null, user?: UserInfo) => void
     ) => void
   ) {
     super();
@@ -41,43 +45,35 @@ export class PassportGlobalArtStrategy extends Strategy {
     this.verifyFn = verify;
   }
 
-  authenticate(req: any, options?: AuthenticateOptions): void {
+  authenticate(req: Request, options?: AuthenticateOptions): void {
     if (req.query && req.query.code) {
-      this.handleCallback(
-        req,
-        req.query.code,
-        req.query.state,
-        req.query.codeVerifier
-      );
+      this.handleCallback(req);
     } else {
-      this.globalArtStrategy
-        .initialize()
-        .then(() => {
-          const authUrl = this.globalArtStrategy.generateAuthorizationUrl({
-            state: options?.state,
-            nonce: options?.nonce,
-            codeChallenge: options?.codeChallenge,
-            codeChallengeMethod: options?.codeChallengeMethod,
-            prompt: options?.prompt,
-          });
-          this.redirect(authUrl);
-        })
-        .catch((err) => {
-          this.error(err);
-        });
+      this.handleRedirectToAuthorization(options);
     }
   }
 
-  handleCallback(
-    req: any,
-    code: string,
-    state: string,
-    codeVerifier?: string
-  ): void {
+  handleRedirectToAuthorization(options?: AuthenticateOptions) {
+    this.globalArtStrategy
+      .initialize()
+      .then(() => {
+        const authUrl =
+          this.globalArtStrategy.generateAuthorizationUrl(options);
+        this.redirect(authUrl);
+      })
+      .catch((err) => {
+        this.error(err);
+      });
+  }
+
+  handleCallback(req: Request): void {
     this.globalArtStrategy
       .initialize()
       .then(() =>
-        this.globalArtStrategy.exchangeCodeForToken(code, codeVerifier)
+        this.globalArtStrategy.exchangeCodeForToken(
+          req.query.code as string,
+          req.query.codeVerifier as string
+        )
       )
       .then((tokenResponse) =>
         this.globalArtStrategy
@@ -91,14 +87,19 @@ export class PassportGlobalArtStrategy extends Strategy {
           tokenResponse.refresh_token,
           userInfo,
           (error, user) => {
-            if (error) return this.error(error);
-            if (!user) return this.fail("Authentication failed");
-            this.success(user);
+            if (error) {
+              return this.error(error);
+            }
+            if (!user) {
+              return this.fail("Authentication failed");
+            }
+
+            return this.success(user);
           }
         );
       })
       .catch((err) => {
-        this.error(err);
+        return this.error(err);
       });
   }
 
@@ -108,7 +109,7 @@ export class PassportGlobalArtStrategy extends Strategy {
     res.redirect(url);
   }
 
-  success(user: any): void {
+  success(user: UserInfo): void {
     const res = this.getResponse();
     if (!res) throw new Error("Response not available");
     res.locals.user = user;
@@ -120,15 +121,15 @@ export class PassportGlobalArtStrategy extends Strategy {
     res.status(401).send({ error: message });
   }
 
-  error(err: any): void {
+  error(err: Error): void {
     const res = this.getResponse();
     if (!res) throw new Error("Response not available");
     res.status(500).send({ error: err instanceof Error ? err.message : err });
   }
 
-  private getResponse(): any {
+  private getResponse(): Response {
     const http = (global as any).__passport_http__;
-    if (!http || !http.res) return null;
+    if (!http || !http.res) throw new Error("Response not available");
     return http.res;
   }
 }

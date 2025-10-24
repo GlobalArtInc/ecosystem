@@ -20,8 +20,8 @@ export interface OpenIDConnectStrategyOptions {
   clientId: string;
   clientSecret: string;
   redirectUri: string;
-  scope?: string;
   responseType?: string;
+  scope?: string[];
   responseMode?: string;
   discoveryUrl?: string;
 }
@@ -35,7 +35,7 @@ export interface TokenResponse {
   scope?: string;
 }
 
-export interface UserInfo {
+export interface AccessTokenUserInfo {
   sub: string;
   iss: string;
   aud: string;
@@ -43,11 +43,18 @@ export interface UserInfo {
   iat: number;
   auth_time?: number;
   email?: string;
-  email_verified?: boolean;
   name?: string;
-  given_name?: string;
-  family_name?: string;
-  preferred_username?: string;
+  firstName?: string;
+  lastName?: string;
+  locale?: string;
+}
+
+export interface UserInfo {
+  id: number;
+  email: string;
+  name: string;
+  firstName?: string;
+  lastName?: string;
   locale?: string;
 }
 
