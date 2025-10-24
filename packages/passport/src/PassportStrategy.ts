@@ -15,8 +15,9 @@ export interface PassportGlobalArtOptions extends OpenIDConnectStrategyOptions {
 }
 
 export class PassportGlobalArtStrategy extends Strategy {
-  name = "globalart";
   private globalArtStrategy: GlobalArtStrategy;
+  public name = "globalart";
+
   private verifyFn: (
     req: any,
     accessToken: string,
@@ -41,21 +42,30 @@ export class PassportGlobalArtStrategy extends Strategy {
   }
 
   authenticate(req: any, options?: AuthenticateOptions): void {
-    this.globalArtStrategy
-      .initialize()
-      .then(() => {
-        const authUrl = this.globalArtStrategy.generateAuthorizationUrl({
-          state: options?.state,
-          nonce: options?.nonce,
-          codeChallenge: options?.codeChallenge,
-          codeChallengeMethod: options?.codeChallengeMethod,
-          prompt: options?.prompt,
+    if (req.query && req.query.code) {
+      this.handleCallback(
+        req,
+        req.query.code,
+        req.query.state,
+        req.query.codeVerifier
+      );
+    } else {
+      this.globalArtStrategy
+        .initialize()
+        .then(() => {
+          const authUrl = this.globalArtStrategy.generateAuthorizationUrl({
+            state: options?.state,
+            nonce: options?.nonce,
+            codeChallenge: options?.codeChallenge,
+            codeChallengeMethod: options?.codeChallengeMethod,
+            prompt: options?.prompt,
+          });
+          this.redirect(authUrl);
+        })
+        .catch((err) => {
+          this.error(err);
         });
-        this.redirect(authUrl);
-      })
-      .catch((err) => {
-        this.error(err);
-      });
+    }
   }
 
   handleCallback(
