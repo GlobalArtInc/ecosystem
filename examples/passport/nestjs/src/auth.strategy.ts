@@ -1,17 +1,18 @@
 import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { PassportGlobalArtStrategy } from "@globalart/passport";
+import { SessionService, SessionUser } from "./session.service";
+import { Request } from "express";
 
 @Injectable()
 export class GlobalArtAuthStrategy extends PassportStrategy(
   PassportGlobalArtStrategy,
   "globalart"
 ) {
-  constructor() {
+  constructor(private readonly sessionService: SessionService) {
     super({
-      clientId: "6ba65d2c-19ab-4c23-81fe-daac90892857",
-      clientSecret:
-        "90d88aef5176a0623f4faf1b273391cacea7d888adf8a9990cef62f68c3557ed",
+      clientId: process.env.GLOBALART_CLIENT_ID,
+      clientSecret: process.env.GLOBALART_CLIENT_SECRET,
       responseType: "code",
       scope: ["openid", "profile", "email"],
       redirectUri: "http://127.0.0.1:4500/callback",
@@ -31,6 +32,16 @@ export class GlobalArtAuthStrategy extends PassportStrategy(
       refreshToken,
       profile,
     });
-    done(null, profile);
+
+    const sessionUser: SessionUser = {
+      id: profile.id || profile.sub,
+      email: profile.email,
+      name: profile.name || profile.displayName,
+      accessToken,
+      refreshToken,
+    };
+    this.sessionService.saveUserSession(req, sessionUser);
+
+    done(null, sessionUser);
   }
 }

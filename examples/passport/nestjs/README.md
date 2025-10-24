@@ -1,13 +1,39 @@
-# Swagger Example
+# Passport NestJS Example с управлением сессиями
 
-This example demonstrates how to use `@globalart/nestjs-swagger` package to generate API documentation.
+Это приложение NestJS демонстрирует интеграцию Passport.js с управлением сессиями.
 
-## Running the application
+## Возможности
 
+- Авторизация через GlobalArt
+- Сохранение пользовательских данных в сессии
+- Защищенные маршруты с проверкой сессии
+- Управление сессиями (создание, проверка, удаление)
+
+## API Endpoints
+
+- `GET /login` - Начать процесс авторизации
+- `GET /callback` - Callback после авторизации
+- `GET /profile` - Получить данные пользователя (требует авторизации)
+- `POST /logout` - Выйти из системы (требует авторизации)
+- `GET /status` - Проверить статус авторизации
+
+## Запуск
+
+1. Установите зависимости:
 ```bash
-# Install dependencies (from root directory)
-pnpm install
-
-# Start the application
-pnpm --filter swagger-example start:dev
+npm install
 ```
+
+2. Запустите сервер разработки:
+```bash
+npm run start:dev
+```
+
+3. Откройте браузер и перейдите по адресу `http://localhost:4500`
+
+## Использование
+
+1. Перейдите на `/login` для начала авторизации
+2. После успешной авторизации данные пользователя сохранятся в сессии
+3. Используйте `/profile` для получения данных пользователя
+4. Используйте `/logout` для выхода из системы
