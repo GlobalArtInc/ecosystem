@@ -23,10 +23,9 @@ export abstract class ExceptionBase extends Error {
     readonly message: string,
     correlationId?: string,
     readonly cause?: Error,
-    readonly metadata?: unknown,
+    readonly metadata?: unknown
   ) {
     super(message);
-    Error.captureStackTrace(this, this.constructor);
     this.correlationId = correlationId;
   }
 
