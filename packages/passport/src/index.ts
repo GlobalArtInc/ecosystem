@@ -1,10 +1,12 @@
-export { GlobalArtStrategy } from "./globalart-passport-auth.strategy.js";
-export { PassportGlobalArtStrategy } from "./globalart-passport.strategy.js";
+export { AuthStrategy } from "./auth.strategy.js";
+export { PassportGlobalArtStrategy } from "./passport.strategy.js";
+export { UserMapper } from "./user.mapper.js";
 export type {
   OpenIDConnectConfig,
   OpenIDConnectStrategyOptions,
   TokenResponse,
   UserInfo,
   AuthorizationUrlOptions,
-} from "./globalart-passport.types.js";
-export type { PassportGlobalArtOptions } from "./globalart-passport.strategy.js";
+  AccessTokenUserInfo,
+} from "./types.js";
+export type { PassportGlobalArtOptions } from "./passport.strategy.js";

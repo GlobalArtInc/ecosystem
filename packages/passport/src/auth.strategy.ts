@@ -5,13 +5,13 @@ import type {
   UserInfo,
   AuthorizationUrlOptions,
   AccessTokenUserInfo,
-} from "./globalart-passport.types";
+} from "./types";
 import fetch from "node-fetch";
 import { URLSearchParams } from "url";
 import { Buffer } from "buffer";
-import { GlobalArtPassportMapper } from "./globalart-passport.mapper";
+import { UserMapper } from "./user.mapper";
 
-export class GlobalArtStrategy {
+export class AuthStrategy {
   private config: OpenIDConnectConfig | null = null;
   private options: OpenIDConnectStrategyOptions;
 
@@ -19,7 +19,6 @@ export class GlobalArtStrategy {
     this.options = {
       scope: ["openid", "profile", "email"],
       responseType: "code",
-      responseMode: "query",
       discoveryUrl:
         "https://sso.globalart.dev/.well-known/openid-configuration",
       ...options,
@@ -182,7 +181,7 @@ export class GlobalArtStrategy {
       }
       const userInfo = (await response.json()) as AccessTokenUserInfo;
 
-      return GlobalArtPassportMapper.toUserInfo(userInfo);
+      return UserMapper.toUserInfo(userInfo);
     } catch (error) {
       throw new Error(
         `Failed to get user info: ${

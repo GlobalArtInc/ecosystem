@@ -1,6 +1,6 @@
-import { AccessTokenUserInfo, UserInfo } from "./globalart-passport.types";
+import { AccessTokenUserInfo, UserInfo } from "./types";
 
-export class GlobalArtPassportMapper {
+export class UserMapper {
   static toUserInfo(userInfo: AccessTokenUserInfo): UserInfo {
     return {
       id: parseInt(userInfo.sub),

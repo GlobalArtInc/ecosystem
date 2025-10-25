@@ -1,10 +1,11 @@
 import { Strategy } from "passport";
-import { GlobalArtStrategy } from "./globalart-passport-auth.strategy";
+import { AuthStrategy } from "./auth.strategy";
 import { Request, Response } from "express";
 import type {
   OpenIDConnectStrategyOptions,
   UserInfo,
-} from "./globalart-passport.types";
+  TokenResponse,
+} from "./types";
 
 interface AuthenticateOptions {
   state?: string;
@@ -19,8 +20,8 @@ export interface PassportGlobalArtOptions extends OpenIDConnectStrategyOptions {
 }
 
 export class PassportGlobalArtStrategy extends Strategy {
-  private globalArtStrategy: GlobalArtStrategy;
-  public name = "globalart";
+  public readonly name = "globalart";
+  private readonly authStrategy: AuthStrategy;
 
   private verifyFn: (
     req: Request,
@@ -41,7 +42,7 @@ export class PassportGlobalArtStrategy extends Strategy {
     ) => void
   ) {
     super();
-    this.globalArtStrategy = new GlobalArtStrategy(options);
+    this.authStrategy = new AuthStrategy(options);
     this.verifyFn = verify;
   }
 
@@ -54,51 +55,58 @@ export class PassportGlobalArtStrategy extends Strategy {
   }
 
   handleRedirectToAuthorization(options?: AuthenticateOptions) {
-    this.globalArtStrategy
+    this.authStrategy
       .initialize()
       .then(() => {
-        const authUrl =
-          this.globalArtStrategy.generateAuthorizationUrl(options);
+        const authUrl = this.authStrategy.generateAuthorizationUrl(options);
         this.redirect(authUrl);
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         this.error(err);
       });
   }
 
   handleCallback(req: Request): void {
-    this.globalArtStrategy
+    this.authStrategy
       .initialize()
       .then(() =>
-        this.globalArtStrategy.exchangeCodeForToken(
+        this.authStrategy.exchangeCodeForToken(
           req.query.code as string,
           req.query.codeVerifier as string
         )
       )
-      .then((tokenResponse) =>
-        this.globalArtStrategy
+      .then((tokenResponse: TokenResponse) =>
+        this.authStrategy
           .getUserInfo(tokenResponse.access_token)
-          .then((userInfo) => ({ tokenResponse, userInfo }))
+          .then((userInfo: UserInfo) => ({ tokenResponse, userInfo }))
       )
-      .then(({ tokenResponse, userInfo }) => {
-        this.verifyFn(
-          req,
-          tokenResponse.access_token,
-          tokenResponse.refresh_token,
+      .then(
+        ({
+          tokenResponse,
           userInfo,
-          (error, user) => {
-            if (error) {
-              return this.error(error);
-            }
-            if (!user) {
-              return this.fail("Authentication failed");
-            }
+        }: {
+          tokenResponse: TokenResponse;
+          userInfo: UserInfo;
+        }) => {
+          this.verifyFn(
+            req,
+            tokenResponse.access_token,
+            tokenResponse.refresh_token,
+            userInfo,
+            (error, user) => {
+              if (error) {
+                return this.error(error);
+              }
+              if (!user) {
+                return this.fail("Authentication failed");
+              }
 
-            return this.success(user);
-          }
-        );
-      })
-      .catch((err) => {
+              return this.success(user);
+            }
+          );
+        }
+      )
+      .catch((err: Error) => {
         return this.error(err);
       });
   }
