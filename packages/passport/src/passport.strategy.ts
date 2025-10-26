@@ -19,7 +19,7 @@ export interface PassportGlobalArtOptions extends OpenIDConnectStrategyOptions {
   passReqToCallback?: boolean;
 }
 
-export class PassportGlobalArtStrategy extends Strategy {
+export class GlobalArtPassportStrategy extends Strategy {
   public readonly name = "globalart";
   private readonly authStrategy: GlobalArtAuthStrategy;
 

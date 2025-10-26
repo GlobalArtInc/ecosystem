@@ -1,7 +1,7 @@
 import express from "express";
 import passport from "passport";
 import session from "express-session";
-import { PassportGlobalArtStrategy } from "@globalart/passport";
+import { GlobalArtPassportStrategy } from "@globalart/passport";
 
 const app = express();
 
@@ -17,7 +17,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 passport.use(
-  new PassportGlobalArtStrategy(
+  new GlobalArtPassportStrategy(
     {
       clientId: process.env.CLIENT_ID!,
       clientSecret: process.env.CLIENT_SECRET!,

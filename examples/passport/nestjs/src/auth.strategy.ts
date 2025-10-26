@@ -1,12 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
-import { PassportGlobalArtStrategy } from "@globalart/passport";
+import { GlobalArtPassportStrategy } from "@globalart/passport";
 import { SessionService, SessionUser } from "./session.service";
 import { Request } from "express";
 
 @Injectable()
 export class GlobalArtAuthStrategy extends PassportStrategy(
-  PassportGlobalArtStrategy,
+  GlobalArtPassportStrategy,
   "globalart"
 ) {
   constructor(private readonly sessionService: SessionService) {

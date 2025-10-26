@@ -1,5 +1,5 @@
 export { GlobalArtAuthStrategy } from "./common.strategy";
-export { PassportGlobalArtStrategy } from "./passport.strategy";
+export { GlobalArtPassportStrategy } from "./passport.strategy";
 export { UserMapper } from "./user.mapper";
 export type {
   OpenIDConnectConfig,
