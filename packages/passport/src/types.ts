@@ -44,8 +44,9 @@ export interface AccessTokenUserInfo {
   auth_time?: number;
   email?: string;
   name?: string;
-  firstName?: string;
-  lastName?: string;
+  given_name?: string;
+  family_name?: string;
+  preferred_username?: string;
   locale?: string;
 }
 
@@ -53,8 +54,9 @@ export interface UserInfo {
   id: number;
   email: string;
   name: string;
-  firstName?: string;
-  lastName?: string;
+  given_name?: string;
+  family_name?: string;
+  preferred_username?: string;
   locale?: string;
 }
 

@@ -6,8 +6,9 @@ export class UserMapper {
       id: parseInt(userInfo.sub),
       email: userInfo.email!,
       name: userInfo.name!,
-      firstName: userInfo.firstName,
-      lastName: userInfo.lastName,
+      given_name: userInfo.given_name,
+      family_name: userInfo.family_name,
+      preferred_username: userInfo.preferred_username,
       locale: userInfo.locale,
     };
   }
