@@ -2,7 +2,7 @@ import type {
   OpenIDConnectConfig,
   OpenIDConnectStrategyOptions,
   TokenResponse,
-  UserInfo,
+  GlobalArtUserInfo,
   AuthorizationUrlOptions,
   AccessTokenUserInfo,
 } from "./types";
@@ -160,7 +160,7 @@ export class GlobalArtAuthStrategy {
     }
   }
 
-  async getUserInfo(accessToken: string): Promise<UserInfo> {
+  async getUserInfo(accessToken: string): Promise<GlobalArtUserInfo> {
     if (!this.config) {
       throw new Error("Strategy not initialized. Call initialize() first.");
     }

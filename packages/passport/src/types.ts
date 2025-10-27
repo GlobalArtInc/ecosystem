@@ -50,7 +50,7 @@ export interface AccessTokenUserInfo {
   locale?: string;
 }
 
-export interface UserInfo {
+export interface GlobalArtUserInfo {
   id: number;
   email: string;
   name: string;

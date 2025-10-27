@@ -5,7 +5,7 @@ export type {
   OpenIDConnectConfig,
   OpenIDConnectStrategyOptions,
   TokenResponse,
-  UserInfo,
+  GlobalArtUserInfo,
   AuthorizationUrlOptions,
   AccessTokenUserInfo,
 } from "./types";

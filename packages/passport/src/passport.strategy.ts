@@ -3,7 +3,7 @@ import { GlobalArtAuthStrategy } from "./common.strategy";
 import { Request, Response } from "express";
 import type {
   OpenIDConnectStrategyOptions,
-  UserInfo,
+  GlobalArtUserInfo,
   TokenResponse,
 } from "./types";
 
@@ -27,8 +27,8 @@ export class GlobalArtPassportStrategy extends Strategy {
     req: Request,
     accessToken: string,
     refreshToken: string | undefined,
-    profile: UserInfo,
-    done: (error: Error | null, user?: UserInfo) => void
+    profile: GlobalArtUserInfo,
+    done: (error: Error | null, user?: GlobalArtUserInfo) => void
   ) => void;
 
   constructor(
@@ -37,8 +37,8 @@ export class GlobalArtPassportStrategy extends Strategy {
       req: Request,
       accessToken: string,
       refreshToken: string | undefined,
-      profile: UserInfo,
-      done: (error: Error | null, user?: UserInfo) => void
+      profile: GlobalArtUserInfo,
+      done: (error: Error | null, user?: GlobalArtUserInfo) => void
     ) => void
   ) {
     super();
@@ -78,7 +78,7 @@ export class GlobalArtPassportStrategy extends Strategy {
       .then((tokenResponse: TokenResponse) =>
         this.authStrategy
           .getUserInfo(tokenResponse.access_token)
-          .then((userInfo: UserInfo) => ({ tokenResponse, userInfo }))
+          .then((userInfo: GlobalArtUserInfo) => ({ tokenResponse, userInfo }))
       )
       .then(
         ({
@@ -86,7 +86,7 @@ export class GlobalArtPassportStrategy extends Strategy {
           userInfo,
         }: {
           tokenResponse: TokenResponse;
-          userInfo: UserInfo;
+          userInfo: GlobalArtUserInfo;
         }) => {
           this.verifyFn(
             req,
@@ -117,7 +117,7 @@ export class GlobalArtPassportStrategy extends Strategy {
     res.redirect(url);
   }
 
-  success(user: UserInfo): void {
+  success(user: GlobalArtUserInfo): void {
     const res = this.getResponse();
     if (!res) throw new Error("Response not available");
     res.locals.user = user;

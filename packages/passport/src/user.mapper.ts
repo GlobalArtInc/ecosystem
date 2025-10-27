@@ -1,7 +1,7 @@
-import { AccessTokenUserInfo, UserInfo } from "./types";
+import { AccessTokenUserInfo, GlobalArtUserInfo } from "./types";
 
 export class UserMapper {
-  static toUserInfo(userInfo: AccessTokenUserInfo): UserInfo {
+  static toUserInfo(userInfo: AccessTokenUserInfo): GlobalArtUserInfo {
     return {
       id: parseInt(userInfo.sub),
       email: userInfo.email!,
