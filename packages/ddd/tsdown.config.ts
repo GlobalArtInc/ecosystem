@@ -9,5 +9,4 @@ export default defineConfig({
   clean: true,
   treeshake: true,
   target: "es2024",
-  external: ["oxide.ts"],
 });

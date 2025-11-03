@@ -1,5 +1,5 @@
-import type { Option, Result } from "oxide.ts";
-import { None, Ok, Some } from "oxide.ts";
+import type { Option, Result } from "@globalart/oxide";
+import { None, Ok, Some } from "@globalart/oxide";
 
 export interface ISpecVisitor {
   or(left: ISpecification, right: ISpecification): this;
@@ -40,7 +40,7 @@ export abstract class CompositeSpecification<
 class And<T, V extends ISpecVisitor> extends CompositeSpecification<T, V> {
   constructor(
     private readonly left: ISpecification<T, V>,
-    private readonly right: ISpecification<T, V>,
+    private readonly right: ISpecification<T, V>
   ) {
     super();
   }
@@ -61,7 +61,7 @@ class And<T, V extends ISpecVisitor> extends CompositeSpecification<T, V> {
 class Or<T, V extends ISpecVisitor> extends CompositeSpecification<T, V> {
   constructor(
     private readonly left: ISpecification<T, V>,
-    private readonly right: ISpecification<T, V>,
+    private readonly right: ISpecification<T, V>
   ) {
     super();
   }
@@ -118,7 +118,7 @@ export const andOptions = <T, V extends ISpecVisitor>(
   ...specs: Option<CompositeSpecification<T, V>>[]
 ): Option<CompositeSpecification<T, V>> => {
   return and(
-    ...specs.filter((spec) => spec.isSome()).map((spec) => spec.unwrap()),
+    ...specs.filter((spec) => spec.isSome()).map((spec) => spec.unwrap())
   );
 };
 

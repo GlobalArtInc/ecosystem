@@ -1,4 +1,4 @@
-import { Ok, type Result } from "oxide.ts";
+import { Ok, type Result } from "@globalart/oxide";
 import { StringFieldValue } from "../fields/string/string-field-value";
 import { type IFilterBaseVisitor } from "../filter-specification-visitor.base";
 import { BaseFilterSpecification } from "../filter-specification.base";

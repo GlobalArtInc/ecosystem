@@ -1,6 +1,6 @@
 import { type IFilterBaseVisitor } from "./filter-specification-visitor.base";
 import { CompositeSpecification } from "../specification";
-import { type Result } from "oxide.ts";
+import { type Result } from "@globalart/oxide";
 
 export abstract class BaseFilterSpecification<
   E = unknown,
@@ -9,7 +9,7 @@ export abstract class BaseFilterSpecification<
   constructor(
     public readonly field: string,
     public readonly value: V,
-    public readonly relation?: string,
+    public readonly relation?: string
   ) {
     super();
   }

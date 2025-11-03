@@ -1,4 +1,4 @@
-import { None, Some, type Option } from "oxide.ts";
+import { None, Some, type Option } from "@globalart/oxide";
 import { match } from "ts-pattern";
 import { z } from "zod";
 import { conjunctions, type IConjunction } from "./conjunction";
@@ -18,7 +18,10 @@ import {
   type IStringFilter,
 } from "./fields/string/string.filter";
 import { type BaseFilterSpecification } from "./filter-specification.base";
-import { BooleanEqual, BooleanNotEqual } from "./specifications/boolean.specification";
+import {
+  BooleanEqual,
+  BooleanNotEqual,
+} from "./specifications/boolean.specification";
 import { DateBetween, DateEqual } from "./specifications/date.specification";
 import {
   NumberEmpty,
@@ -255,15 +258,21 @@ const convertBooleanFilter = (
   }
 
   switch (filter.operator) {
-    case '$eq': {
-      return Some(new BooleanEqual(filter.field, new BooleanFieldValue(filter.value)));
+    case "$eq": {
+      return Some(
+        new BooleanEqual(filter.field, new BooleanFieldValue(filter.value))
+      );
     }
-    case '$neq': {
-      return Some(new BooleanNotEqual(filter.field, new BooleanFieldValue(filter.value)));
+    case "$neq": {
+      return Some(
+        new BooleanNotEqual(filter.field, new BooleanFieldValue(filter.value))
+      );
     }
   }
 
-  return Some(new BooleanEqual(filter.field, new BooleanFieldValue(filter.value)));
+  return Some(
+    new BooleanEqual(filter.field, new BooleanFieldValue(filter.value))
+  );
 };
 
 const convertDateFilter = (

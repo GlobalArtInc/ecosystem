@@ -1,4 +1,4 @@
-import { type Option } from "oxide.ts";
+import { type Option } from "@globalart/oxide";
 import { ValueObject } from "../value-objects/value-object";
 import {
   type IFilter,

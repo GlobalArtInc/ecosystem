@@ -7,7 +7,7 @@ import {
   isWithinInterval,
   isYesterday,
 } from "date-fns";
-import { Ok, type Result } from "oxide.ts";
+import { Ok, type Result } from "@globalart/oxide";
 import { DateFieldValue } from "../fields/date/date-field-value";
 import { type IFilterBaseVisitor } from "../filter-specification-visitor.base";
 import { BaseFilterSpecification } from "../filter-specification.base";
@@ -185,7 +185,7 @@ export class DateBetween extends BaseFilterSpecification<
     public field: string,
     public dateStart: Date,
     public dateEnd: Date,
-    public relation?: string,
+    public relation?: string
   ) {
     super(field, new DateFieldValue(dateStart), relation);
   }

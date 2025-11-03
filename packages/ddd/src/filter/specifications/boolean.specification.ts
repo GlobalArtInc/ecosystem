@@ -1,4 +1,4 @@
-import { Ok, type Result } from "oxide.ts";
+import { Ok, type Result } from "@globalart/oxide";
 import { BooleanFieldValue } from "../fields/boolean/boolean-field-value";
 import { type IFilterBaseVisitor } from "../filter-specification-visitor.base";
 import { BaseFilterSpecification } from "../filter-specification.base";
@@ -32,4 +32,3 @@ export class BooleanNotEqual extends BaseFilterSpecification<
     return Ok(undefined);
   }
 }
-
