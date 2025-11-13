@@ -41,7 +41,7 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "release-it": "19.0.6",
-    "tsdown": "0.16.3",
+    "tsdown": "0.16.4",
     "@types/passport": "^1.0.17",
     "prettier": "^3.6.2",
     "@types/express": "^5.0.0"
