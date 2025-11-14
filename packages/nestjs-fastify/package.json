@@ -43,7 +43,7 @@
     "@fastify/multipart": "9.3.0",
     "@nestjs/common": "^11.1.6",
     "@nestjs/core": "^11.1.6",
-    "@nestjs/microservices": "11.1.8",
+    "@nestjs/microservices": "11.1.9",
     "@nestjs/platform-fastify": "11.1.9",
     "@nestjs/swagger": "^11.2.0",
     "@nestjs/testing": "^11.1.6",
