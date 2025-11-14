@@ -1,0 +1,50 @@
+{
+  "name": "@globalart/zod-to-proto",
+  "version": "1.0.0",
+  "author": {
+    "name": "GlobalArt, Inc"
+  },
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "format": "prettier --write \"**/*.ts\"",
+    "test": "jest --runInBand --passWithNoTests",
+    "test:cov": "jest --coverage --passWithNoTests",
+    "coveralls": "yarn run test:cov --coverageReporters=text-lcov | coveralls",
+    "build": "tsdown",
+    "build:watch": "tsdown --watch",
+    "prepublishOnly": "npm run build",
+    "publish:dev": "npm publish --access public --tag dev",
+    "publish:npm": "release-it --config ../../.release-it.json"
+  },
+  "description": "OpenID Connect strategy for GlobalArt SSO integration",
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^24.9.1",
+    "@types/passport": "^1.0.17",
+    "prettier": "^3.6.2",
+    "release-it": "19.0.6",
+    "ts-node": "^10.9.2",
+    "tsdown": "0.16.4",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "inflection": "3.0.2",
+    "zod": "4.1.12"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
