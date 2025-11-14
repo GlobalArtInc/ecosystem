@@ -29,7 +29,7 @@
     "publish:dev": "npm publish --access public --tag dev",
     "publish:npm": "release-it --config ../../.release-it.json"
   },
-  "description": "OpenID Connect strategy for GlobalArt SSO integration",
+  "description": "Convert Zod schemas to Protobuf definitions",
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/node": "^24.9.1",
