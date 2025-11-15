@@ -11,7 +11,7 @@ interface ServiceGenerationContext {
 
 const generateRequestMessageName = (
   methodName: string,
-  typePrefix: string | null,
+  typePrefix: string | null
 ): string => {
   const messageName = toPascalCase({ value: `${methodName}Request` });
   return typePrefix ? `${typePrefix}${messageName}` : messageName;
@@ -19,7 +19,7 @@ const generateRequestMessageName = (
 
 const generateResponseMessageName = (
   methodName: string,
-  typePrefix: string | null,
+  typePrefix: string | null
 ): string => {
   const messageName = toPascalCase({ value: `${methodName}Response` });
   return typePrefix ? `${typePrefix}${messageName}` : messageName;
@@ -27,7 +27,7 @@ const generateResponseMessageName = (
 
 const processServiceMethod = (
   method: ServiceMethod,
-  context: ServiceGenerationContext,
+  context: ServiceGenerationContext
 ): { requestName: string; responseName: string } => {
   const { messages, enums, typePrefix } = context;
 
@@ -59,13 +59,13 @@ const processServiceMethod = (
 
 export const generateServices = (
   services: ServiceDefinition[],
-  context: ServiceGenerationContext,
+  context: ServiceGenerationContext
 ): string[] => {
   return services.map((service) => {
     const methods = service.methods.map((method) => {
       const { requestName, responseName } = processServiceMethod(
         method,
-        context,
+        context
       );
 
       const requestStreaming =
@@ -80,9 +80,9 @@ export const generateServices = (
         ? `stream ${responseName}`
         : responseName;
 
-      return `    rpc ${method.name}(${requestType}) returns (${responseType});`;
+      return `    rpc ${toPascalCase({ value: method.name })}(${requestType}) returns (${responseType});`;
     });
 
-    return `service ${service.name} {\n${methods.join("\n")}\n}`;
+    return `service ${toPascalCase({ value: service.name })} {\n${methods.join("\n")}\n}`;
   });
 };
