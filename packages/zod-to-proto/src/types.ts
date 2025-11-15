@@ -35,6 +35,11 @@ export interface ZodMapDefinition {
   valueType: ZodTypeAny;
 }
 
+export interface ZodRecordDefinition {
+  keyType: ZodTypeAny;
+  valueType: ZodTypeAny;
+}
+
 export interface ZodArrayDefinition {
   valueType: ZodTypeAny;
   element: ZodTypeAny;

@@ -11,4 +11,21 @@ export const userServiceZodToProto = zodToProtobuf(z.object(), {
   },
 });
 
+console.log(
+  zodToProtobuf(z.object(), {
+    services: {
+      TestService: z.object({
+        test: z.function({
+          input: [
+            z.object({
+              id: z.number().int(),
+            }),
+          ],
+          output: z.record(z.string(), z.number().int()),
+        }),
+      }),
+    },
+  })
+);
+
 fs.writeFileSync("./user-service.proto", userServiceZodToProto);

@@ -10,6 +10,7 @@ import {
   ZodNumber,
   ZodObject,
   ZodOptional,
+  ZodRecord,
   ZodSet,
   ZodString,
   ZodTuple,
@@ -19,6 +20,7 @@ import {
 import {
   ZodArrayDefinition,
   ZodMapDefinition,
+  ZodRecordDefinition,
   type ProtobufField,
 } from "./types";
 import { getNumberTypeName, toPascalCase, protobufFieldToType } from "./utils";
@@ -112,6 +114,57 @@ export const traverseMap = ({
   ];
 };
 
+export const traverseRecord = ({
+  key,
+  value,
+  messages,
+  enums,
+  typePrefix,
+}: {
+  key: string;
+  value: ZodRecord;
+  messages: Map<string, string[]>;
+  enums: Map<string, string[]>;
+  typePrefix: string | null;
+}): ProtobufField[] => {
+  const recordDef = value.def as unknown as ZodRecordDefinition;
+
+  const keyType = traverseKey({
+    key: inflection.singularize(key),
+    value: recordDef.keyType,
+    messages,
+    enums,
+    isOptional: false,
+    isInArray: true,
+    typePrefix,
+  });
+  const valueType = traverseKey({
+    key: inflection.singularize(key),
+    value: recordDef.valueType,
+    messages,
+    enums,
+    isOptional: false,
+    isInArray: true,
+    typePrefix,
+  });
+
+  if (!keyType[0] || keyType.length !== 1) {
+    return [];
+  }
+
+  if (!valueType[0] || valueType.length !== 1) {
+    return [];
+  }
+
+  const mapType = `map<${protobufFieldToType({ field: keyType[0] })}, ${protobufFieldToType({ field: valueType[0] })}>`;
+  return [
+    {
+      types: [mapType],
+      name: key,
+    },
+  ];
+};
+
 export const traverseKey = ({
   key,
   value,
@@ -159,6 +212,16 @@ export const traverseKey = ({
     return traverseMap({
       key,
       value: value as ZodMap<ZodTypeAny, ZodTypeAny>,
+      messages,
+      enums,
+      typePrefix,
+    });
+  }
+
+  if (value instanceof ZodRecord) {
+    return traverseRecord({
+      key,
+      value: value as ZodRecord,
       messages,
       enums,
       typePrefix,

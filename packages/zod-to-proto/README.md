@@ -255,6 +255,7 @@ interface ServiceMethod {
 - `z.array()` → `repeated`
 - `z.set()` → `repeated`
 - `z.map()` → `map<keyType, valueType>` (key must be int32, int64, string, or bool)
+- `z.record()` → `map<keyType, valueType>` (same as z.map())
 - `z.tuple()` → nested message
 
 ### Complex Types
@@ -274,6 +275,7 @@ const schema = z.object({
   id: z.string(),
   tags: z.array(z.string()),
   metadata: z.map(z.string(), z.number()),
+  settings: z.record(z.string(), z.string()),
   status: z.enum(["active", "inactive", "pending"]),
   profile: z.object({
     firstName: z.string(),
@@ -355,9 +357,9 @@ const protoDefinition = zodToProtobuf(schema, {
 
 ## Advanced Usage
 
-### Working with Maps
+### Working with Maps and Records
 
-Protobuf maps have strict key type requirements. Only integral types, strings, and booleans are allowed as keys:
+Protobuf maps have strict key type requirements. Only integral types, strings, and booleans are allowed as keys. Both `z.map()` and `z.record()` are converted to protobuf `map<>` type:
 
 ```typescript
 const schema = z.object({
@@ -365,6 +367,10 @@ const schema = z.object({
   usersByStringId: z.map(z.string(), userSchema),
   usersByIntId: z.map(z.number().int(), userSchema),
   flagsMap: z.map(z.boolean(), z.string()),
+  
+  // ✅ Using z.record() - same as z.map()
+  metadataRecord: z.record(z.string(), z.string()),
+  settingsRecord: z.record(z.string(), z.number()),
   
   // ❌ Invalid - double is not allowed as map key
   invalidMap: z.map(z.number(), userSchema), // Use .int() instead!
