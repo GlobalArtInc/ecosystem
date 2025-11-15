@@ -57,7 +57,7 @@ export const traverseArray = ({
     isOptional: false,
     isInArray: true,
     typePrefix,
-    parentKey,
+    parentKey: undefined,
   });
   return elementFields.map((field) => ({
     ...field,
@@ -219,7 +219,7 @@ export const traverseKey = ({
       messages,
       enums,
       typePrefix,
-      parentKey: key,
+      parentKey,
     });
   }
 
