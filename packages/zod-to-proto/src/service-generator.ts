@@ -107,6 +107,7 @@ const processServiceMethod = (
       messages,
       enums,
       typePrefix,
+      parentKey: requestName,
     });
     messages.set(requestName, requestFields);
   }
@@ -118,6 +119,7 @@ const processServiceMethod = (
       messages,
       enums,
       typePrefix,
+      parentKey: responseName,
     });
     messages.set(responseName, responseFields);
   }

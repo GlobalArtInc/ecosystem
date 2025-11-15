@@ -57,7 +57,7 @@ export const traverseArray = ({
     isOptional: false,
     isInArray: true,
     typePrefix,
-    parentKey: undefined,
+    parentKey: nestedValue instanceof ZodObject ? parentKey : undefined,
   });
   return elementFields.map((field) => ({
     ...field,
@@ -250,8 +250,13 @@ export const traverseKey = ({
   if (value instanceof ZodObject) {
     let messageName = toPascalCase({ value: key });
     if (parentKey) {
-      const parentMessageName = toPascalCase({ value: parentKey });
-      messageName = `${parentMessageName}${messageName}`;
+      const isParentAlreadyPascalCase = /^[A-Z][a-zA-Z0-9]*$/.test(parentKey);
+      if (isParentAlreadyPascalCase) {
+        messageName = `${parentKey}${messageName}`;
+      } else {
+        const parentMessageName = toPascalCase({ value: parentKey });
+        messageName = `${parentMessageName}${messageName}`;
+      }
     }
     if (typePrefix) {
       messageName = `${typePrefix}${messageName}`;
@@ -261,7 +266,7 @@ export const traverseKey = ({
       messages,
       enums,
       typePrefix,
-      parentKey: key,
+      parentKey: messageName,
     });
     messages.set(messageName, nestedMessageFields);
     return [
@@ -309,8 +314,13 @@ export const traverseKey = ({
       .join("\n");
     let enumName = toPascalCase({ value: key });
     if (parentKey) {
-      const parentMessageName = toPascalCase({ value: parentKey });
-      enumName = `${parentMessageName}${enumName}`;
+      const isParentAlreadyPascalCase = /^[A-Z][a-zA-Z0-9]*$/.test(parentKey);
+      if (isParentAlreadyPascalCase) {
+        enumName = `${parentKey}${enumName}`;
+      } else {
+        const parentMessageName = toPascalCase({ value: parentKey });
+        enumName = `${parentMessageName}${enumName}`;
+      }
     }
     if (typePrefix) {
       enumName = `${typePrefix}${enumName}`;
@@ -360,8 +370,13 @@ export const traverseKey = ({
 
     let tupleMessageName = toPascalCase({ value: key });
     if (parentKey) {
-      const parentMessageName = toPascalCase({ value: parentKey });
-      tupleMessageName = `${parentMessageName}${tupleMessageName}`;
+      const isParentAlreadyPascalCase = /^[A-Z][a-zA-Z0-9]*$/.test(parentKey);
+      if (isParentAlreadyPascalCase) {
+        tupleMessageName = `${parentKey}${tupleMessageName}`;
+      } else {
+        const parentMessageName = toPascalCase({ value: parentKey });
+        tupleMessageName = `${parentMessageName}${tupleMessageName}`;
+      }
     }
     if (typePrefix) {
       tupleMessageName = `${typePrefix}${tupleMessageName}`;
