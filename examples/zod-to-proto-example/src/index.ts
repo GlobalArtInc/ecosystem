@@ -1,31 +1,21 @@
 import { zodToProtobuf } from "@globalart/zod-to-proto";
-import { z } from "zod";
+import z from "zod";
+import { roleServiceSchema } from "./schemas/role.schema";
+import { UserService, userServiceSchema } from "./schemas/user.schema";
 
-const schema = z.object({
-  name: z.string(),
-  age: z.number(),
+export const userServiceZodToProto = zodToProtobuf(z.object(), {
+  services: {
+    UserService: userServiceSchema,
+    RoleService: roleServiceSchema,
+  },
 });
 
-console.log(
-  zodToProtobuf(z.object(), {
-    packageName: "user.service",
-    services: [
-      {
-        name: "UserService",
-        methods: [
-          {
-            name: "getUser",
-            request: z.object({
-              id: z.string(),
-            }),
-            response: z.object({
-              name: z.string(),
-              age: z.number(),
-              email: z.string(),
-            }),
-          },
-        ],
-      },
-    ],
-  })
-);
+console.log(userServiceZodToProto);
+
+class Test {
+  constructor(private readonly userService: UserService) {}
+
+  async test() {
+    console.log(this.userService.getUsersByIds({ ids: [1, 2, 3] }));
+  }
+}

@@ -70,9 +70,16 @@ export const traverseMap = ({
   enums: Map<string, string[]>;
   typePrefix: string | null;
 }): ProtobufField[] => {
+  const mapDef = (value._def || value.def) as {
+    keyType?: ZodTypeAny;
+    valueType?: ZodTypeAny;
+  };
+
   const keyType = traverseKey({
-    key: `${key}Key`,
-    value: value._def.keyType,
+    key: inflection.singularize(key),
+    value:
+      mapDef.keyType ||
+      (value as ZodTypeAny & { keyType?: ZodTypeAny }).keyType,
     messages,
     enums,
     isOptional: false,
@@ -80,8 +87,10 @@ export const traverseMap = ({
     typePrefix,
   });
   const valueType = traverseKey({
-    key: `${key}Value`,
-    value: value._def.valueType,
+    key: inflection.singularize(key),
+    value:
+      mapDef.valueType ||
+      (value as ZodTypeAny & { valueType?: ZodTypeAny }).valueType,
     messages,
     enums,
     isOptional: false,
@@ -123,6 +132,10 @@ export const traverseKey = ({
   isInArray: boolean;
   typePrefix: string | null;
 }): ProtobufField[] => {
+  if (!value) {
+    return [];
+  }
+
   if (value instanceof ZodOptional || value instanceof ZodNullable) {
     return traverseKey({
       key,
@@ -209,7 +222,7 @@ export const traverseKey = ({
     const enumFields = value.options
       .map(
         (option: string | number, index: number) =>
-          `    ${String(option)} = ${index};`,
+          `    ${String(option)} = ${index};`
       )
       .join("\n");
     let enumName = toPascalCase({ value: key });
@@ -263,8 +276,8 @@ export const traverseKey = ({
       tupleMessageName,
       tupleFields.map(
         (field, index) =>
-          `  ${field.types.join(" ")} ${field.name} = ${index + 1};`,
-      ),
+          `  ${field.types.join(" ")} ${field.name} = ${index + 1};`
+      )
     );
     return [
       {
@@ -292,11 +305,20 @@ export const traverseSchema = ({
   enums: Map<string, string[]>;
   typePrefix: string | null;
 }): string[] => {
-  if (!(schema instanceof ZodObject)) {
-    throw new UnsupportedTypeException(schema.constructor.name);
+  if (
+    !schema ||
+    typeof schema !== "object" ||
+    !("_def" in schema) ||
+    (schema.constructor.name !== "ZodObject" &&
+      (schema._def as { type?: string }).type !== "object")
+  ) {
+    throw new UnsupportedTypeException(
+      schema?.constructor?.name || typeof schema
+    );
   }
 
-  const fields = Object.entries(schema.shape).flatMap(([key, value]) => {
+  const zodObject = schema as ZodObject<any>;
+  const fields = Object.entries(zodObject.shape).flatMap(([key, value]) => {
     return traverseKey({
       key,
       value,
@@ -310,6 +332,6 @@ export const traverseSchema = ({
 
   return fields.map(
     (field, index) =>
-      `${protobufFieldToType({ field })} ${field.name} = ${index + 1};`,
+      `${protobufFieldToType({ field })} ${field.name} = ${index + 1};`
   );
 };

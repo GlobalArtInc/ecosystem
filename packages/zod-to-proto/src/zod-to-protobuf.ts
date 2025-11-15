@@ -5,13 +5,13 @@ import { generateServices } from "./service-generator";
 
 export const zodToProtobuf = (
   schema?: ZodTypeAny,
-  options: ZodToProtobufOptions = {},
+  options: ZodToProtobufOptions = {}
 ): string => {
   const {
     packageName = "default",
     rootMessageName = "Message",
     typePrefix = "",
-    services = [],
+    services,
     skipRootMessage = false,
   } = options;
 
@@ -32,21 +32,22 @@ export const zodToProtobuf = (
     typePrefix: typePrefix || null,
   };
 
-  if (services.length > 0) {
-    generateServices(services, context);
-  }
+  const hasServices =
+    services &&
+    (Array.isArray(services)
+      ? services.length > 0
+      : Object.keys(services).length > 0);
+
+  const servicesString = hasServices ? generateServices(services, context) : [];
 
   const enumsString = Array.from(enums.values()).map((enumDef) =>
-    enumDef.join("\n"),
+    enumDef.join("\n")
   );
 
   const messagesString = Array.from(messages.entries()).map(
     ([name, fields]) =>
-      `message ${name} {\n${fields.map((field) => `    ${field}`).join("\n")}\n}`,
+      `message ${name} {\n${fields.map((field) => `    ${field}`).join("\n")}\n}`
   );
-
-  const servicesString =
-    services.length > 0 ? generateServices(services, context) : [];
 
   const content = [enumsString, messagesString, servicesString]
     .filter((strings) => !!strings.length)

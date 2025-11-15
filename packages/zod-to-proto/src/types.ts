@@ -1,10 +1,14 @@
-import type { ZodTypeAny } from "zod";
+import type { ZodObject, ZodTypeAny } from "zod";
+
+export type ServicesInput =
+  | ServiceDefinition[]
+  | Record<string, ZodObject<any>>;
 
 export interface ZodToProtobufOptions {
   packageName?: string;
   rootMessageName?: string;
   typePrefix?: string;
-  services?: ServiceDefinition[];
+  services?: ServicesInput;
   skipRootMessage?: boolean;
 }
 

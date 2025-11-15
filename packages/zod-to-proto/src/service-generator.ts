@@ -1,5 +1,5 @@
-import type { ZodTypeAny } from "zod";
-import type { ServiceDefinition, ServiceMethod } from "./types";
+import { z, type ZodFunction, ZodObject, type ZodTypeAny } from "zod";
+import type { ServiceDefinition, ServiceMethod, ServicesInput } from "./types";
 import { toPascalCase } from "./utils";
 import { traverseSchema } from "./traversers";
 
@@ -8,6 +8,72 @@ interface ServiceGenerationContext {
   enums: Map<string, string[]>;
   typePrefix: string | null;
 }
+
+const parseZodServiceSchema = (
+  name: string,
+  schema: ZodObject<Record<string, ZodTypeAny>>
+): ServiceDefinition => {
+  const shape = schema.shape as Record<string, ZodTypeAny>;
+  const methods: ServiceMethod[] = [];
+
+  for (const [methodName, methodSchema] of Object.entries(shape)) {
+    const methodDef = (methodSchema as ZodTypeAny)._def as {
+      type?: string;
+      input?: ZodTypeAny;
+      output?: ZodTypeAny;
+    };
+
+    if (methodDef.type === "function") {
+      const inputDef = methodDef.input as ZodTypeAny & {
+        def?: { items?: ZodTypeAny[] };
+      };
+
+      const args = inputDef?.def?.items ?? [];
+      const output = methodDef.output as ZodTypeAny;
+
+      if (args.length > 0 && args[0] && output) {
+        const request = args[0];
+        const response = output;
+
+        methods.push({
+          name: methodName,
+          request,
+          response,
+        });
+      }
+    }
+  }
+
+  return {
+    name,
+    methods,
+  };
+};
+
+const normalizeServices = (services: ServicesInput): ServiceDefinition[] => {
+  if (Array.isArray(services)) {
+    return services;
+  }
+
+  return Object.entries(services).map(([name, schema]) =>
+    parseZodServiceSchema(name, schema)
+  );
+};
+
+const ensureZodObject = (
+  schema: ZodTypeAny
+): ZodObject<Record<string, ZodTypeAny>> => {
+  const schemaType =
+    (schema._def as { type?: string }).type || schema.constructor.name;
+
+  if (schemaType === "object" || schema.constructor.name === "ZodObject") {
+    return schema as ZodObject<Record<string, ZodTypeAny>>;
+  }
+
+  return z.object({
+    data: schema,
+  });
+};
 
 const generateRequestMessageName = (
   methodName: string,
@@ -35,8 +101,9 @@ const processServiceMethod = (
   const responseName = generateResponseMessageName(method.name, typePrefix);
 
   if (!messages.has(requestName)) {
+    const requestSchema = ensureZodObject(method.request);
     const requestFields = traverseSchema({
-      schema: method.request,
+      schema: requestSchema,
       messages,
       enums,
       typePrefix,
@@ -45,8 +112,9 @@ const processServiceMethod = (
   }
 
   if (!messages.has(responseName)) {
+    const responseSchema = ensureZodObject(method.response);
     const responseFields = traverseSchema({
-      schema: method.response,
+      schema: responseSchema,
       messages,
       enums,
       typePrefix,
@@ -58,10 +126,12 @@ const processServiceMethod = (
 };
 
 export const generateServices = (
-  services: ServiceDefinition[],
+  services: ServicesInput,
   context: ServiceGenerationContext
 ): string[] => {
-  return services.map((service) => {
+  const normalizedServices = normalizeServices(services);
+
+  return normalizedServices.map((service) => {
     const methods = service.methods.map((method) => {
       const { requestName, responseName } = processServiceMethod(
         method,
