@@ -49,7 +49,7 @@ export const zodToProtobuf = (
       `message ${name} {\n${fields.map((field) => `    ${field}`).join("\n")}\n}`
   );
 
-  const content = [enumsString, messagesString, servicesString]
+  const content = [servicesString, enumsString, messagesString]
     .filter((strings) => !!strings.length)
     .map((strings) => strings.join("\n\n"))
     .join("\n\n");

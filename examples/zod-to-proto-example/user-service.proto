@@ -1,6 +1,17 @@
 syntax = "proto3";
 package default;
 
+service UserService {
+    rpc GetUserById(GetUserByIdRequest) returns (GetUserByIdResponse);
+    rpc GetUserByEmail(GetUserByEmailRequest) returns (GetUserByEmailResponse);
+    rpc CreateOrUpdateUser(CreateOrUpdateUserRequest) returns (CreateOrUpdateUserResponse);
+    rpc GetUsersByIds(GetUsersByIdsRequest) returns (GetUsersByIdsResponse);
+}
+
+service RoleService {
+    rpc GetRoles(GetRolesRequest) returns (GetRolesResponse);
+}
+
 message GetUserByIdRequest {
     int32 id = 1;
 }
@@ -61,15 +72,4 @@ message Datum {
 
 message GetRolesResponse {
     repeated Datum data = 1;
-}
-
-service UserService {
-    rpc GetUserById(GetUserByIdRequest) returns (GetUserByIdResponse);
-    rpc GetUserByEmail(GetUserByEmailRequest) returns (GetUserByEmailResponse);
-    rpc CreateOrUpdateUser(CreateOrUpdateUserRequest) returns (CreateOrUpdateUserResponse);
-    rpc GetUsersByIds(GetUsersByIdsRequest) returns (GetUsersByIdsResponse);
-}
-
-service RoleService {
-    rpc GetRoles(GetRolesRequest) returns (GetRolesResponse);
 }
