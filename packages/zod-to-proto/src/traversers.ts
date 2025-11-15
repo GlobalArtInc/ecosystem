@@ -99,11 +99,11 @@ export const traverseMap = ({
   });
 
   if (!keyType[0] || keyType.length !== 1) {
-    throw new UnsupportedTypeException(`${key} map key`);
+    return [];
   }
 
   if (!valueType[0] || valueType.length !== 1) {
-    throw new UnsupportedTypeException(`${key} map value`);
+    return [];
   }
 
   const mapType = `map<${protobufFieldToType({ field: keyType[0] })}, ${protobufFieldToType({ field: valueType[0] })}>`;
@@ -288,10 +288,10 @@ export const traverseKey = ({
   }
 
   if (value instanceof ZodType) {
-    throw new UnsupportedTypeException(value.constructor.name);
+    return [];
   }
 
-  throw new UnsupportedTypeException(typeof value);
+  return [];
 };
 
 export const traverseSchema = ({
@@ -312,9 +312,7 @@ export const traverseSchema = ({
     (schema.constructor.name !== "ZodObject" &&
       (schema._def as { type?: string }).type !== "object")
   ) {
-    throw new UnsupportedTypeException(
-      schema?.constructor?.name || typeof schema
-    );
+    return [];
   }
 
   const zodObject = schema as ZodObject<any>;
