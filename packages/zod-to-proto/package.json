@@ -26,6 +26,17 @@
       }
     }
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GlobalArtInc/ecosystem.git#main"
+  },
+  "keywords": [
+    "zod",
+    "protobuf",
+    "grpc",
+    "protobuf-schema",
+    "protobuf-generator"
+  ],
   "scripts": {
     "format": "prettier --write \"**/*.ts\"",
     "test": "jest --runInBand --passWithNoTests",

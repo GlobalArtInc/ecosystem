@@ -56,6 +56,52 @@ message Message {
 
 ### Generating gRPC Services
 
+There are two ways to define gRPC services:
+
+#### Option 1: Using Zod Schemas with Functions (Recommended)
+
+```typescript
+import { zodToProtobuf } from "@globalart/zod-to-proto";
+import { z } from "zod";
+
+// Define request/response schemas
+const getUserByIdRequestSchema = z.object({
+  id: z.number().int(),
+});
+
+const userSchema = z.object({
+  id: z.number().int(),
+  name: z.string(),
+  email: z.string(),
+});
+
+// Define service using z.function()
+const userServiceSchema = z.object({
+  getUserById: z.function({
+    input: [getUserByIdRequestSchema],
+    output: userSchema,
+  }),
+  createUser: z.function({
+    input: [userSchema],
+    output: z.object({
+      id: z.number().int(),
+      success: z.boolean(),
+    }),
+  }),
+});
+
+const protoDefinition = zodToProtobuf(z.object(), {
+  packageName: "user.service",
+  services: {
+    UserService: userServiceSchema,
+  },
+});
+
+console.log(protoDefinition);
+```
+
+#### Option 2: Using Service Definitions Array
+
 ```typescript
 import { zodToProtobuf } from "@globalart/zod-to-proto";
 import { z } from "zod";
@@ -97,36 +143,36 @@ const protoDefinition = zodToProtobuf(z.object(), {
 console.log(protoDefinition);
 ```
 
-Output:
+Both approaches produce the same output:
 
 ```protobuf
 syntax = "proto3";
 package user.service;
 
-message GetUserRequest {
-  string id = 1;
+message GetUserByIdRequest {
+  int32 id = 1;
 }
 
-message GetUserResponse {
-  string name = 1;
-  int32 age = 2;
+message GetUserByIdResponse {
+  int32 id = 1;
+  string name = 2;
   string email = 3;
 }
 
 message CreateUserRequest {
-  string name = 1;
-  int32 age = 2;
+  int32 id = 1;
+  string name = 2;
   string email = 3;
 }
 
 message CreateUserResponse {
-  string id = 1;
+  int32 id = 1;
   bool success = 2;
 }
 
 service UserService {
-  rpc getUser(GetUserRequest) returns (GetUserResponse);
-  rpc createUser(CreateUserRequest) returns (CreateUserResponse);
+  rpc GetUserById(GetUserByIdRequest) returns (GetUserByIdResponse);
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
 }
 ```
 
@@ -145,15 +191,40 @@ Converts a Zod schema to a Protobuf definition.
 
 ```typescript
 interface ZodToProtobufOptions {
-  packageName?: string;           // Protobuf package name (default: "default")
-  rootMessageName?: string;       // Root message name (default: "Message")
-  typePrefix?: string;            // Prefix for message and enum types
-  services?: ServiceDefinition[]; // gRPC service definitions
-  skipRootMessage?: boolean;      // Skip root message generation
+  packageName?: string;                              // Protobuf package name (default: "default")
+  rootMessageName?: string;                          // Root message name (default: "Message")
+  typePrefix?: string;                               // Prefix for message and enum types
+  services?: ServicesInput;                          // gRPC service definitions
+  skipRootMessage?: boolean;                         // Skip root message generation
 }
+
+type ServicesInput = ServiceDefinition[] | Record<string, ZodObject<any>>;
 ```
 
 #### Service Definition
+
+You can define services in two ways:
+
+**Option 1: Using Zod Schemas (Recommended)**
+
+```typescript
+const serviceSchema = z.object({
+  methodName: z.function({
+    input: [requestSchema],
+    output: responseSchema,
+  }),
+  // ... more methods
+});
+
+// Use in options
+const proto = zodToProtobuf(z.object(), {
+  services: {
+    ServiceName: serviceSchema,
+  },
+});
+```
+
+**Option 2: Using Service Definitions Array**
 
 ```typescript
 interface ServiceDefinition {
@@ -183,7 +254,7 @@ interface ServiceMethod {
 
 - `z.array()` → `repeated`
 - `z.set()` → `repeated`
-- `z.map()` → `map<keyType, valueType>`
+- `z.map()` → `map<keyType, valueType>` (key must be int32, int64, string, or bool)
 - `z.tuple()` → nested message
 
 ### Complex Types
@@ -282,12 +353,113 @@ const protoDefinition = zodToProtobuf(schema, {
 });
 ```
 
+## Advanced Usage
+
+### Working with Maps
+
+Protobuf maps have strict key type requirements. Only integral types, strings, and booleans are allowed as keys:
+
+```typescript
+const schema = z.object({
+  // ✅ Valid map keys
+  usersByStringId: z.map(z.string(), userSchema),
+  usersByIntId: z.map(z.number().int(), userSchema),
+  flagsMap: z.map(z.boolean(), z.string()),
+  
+  // ❌ Invalid - double is not allowed as map key
+  invalidMap: z.map(z.number(), userSchema), // Use .int() instead!
+});
+```
+
+### Type-Safe Service Definitions
+
+When using Zod schemas for services, you get full TypeScript type safety:
+
+```typescript
+const userServiceSchema = z.object({
+  getUser: z.function({
+    input: [z.object({ id: z.number().int() })],
+    output: userSchema,
+  }),
+});
+
+type UserService = z.infer<typeof userServiceSchema>;
+
+// Implementation with type checking
+class UserServiceImpl implements UserService {
+  async getUser({ id }: { id: number }) {
+    // TypeScript knows the shape of input and output
+    return { id, name: "John", email: "john@example.com" };
+  }
+}
+```
+
+### Avoiding Circular Dependencies
+
+**Important:** Avoid circular dependencies between schema files. Circular imports will cause types to become `undefined` during schema construction.
+
+❌ **Bad Example:**
+```typescript
+// user.schema.ts
+import { getUserByIdResponseSchema } from "./get-user-by-id.schema";
+
+export const userSchema = z.object({ ... });
+
+export const userServiceSchema = z.object({
+  getUserById: z.function({
+    input: [...],
+    output: getUserByIdResponseSchema, // ❌ Circular dependency
+  }),
+});
+
+// get-user-by-id.schema.ts
+import { userSchema } from "./user.schema"; // ❌ Circular dependency
+
+export const getUserByIdResponseSchema = userSchema;
+```
+
+✅ **Good Example:**
+```typescript
+// user.schema.ts
+import { getUserByIdRequestSchema } from "./get-user-by-id.schema";
+
+export const userSchema = z.object({ ... });
+
+export const userServiceSchema = z.object({
+  getUserById: z.function({
+    input: [getUserByIdRequestSchema],
+    output: userSchema, // ✅ Direct reference, no circular dependency
+  }),
+});
+
+// get-user-by-id.schema.ts
+export const getUserByIdRequestSchema = z.object({ id: z.number().int() });
+// No import of userSchema needed
+```
+
+### Multiple Services
+
+You can define multiple services in a single protobuf file:
+
+```typescript
+const protoDefinition = zodToProtobuf(z.object(), {
+  packageName: "api.v1",
+  services: {
+    UserService: userServiceSchema,
+    AuthService: authServiceSchema,
+    ProductService: productServiceSchema,
+  },
+});
+```
+
 ## Limitations
 
 - Only the types listed above are supported
 - Unsupported types will throw `UnsupportedTypeException`
 - Nested objects are automatically converted to separate messages
 - Enum values are converted to numbers starting from 0
+- Map keys must be integral types (int32, int64, etc.), strings, or booleans - **not** doubles or floats
+- Avoid circular dependencies between schema files
 
 ## License
 

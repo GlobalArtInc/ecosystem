@@ -16,6 +16,9 @@ class Test {
   constructor(private readonly userService: UserService) {}
 
   async test() {
-    console.log(this.userService.getUsersByIds({ ids: [1, 2, 3] }));
+    const s1 = this.userService.getUsersByIds({ ids: [1, 2, 3] });
+    console.log(s1.users);
+    const s2 = await this.userService.getUsersByIds({ ids: [1, 2, 3] });
+    console.log(s2.users);
   }
 }
