@@ -16,7 +16,11 @@ import {
   ZodType,
   type ZodTypeAny,
 } from "zod";
-import { UnsupportedTypeException, type ProtobufField } from "./types";
+import {
+  ZodArrayDefinition,
+  ZodMapDefinition,
+  type ProtobufField,
+} from "./types";
 import { getNumberTypeName, toPascalCase, protobufFieldToType } from "./utils";
 
 export const traverseArray = ({
@@ -36,9 +40,9 @@ export const traverseArray = ({
     value instanceof ZodArray
       ? value.element
       : value instanceof ZodSet
-        ? (value._def as { valueType: ZodTypeAny }).valueType
+        ? (value.def as unknown as ZodArrayDefinition).valueType
         : // @ts-expect-error
-          (value._def as { element?: ZodTypeAny }).element;
+          (value.def as unknown as ZodArrayDefinition).element;
 
   const singularKey = inflection.singularize(key);
   const elementFields = traverseKey({
@@ -70,16 +74,11 @@ export const traverseMap = ({
   enums: Map<string, string[]>;
   typePrefix: string | null;
 }): ProtobufField[] => {
-  const mapDef = (value._def || value.def) as {
-    keyType?: ZodTypeAny;
-    valueType?: ZodTypeAny;
-  };
+  const mapDef = value.def as ZodMapDefinition;
 
   const keyType = traverseKey({
     key: inflection.singularize(key),
-    value:
-      mapDef.keyType ||
-      (value as ZodTypeAny & { keyType?: ZodTypeAny }).keyType,
+    value: mapDef.keyType,
     messages,
     enums,
     isOptional: false,
@@ -88,9 +87,7 @@ export const traverseMap = ({
   });
   const valueType = traverseKey({
     key: inflection.singularize(key),
-    value:
-      mapDef.valueType ||
-      (value as ZodTypeAny & { valueType?: ZodTypeAny }).valueType,
+    value: mapDef.valueType,
     messages,
     enums,
     isOptional: false,
@@ -258,7 +255,7 @@ export const traverseKey = ({
 
   if (value instanceof ZodTuple) {
     const tupleFields: ProtobufField[] = (
-      value._def.items as ZodTypeAny[]
+      value.def.items as ZodTypeAny[]
     ).flatMap((item: ZodTypeAny, index: number) => {
       return traverseKey({
         key: `${key}_${index}`,
@@ -308,9 +305,9 @@ export const traverseSchema = ({
   if (
     !schema ||
     typeof schema !== "object" ||
-    !("_def" in schema) ||
+    !("def" in schema) ||
     (schema.constructor.name !== "ZodObject" &&
-      (schema._def as { type?: string }).type !== "object")
+      (schema.def as { type?: string }).type !== "object")
   ) {
     return [];
   }

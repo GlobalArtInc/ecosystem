@@ -24,11 +24,24 @@ export interface ServiceDefinition {
   methods: ServiceMethod[];
 }
 
-export class UnsupportedTypeException extends Error {
-  constructor(type: string) {
-    super(`Unsupported type: ${type}`);
-    this.name = "UnsupportedTypeException";
-  }
+export interface ZodFunctionDefinition {
+  type: "function";
+  input: ZodTypeAny;
+  output: ZodTypeAny;
+}
+
+export interface ZodMapDefinition {
+  keyType: ZodTypeAny;
+  valueType: ZodTypeAny;
+}
+
+export interface ZodArrayDefinition {
+  valueType: ZodTypeAny;
+  element: ZodTypeAny;
+}
+
+export interface ZodTupleDefinition {
+  items?: ZodTypeAny[];
 }
 
 export interface ProtobufField {

@@ -12,8 +12,6 @@ export const userSchema = z.object({
   locale: z.string(),
 });
 
-export type User = z.infer<typeof userSchema>;
-
 export const userServiceSchema = z.object({
   getUserById: z.function({
     input: [getUserByIdRequestSchema],
@@ -35,5 +33,6 @@ export const userServiceSchema = z.object({
   }),
 });
 
+export type User = z.infer<typeof userSchema>;
 export type UserService = z.infer<typeof userServiceSchema>;
 export type RoleService = z.infer<typeof roleServiceSchema>;

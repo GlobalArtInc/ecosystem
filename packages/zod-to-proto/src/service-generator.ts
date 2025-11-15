@@ -1,5 +1,11 @@
-import { z, type ZodFunction, ZodObject, type ZodTypeAny } from "zod";
-import type { ServiceDefinition, ServiceMethod, ServicesInput } from "./types";
+import { z, ZodObject, type ZodTypeAny } from "zod";
+import type {
+  ServiceDefinition,
+  ServiceMethod,
+  ServicesInput,
+  ZodFunctionDefinition,
+  ZodTupleDefinition,
+} from "./types";
 import { toPascalCase } from "./utils";
 import { traverseSchema } from "./traversers";
 
@@ -17,18 +23,12 @@ const parseZodServiceSchema = (
   const methods: ServiceMethod[] = [];
 
   for (const [methodName, methodSchema] of Object.entries(shape)) {
-    const methodDef = (methodSchema as ZodTypeAny)._def as {
-      type?: string;
-      input?: ZodTypeAny;
-      output?: ZodTypeAny;
-    };
+    const methodDef = (methodSchema as ZodTypeAny).def as ZodFunctionDefinition;
 
     if (methodDef.type === "function") {
-      const inputDef = methodDef.input as ZodTypeAny & {
-        def?: { items?: ZodTypeAny[] };
-      };
+      const inputDef = methodDef.input;
 
-      const args = inputDef?.def?.items ?? [];
+      const args = (inputDef?.def as ZodTupleDefinition)?.items ?? [];
       const output = methodDef.output as ZodTypeAny;
 
       if (args.length > 0 && args[0] && output) {
@@ -64,7 +64,7 @@ const ensureZodObject = (
   schema: ZodTypeAny
 ): ZodObject<Record<string, ZodTypeAny>> => {
   const schemaType =
-    (schema._def as { type?: string }).type || schema.constructor.name;
+    (schema.def as { type?: string }).type || schema.constructor.name;
 
   if (schemaType === "object" || schema.constructor.name === "ZodObject") {
     return schema as ZodObject<Record<string, ZodTypeAny>>;

@@ -1,0 +1,75 @@
+syntax = "proto3";
+package default;
+
+message GetUserByIdRequest {
+    int32 id = 1;
+}
+
+message GetUserByIdResponse {
+    int32 id = 1;
+    string email = 2;
+    string fullName = 3;
+    string locale = 4;
+}
+
+message GetUserByEmailRequest {
+    string email = 1;
+}
+
+message GetUserByEmailResponse {
+    int32 id = 1;
+    string email = 2;
+    string fullName = 3;
+    string locale = 4;
+}
+
+message CreateOrUpdateUserRequest {
+
+}
+
+message CreateOrUpdateUserResponse {
+    int32 id = 1;
+    string email = 2;
+    string fullName = 3;
+    string locale = 4;
+}
+
+message GetUsersByIdsRequest {
+    repeated int32 ids = 1;
+}
+
+message User {
+    int32 id = 1;
+    string email = 2;
+    string fullName = 3;
+    string locale = 4;
+}
+
+message GetUsersByIdsResponse {
+    map<int32, User> users = 1;
+}
+
+message GetRolesRequest {
+
+}
+
+message Datum {
+    int32 id = 1;
+    string name = 2;
+    int32 level = 3;
+}
+
+message GetRolesResponse {
+    repeated Datum data = 1;
+}
+
+service UserService {
+    rpc GetUserById(GetUserByIdRequest) returns (GetUserByIdResponse);
+    rpc GetUserByEmail(GetUserByEmailRequest) returns (GetUserByEmailResponse);
+    rpc CreateOrUpdateUser(CreateOrUpdateUserRequest) returns (CreateOrUpdateUserResponse);
+    rpc GetUsersByIds(GetUsersByIdsRequest) returns (GetUsersByIdsResponse);
+}
+
+service RoleService {
+    rpc GetRoles(GetRolesRequest) returns (GetRolesResponse);
+}
