@@ -31,12 +31,14 @@ export const traverseArray = ({
   messages,
   enums,
   typePrefix,
+  parentKey,
 }: {
   key: string;
   value: ZodArray<ZodTypeAny> | ZodSet<ZodTypeAny>;
   messages: Map<string, string[]>;
   enums: Map<string, string[]>;
   typePrefix: string | null;
+  parentKey?: string;
 }): ProtobufField[] => {
   const nestedValue =
     value instanceof ZodArray
@@ -55,6 +57,7 @@ export const traverseArray = ({
     isOptional: false,
     isInArray: true,
     typePrefix,
+    parentKey,
   });
   return elementFields.map((field) => ({
     ...field,
@@ -69,12 +72,14 @@ export const traverseMap = ({
   messages,
   enums,
   typePrefix,
+  parentKey,
 }: {
   key: string;
   value: ZodMap<ZodTypeAny, ZodTypeAny>;
   messages: Map<string, string[]>;
   enums: Map<string, string[]>;
   typePrefix: string | null;
+  parentKey?: string;
 }): ProtobufField[] => {
   const mapDef = value.def as ZodMapDefinition;
 
@@ -86,6 +91,7 @@ export const traverseMap = ({
     isOptional: false,
     isInArray: true,
     typePrefix,
+    parentKey,
   });
   const valueType = traverseKey({
     key: inflection.singularize(key),
@@ -95,6 +101,7 @@ export const traverseMap = ({
     isOptional: false,
     isInArray: true,
     typePrefix,
+    parentKey,
   });
 
   if (!keyType[0] || keyType.length !== 1) {
@@ -120,12 +127,14 @@ export const traverseRecord = ({
   messages,
   enums,
   typePrefix,
+  parentKey,
 }: {
   key: string;
   value: ZodRecord;
   messages: Map<string, string[]>;
   enums: Map<string, string[]>;
   typePrefix: string | null;
+  parentKey?: string;
 }): ProtobufField[] => {
   const recordDef = value.def as unknown as ZodRecordDefinition;
 
@@ -137,6 +146,7 @@ export const traverseRecord = ({
     isOptional: false,
     isInArray: true,
     typePrefix,
+    parentKey,
   });
   const valueType = traverseKey({
     key: inflection.singularize(key),
@@ -146,6 +156,7 @@ export const traverseRecord = ({
     isOptional: false,
     isInArray: true,
     typePrefix,
+    parentKey,
   });
 
   if (!keyType[0] || keyType.length !== 1) {
@@ -173,6 +184,7 @@ export const traverseKey = ({
   isOptional,
   isInArray,
   typePrefix,
+  parentKey,
 }: {
   key: string;
   value: unknown;
@@ -181,6 +193,7 @@ export const traverseKey = ({
   isOptional: boolean;
   isInArray: boolean;
   typePrefix: string | null;
+  parentKey?: string;
 }): ProtobufField[] => {
   if (!value) {
     return [];
@@ -195,6 +208,7 @@ export const traverseKey = ({
       isOptional: true,
       isInArray,
       typePrefix,
+      parentKey,
     });
   }
 
@@ -205,6 +219,7 @@ export const traverseKey = ({
       messages,
       enums,
       typePrefix,
+      parentKey: key,
     });
   }
 
@@ -215,6 +230,7 @@ export const traverseKey = ({
       messages,
       enums,
       typePrefix,
+      parentKey,
     });
   }
 
@@ -225,6 +241,7 @@ export const traverseKey = ({
       messages,
       enums,
       typePrefix,
+      parentKey,
     });
   }
 
@@ -232,6 +249,10 @@ export const traverseKey = ({
 
   if (value instanceof ZodObject) {
     let messageName = toPascalCase({ value: key });
+    if (parentKey) {
+      const parentMessageName = toPascalCase({ value: parentKey });
+      messageName = `${parentMessageName}${messageName}`;
+    }
     if (typePrefix) {
       messageName = `${typePrefix}${messageName}`;
     }
@@ -240,6 +261,7 @@ export const traverseKey = ({
       messages,
       enums,
       typePrefix,
+      parentKey: key,
     });
     messages.set(messageName, nestedMessageFields);
     return [
@@ -286,6 +308,10 @@ export const traverseKey = ({
       )
       .join("\n");
     let enumName = toPascalCase({ value: key });
+    if (parentKey) {
+      const parentMessageName = toPascalCase({ value: parentKey });
+      enumName = `${parentMessageName}${enumName}`;
+    }
     if (typePrefix) {
       enumName = `${typePrefix}${enumName}`;
     }
@@ -328,10 +354,18 @@ export const traverseKey = ({
         isOptional: false,
         isInArray,
         typePrefix,
+        parentKey,
       });
     });
 
-    const tupleMessageName = toPascalCase({ value: key });
+    let tupleMessageName = toPascalCase({ value: key });
+    if (parentKey) {
+      const parentMessageName = toPascalCase({ value: parentKey });
+      tupleMessageName = `${parentMessageName}${tupleMessageName}`;
+    }
+    if (typePrefix) {
+      tupleMessageName = `${typePrefix}${tupleMessageName}`;
+    }
     messages.set(
       tupleMessageName,
       tupleFields.map(
@@ -359,11 +393,13 @@ export const traverseSchema = ({
   messages,
   enums,
   typePrefix,
+  parentKey,
 }: {
   schema: ZodTypeAny;
   messages: Map<string, string[]>;
   enums: Map<string, string[]>;
   typePrefix: string | null;
+  parentKey?: string;
 }): string[] => {
   if (
     !schema ||
@@ -385,6 +421,7 @@ export const traverseSchema = ({
       isOptional: false,
       isInArray: false,
       typePrefix,
+      parentKey,
     });
   });
 

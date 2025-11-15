@@ -11,21 +11,43 @@ export const userServiceZodToProto = zodToProtobuf(z.object(), {
   },
 });
 
-console.log(
-  zodToProtobuf(z.object(), {
-    services: {
-      TestService: z.object({
-        test: z.function({
-          input: [
-            z.object({
-              id: z.number().int(),
-            }),
-          ],
-          output: z.record(z.string(), z.number().int()),
-        }),
+///
+
+export const getProjectUsersRequestSchema = z.object({
+  projectId: z.number().int(),
+});
+export const getProjectUsersResponseSchema = z.object({
+  users: z.array(
+    z.object({
+      id: z.number().int(),
+      projectId: z.number().int(),
+      userId: z.number().int(),
+      role: z.string(),
+      isActive: z.boolean(),
+      createdAt: z.string(),
+      updatedAt: z.string(),
+      user: z.object({
+        id: z.number().int(),
+        name: z.string(),
+        email: z.string(),
+        createdAt: z.string(),
+        updatedAt: z.string(),
       }),
+    })
+  ),
+});
+
+const func = z.object({
+  getTest: z.function({
+    input: [getProjectUsersRequestSchema],
+    output: getProjectUsersResponseSchema,
+  }),
+});
+
+console.log(
+  zodToProtobuf(func, {
+    services: {
+      TestService: func,
     },
   })
 );
-
-fs.writeFileSync("./user-service.proto", userServiceZodToProto);
