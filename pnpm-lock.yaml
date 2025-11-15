@@ -550,6 +550,31 @@ importers:
         specifier: ^5.9.2
         version: 5.9.2
 
+  examples/zod-to-proto-example:
+    dependencies:
+      '@globalart/zod-to-proto':
+        specifier: workspace:*
+        version: link:../../packages/zod-to-proto
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
+    devDependencies:
+      '@types/express':
+        specifier: ^5.0.3
+        version: 5.0.3
+      '@types/jest':
+        specifier: ^30.0.0
+        version: 30.0.0
+      '@types/node':
+        specifier: ^24.9.1
+        version: 24.9.1
+      prettier:
+        specifier: ^3.6.2
+        version: 3.6.2
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/ddd:
     dependencies:
       '@globalart/oxide':
@@ -4879,9 +4904,9 @@ packages:
         optional: true
     dependencies:
       '@inquirer/ansi': 1.0.1
-      '@inquirer/core': 10.3.0(@types/node@24.3.0)
+      '@inquirer/core': 10.3.0(@types/node@24.9.1)
       '@inquirer/figures': 1.0.14
-      '@inquirer/type': 3.0.9(@types/node@24.3.0)
+      '@inquirer/type': 3.0.9(@types/node@24.9.1)
       yoctocolors-cjs: 2.1.2
     dev: true
 
@@ -4928,8 +4953,8 @@ packages:
       '@types/node':
         optional: true
     dependencies:
-      '@inquirer/core': 10.3.0(@types/node@24.3.0)
-      '@inquirer/type': 3.0.9(@types/node@24.3.0)
+      '@inquirer/core': 10.3.0(@types/node@24.9.1)
+      '@inquirer/type': 3.0.9(@types/node@24.9.1)
     dev: true
 
   /@inquirer/confirm@5.1.19(@types/node@24.3.0):
@@ -5009,9 +5034,9 @@ packages:
       '@types/node':
         optional: true
     dependencies:
-      '@inquirer/core': 10.3.0(@types/node@24.3.0)
-      '@inquirer/external-editor': 1.0.2(@types/node@24.3.0)
-      '@inquirer/type': 3.0.9(@types/node@24.3.0)
+      '@inquirer/core': 10.3.0(@types/node@24.9.1)
+      '@inquirer/external-editor': 1.0.2(@types/node@24.9.1)
+      '@inquirer/type': 3.0.9(@types/node@24.9.1)
     dev: true
 
   /@inquirer/editor@4.2.21(@types/node@24.3.0):
@@ -5053,8 +5078,8 @@ packages:
       '@types/node':
         optional: true
     dependencies:
-      '@inquirer/core': 10.3.0(@types/node@24.3.0)
-      '@inquirer/type': 3.0.9(@types/node@24.3.0)
+      '@inquirer/core': 10.3.0(@types/node@24.9.1)
+      '@inquirer/type': 3.0.9(@types/node@24.9.1)
       yoctocolors-cjs: 2.1.2
     dev: true
 
@@ -5143,8 +5168,8 @@ packages:
       '@types/node':
         optional: true
     dependencies:
-      '@inquirer/core': 10.3.0(@types/node@24.3.0)
-      '@inquirer/type': 3.0.9(@types/node@24.3.0)
+      '@inquirer/core': 10.3.0(@types/node@24.9.1)
+      '@inquirer/type': 3.0.9(@types/node@24.9.1)
     dev: true
 
   /@inquirer/input@4.2.5(@types/node@24.3.0):
@@ -5184,8 +5209,8 @@ packages:
       '@types/node':
         optional: true
     dependencies:
-      '@inquirer/core': 10.3.0(@types/node@24.3.0)
-      '@inquirer/type': 3.0.9(@types/node@24.3.0)
+      '@inquirer/core': 10.3.0(@types/node@24.9.1)
+      '@inquirer/type': 3.0.9(@types/node@24.9.1)
     dev: true
 
   /@inquirer/number@3.0.21(@types/node@24.3.0):
@@ -5226,8 +5251,8 @@ packages:
         optional: true
     dependencies:
       '@inquirer/ansi': 1.0.1
-      '@inquirer/core': 10.3.0(@types/node@24.3.0)
-      '@inquirer/type': 3.0.9(@types/node@24.3.0)
+      '@inquirer/core': 10.3.0(@types/node@24.9.1)
+      '@inquirer/type': 3.0.9(@types/node@24.9.1)
     dev: true
 
   /@inquirer/password@4.0.21(@types/node@24.3.0):
@@ -5422,8 +5447,8 @@ packages:
       '@types/node':
         optional: true
     dependencies:
-      '@inquirer/core': 10.3.0(@types/node@24.3.0)
-      '@inquirer/type': 3.0.9(@types/node@24.3.0)
+      '@inquirer/core': 10.3.0(@types/node@24.9.1)
+      '@inquirer/type': 3.0.9(@types/node@24.9.1)
       yoctocolors-cjs: 2.1.2
     dev: true
 
@@ -5466,9 +5491,9 @@ packages:
       '@types/node':
         optional: true
     dependencies:
-      '@inquirer/core': 10.3.0(@types/node@24.3.0)
+      '@inquirer/core': 10.3.0(@types/node@24.9.1)
       '@inquirer/figures': 1.0.14
-      '@inquirer/type': 3.0.9(@types/node@24.3.0)
+      '@inquirer/type': 3.0.9(@types/node@24.9.1)
       yoctocolors-cjs: 2.1.2
     dev: true
 
@@ -5514,9 +5539,9 @@ packages:
         optional: true
     dependencies:
       '@inquirer/ansi': 1.0.1
-      '@inquirer/core': 10.3.0(@types/node@24.3.0)
+      '@inquirer/core': 10.3.0(@types/node@24.9.1)
       '@inquirer/figures': 1.0.14
-      '@inquirer/type': 3.0.9(@types/node@24.3.0)
+      '@inquirer/type': 3.0.9(@types/node@24.9.1)
       yoctocolors-cjs: 2.1.2
     dev: true
 
@@ -12402,9 +12427,9 @@ packages:
         optional: true
     dependencies:
       '@inquirer/ansi': 1.0.1
-      '@inquirer/core': 10.3.0(@types/node@24.3.0)
+      '@inquirer/core': 10.3.0(@types/node@24.9.1)
       '@inquirer/prompts': 7.9.0
-      '@inquirer/type': 3.0.9(@types/node@24.3.0)
+      '@inquirer/type': 3.0.9(@types/node@24.9.1)
       mute-stream: 2.0.0
       run-async: 4.0.5
       rxjs: 7.8.2

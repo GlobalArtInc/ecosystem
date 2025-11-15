@@ -9,7 +9,7 @@
     "test:cov": "pnpm -r test:cov",
     "lint": "pnpm -r lint",
     "format": "pnpm -r format",
-    "clean": "pnpm -r clean && rimraf node_modules packages/*/node_modules",
+    "clean": "pnpm -r clean && npx rimraf packages/*/node_modules packages/*/dist examples/*/node_modules examples/*/dist",
     "dev": "pnpm -r --parallel dev",
     "publish:dev": "pnpm -r publish:dev",
     "publish:npm": "pnpm -r publish:npm",

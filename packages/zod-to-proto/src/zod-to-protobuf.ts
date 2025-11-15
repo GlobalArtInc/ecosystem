@@ -5,7 +5,7 @@ import { generateServices } from "./service-generator";
 
 export const zodToProtobuf = (
   schema?: ZodTypeAny,
-  options: ZodToProtobufOptions = {}
+  options: ZodToProtobufOptions = {},
 ): string => {
   const {
     packageName = "default",
@@ -37,12 +37,12 @@ export const zodToProtobuf = (
   }
 
   const enumsString = Array.from(enums.values()).map((enumDef) =>
-    enumDef.join("\n")
+    enumDef.join("\n"),
   );
 
   const messagesString = Array.from(messages.entries()).map(
     ([name, fields]) =>
-      `message ${name} {\n${fields.map((field) => `    ${field}`).join("\n")}\n}`
+      `message ${name} {\n${fields.map((field) => `    ${field}`).join("\n")}\n}`,
   );
 
   const servicesString =
