@@ -2,6 +2,13 @@ import type { ZodTypeAny } from "zod";
 import type { ZodToProtobufOptions } from "./types";
 import { traverseSchema } from "./traversers";
 import { generateServices } from "./service-generator";
+import { z } from "zod";
+
+export const zodToProtobufService = (
+  options: ZodToProtobufOptions = {}
+): string => {
+  return zodToProtobuf(z.object(), options);
+};
 
 export const zodToProtobuf = (
   schema?: ZodTypeAny,

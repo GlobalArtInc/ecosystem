@@ -187,6 +187,32 @@ Converts a Zod schema to a Protobuf definition.
 - `schema` (optional): `ZodTypeAny` - Root Zod schema to convert
 - `options` (optional): `ZodToProtobufOptions` - Configuration options
 
+### `zodToProtobufService(options?)`
+
+Convenience wrapper for generating only gRPC service definitions without passing an explicit root schema.
+
+```typescript
+import { zodToProtobufService } from "@globalart/zod-to-proto";
+import { z } from "zod";
+
+const userServiceSchema = z.object({
+  getUserById: z.function({
+    input: [z.object({ id: z.number().int() })],
+    output: z.object({
+      id: z.number().int(),
+      name: z.string(),
+    }),
+  }),
+});
+
+const protoDefinition = zodToProtobufService({
+  packageName: "user.service",
+  services: {
+    UserService: userServiceSchema,
+  },
+});
+```
+
 #### Options
 
 ```typescript

@@ -1,4 +1,4 @@
-import { zodToProtobuf } from "@globalart/zod-to-proto";
+import { zodToProtobuf, zodToProtobufService } from "@globalart/zod-to-proto";
 import z from "zod";
 import { roleServiceSchema } from "./schemas/role.schema";
 import { userServiceSchema } from "./schemas/user.schema";
@@ -10,8 +10,6 @@ export const userServiceZodToProto = zodToProtobuf(z.object(), {
     RoleService: roleServiceSchema,
   },
 });
-
-///
 
 export const getProjectUsersRequestSchema = z.object({
   projectId: z.number().int(),
@@ -51,3 +49,11 @@ console.log(
     },
   })
 );
+
+const testServiceProto = zodToProtobufService({
+  services: {
+    TestService: func,
+  },
+});
+
+console.log(testServiceProto);
