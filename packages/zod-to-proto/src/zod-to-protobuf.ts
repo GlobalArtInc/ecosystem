@@ -4,12 +4,27 @@ import { traverseSchema } from "./traversers";
 import { generateServices } from "./service-generator";
 import { z } from "zod";
 
+/**
+ * Generates a protobuf definition string for services only (without root message).
+ * Convenience function that calls zodToProtobuf with an empty schema.
+ *
+ * @param options - Options for protobuf generation
+ * @returns Protobuf definition string
+ */
 export const zodToProtobufService = (
   options: ZodToProtobufOptions = {}
 ): string => {
   return zodToProtobuf(z.object(), options);
 };
 
+/**
+ * Converts a Zod schema to a protobuf definition string.
+ * Generates messages, enums, and services based on the provided schema and options.
+ *
+ * @param schema - Optional Zod schema to convert (if not provided, only services will be generated)
+ * @param options - Options for protobuf generation including package name, root message name, type prefix, and services
+ * @returns Complete protobuf definition string
+ */
 export const zodToProtobuf = (
   schema?: ZodTypeAny,
   options: ZodToProtobufOptions = {}

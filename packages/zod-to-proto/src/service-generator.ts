@@ -9,12 +9,27 @@ import type {
 import { toPascalCase } from "./utils";
 import { traverseSchema } from "./traversers";
 
+/**
+ * Context for generating protobuf services.
+ * Contains accumulated messages, enums, and type prefix.
+ */
 interface ServiceGenerationContext {
+  /** Map of message names to their protobuf fields */
   messages: Map<string, string[]>;
+  /** Map of enum names to their protobuf values */
   enums: Map<string, string[]>;
+  /** Prefix for type names or null if prefix is not used */
   typePrefix: string | null;
 }
 
+/**
+ * Parses a Zod service schema and extracts method definitions.
+ * Each method must be a function with one argument (request) and a return value (response).
+ *
+ * @param name - Service name
+ * @param schema - Zod object containing service methods as functions
+ * @returns Service definition with extracted methods
+ */
 const parseZodServiceSchema = (
   name: string,
   schema: ZodObject<Record<string, ZodTypeAny>>
@@ -50,6 +65,14 @@ const parseZodServiceSchema = (
   };
 };
 
+/**
+ * Normalizes service input data into an array of service definitions.
+ * If an array is passed, returns it as is.
+ * If an object is passed, converts each key-value pair into a service definition.
+ *
+ * @param services - Array of service definitions or object with Zod schemas
+ * @returns Array of normalized service definitions
+ */
 const normalizeServices = (services: ServicesInput): ServiceDefinition[] => {
   if (Array.isArray(services)) {
     return services;
@@ -60,6 +83,14 @@ const normalizeServices = (services: ServicesInput): ServiceDefinition[] => {
   );
 };
 
+/**
+ * Ensures that the schema is a ZodObject.
+ * If the schema is already an object, returns it as is.
+ * Otherwise, wraps the schema in an object with a "data" field.
+ *
+ * @param schema - Zod schema of any type
+ * @returns ZodObject containing the original schema
+ */
 const ensureZodObject = (
   schema: ZodTypeAny
 ): ZodObject<Record<string, ZodTypeAny>> => {
@@ -75,6 +106,13 @@ const ensureZodObject = (
   });
 };
 
+/**
+ * Generates the name for a request message based on the method name.
+ *
+ * @param methodName - Name of the service method
+ * @param typePrefix - Optional prefix for type names
+ * @returns Generated request message name in PascalCase
+ */
 const generateRequestMessageName = (
   methodName: string,
   typePrefix: string | null
@@ -83,6 +121,13 @@ const generateRequestMessageName = (
   return typePrefix ? `${typePrefix}${messageName}` : messageName;
 };
 
+/**
+ * Generates the name for a response message based on the method name.
+ *
+ * @param methodName - Name of the service method
+ * @param typePrefix - Optional prefix for type names
+ * @returns Generated response message name in PascalCase
+ */
 const generateResponseMessageName = (
   methodName: string,
   typePrefix: string | null
@@ -91,6 +136,14 @@ const generateResponseMessageName = (
   return typePrefix ? `${typePrefix}${messageName}` : messageName;
 };
 
+/**
+ * Processes a service method by generating request and response message names
+ * and traversing their schemas to populate the context with message definitions.
+ *
+ * @param method - Service method definition
+ * @param context - Generation context containing messages, enums, and type prefix
+ * @returns Object containing request and response message names
+ */
 const processServiceMethod = (
   method: ServiceMethod,
   context: ServiceGenerationContext
@@ -127,6 +180,14 @@ const processServiceMethod = (
   return { requestName, responseName };
 };
 
+/**
+ * Generates protobuf service definitions from Zod service schemas.
+ * Supports streaming methods (client, server, bidirectional).
+ *
+ * @param services - Service definitions as array or object with Zod schemas
+ * @param context - Generation context containing messages, enums, and type prefix
+ * @returns Array of protobuf service definition strings
+ */
 export const generateServices = (
   services: ServicesInput,
   context: ServiceGenerationContext

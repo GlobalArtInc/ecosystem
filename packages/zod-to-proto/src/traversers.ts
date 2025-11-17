@@ -25,6 +25,18 @@ import {
 } from "./types";
 import { getNumberTypeName, toPascalCase, protobufFieldToType } from "./utils";
 
+/**
+ * Traverses a Zod array or set schema and converts it to protobuf repeated fields.
+ * Handles nested types and generates appropriate field definitions.
+ *
+ * @param key - Field name
+ * @param value - Zod array or set schema
+ * @param messages - Map of message names to their protobuf fields
+ * @param enums - Map of enum names to their protobuf values
+ * @param typePrefix - Optional prefix for type names
+ * @param parentKey - Optional parent message name for nested types
+ * @returns Array of protobuf field definitions
+ */
 export const traverseArray = ({
   key,
   value,
@@ -66,6 +78,18 @@ export const traverseArray = ({
   }));
 };
 
+/**
+ * Traverses a Zod map schema and converts it to a protobuf map type.
+ * Validates that both key and value types are simple types suitable for map keys/values.
+ *
+ * @param key - Field name
+ * @param value - Zod map schema
+ * @param messages - Map of message names to their protobuf fields
+ * @param enums - Map of enum names to their protobuf values
+ * @param typePrefix - Optional prefix for type names
+ * @param parentKey - Optional parent message name for nested types
+ * @returns Array containing a single protobuf map field definition, or empty array if invalid
+ */
 export const traverseMap = ({
   key,
   value,
@@ -121,6 +145,18 @@ export const traverseMap = ({
   ];
 };
 
+/**
+ * Traverses a Zod record schema and converts it to a protobuf map type.
+ * Similar to traverseMap but handles ZodRecord type.
+ *
+ * @param key - Field name
+ * @param value - Zod record schema
+ * @param messages - Map of message names to their protobuf fields
+ * @param enums - Map of enum names to their protobuf values
+ * @param typePrefix - Optional prefix for type names
+ * @param parentKey - Optional parent message name for nested types
+ * @returns Array containing a single protobuf map field definition, or empty array if invalid
+ */
 export const traverseRecord = ({
   key,
   value,
@@ -176,6 +212,20 @@ export const traverseRecord = ({
   ];
 };
 
+/**
+ * Traverses a single key-value pair from a Zod schema and converts it to protobuf field definitions.
+ * Handles various Zod types including primitives, objects, arrays, maps, enums, tuples, and optional/nullable fields.
+ *
+ * @param key - Field name
+ * @param value - Zod schema value
+ * @param messages - Map of message names to their protobuf fields
+ * @param enums - Map of enum names to their protobuf values
+ * @param isOptional - Whether the field is optional
+ * @param isInArray - Whether the field is inside an array
+ * @param typePrefix - Optional prefix for type names
+ * @param parentKey - Optional parent message name for nested types
+ * @returns Array of protobuf field definitions
+ */
 export const traverseKey = ({
   key,
   value,
@@ -403,6 +453,17 @@ export const traverseKey = ({
   return [];
 };
 
+/**
+ * Traverses a Zod object schema and converts it to protobuf message field definitions.
+ * Processes all fields in the schema and generates appropriate protobuf types.
+ *
+ * @param schema - Zod schema to traverse
+ * @param messages - Map of message names to their protobuf fields
+ * @param enums - Map of enum names to their protobuf values
+ * @param typePrefix - Optional prefix for type names
+ * @param parentKey - Optional parent message name for nested types
+ * @returns Array of protobuf field definition strings
+ */
 export const traverseSchema = ({
   schema,
   messages,
