@@ -82,6 +82,7 @@ export interface LoggerConfiguration {
   readonly format: LogFormat;
   readonly sensitiveFields: readonly string[];
   readonly exclude: readonly ExcludeOption[];
+  readonly logRequests?: boolean;
 }
 
 export interface FormatterOptions {

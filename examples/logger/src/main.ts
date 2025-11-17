@@ -17,8 +17,6 @@ async function bootstrap() {
     })
   );
 
-  app.useGlobalInterceptors(app.get(HttpLoggerInterceptor));
-
   await app.listen(4500);
   console.log("Application is running on: http://localhost:4500");
   console.log("GraphQL Playground: http://localhost:4500/graphql");

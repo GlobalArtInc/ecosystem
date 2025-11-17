@@ -1,5 +1,5 @@
 import { DynamicModule, Module, Provider } from "@nestjs/common";
-import { Reflector } from "@nestjs/core";
+import { APP_INTERCEPTOR, Reflector } from "@nestjs/core";
 import { LoggerService } from "./logger.service";
 import { HttpLoggerInterceptor } from "./http-logger.interceptor";
 import { FormatterFactory } from "../factories/formatter.factory";
@@ -29,6 +29,7 @@ export interface LoggerModuleOptions {
   format?: "json" | "text" | "pino";
   sensitiveFields?: string[];
   exclude?: ExcludeOption[];
+  logRequests?: boolean;
 }
 
 export interface LoggerModuleAsyncOptions {
@@ -47,7 +48,18 @@ export class LoggerModule {
 
     return {
       module: LoggerModule,
-      providers: [...providers, ...contextProviders],
+      providers: [
+        ...providers,
+        ...contextProviders,
+        ...(options.logRequests
+          ? [
+              {
+                provide: APP_INTERCEPTOR,
+                useExisting: HttpLoggerInterceptor,
+              },
+            ]
+          : []),
+      ],
       exports: [
         LOGGER_SERVICE_TOKEN,
         HttpLoggerInterceptor,
@@ -73,7 +85,20 @@ export class LoggerModule {
 
     return {
       module: LoggerModule,
-      providers: [...providers, ...contextProviders],
+      providers: [
+        ...providers,
+        ...contextProviders,
+        {
+          provide: APP_INTERCEPTOR,
+          useFactory: (
+            config: LoggerConfiguration,
+            interceptor: HttpLoggerInterceptor
+          ): HttpLoggerInterceptor | null => {
+            return config.logRequests ? interceptor : null;
+          },
+          inject: [LOGGER_CONFIG_TOKEN, HttpLoggerInterceptor],
+        },
+      ],
       exports: [
         LOGGER_SERVICE_TOKEN,
         HttpLoggerInterceptor,

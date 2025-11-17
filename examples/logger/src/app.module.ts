@@ -13,6 +13,7 @@ import { UserService } from "./user.service";
       timestamp: true,
       colors: true,
       format: "text",
+      logRequests: true,
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
