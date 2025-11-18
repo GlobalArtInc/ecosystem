@@ -24,6 +24,9 @@ export const getProjectUsersResponseSchema = z.object({
       isActive: z.boolean(),
       createdAt: z.string(),
       updatedAt: z.string(),
+      floatValue: z.float32(),
+      numberValue: z.number(),
+      bytes: z.instanceof(Buffer),
       user: z.object({
         id: z.number().int(),
         name: z.string(),

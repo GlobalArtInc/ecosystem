@@ -402,6 +402,29 @@ export const traverseKey = ({
     ];
   }
 
+  if (value instanceof ZodType) {
+    const def = value.def as {
+      type?: string;
+      check?: unknown;
+      fn?: (data: unknown) => boolean;
+    };
+    if (def.type === "custom" && def.check === "custom" && def.fn) {
+      try {
+        if (
+          (typeof Buffer !== "undefined" && def.fn(Buffer.alloc(0))) ||
+          (typeof Uint8Array !== "undefined" && def.fn(new Uint8Array(0)))
+        ) {
+          return [
+            {
+              types: [optional, "bytes"],
+              name: key,
+            },
+          ];
+        }
+      } catch {}
+    }
+  }
+
   if (value instanceof ZodTuple) {
     const tupleFields: ProtobufField[] = (
       value.def.items as ZodTypeAny[]
