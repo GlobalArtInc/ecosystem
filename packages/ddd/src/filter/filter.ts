@@ -41,7 +41,7 @@ import {
   StringStartsWith,
 } from "./specifications/string.specification";
 
-export const filterRoorFilter = <T extends z.ZodType>(filters: [T, ...T[]]) => {
+export const filterRootFilter = <T extends z.ZodType>(filters: [T, ...T[]]) => {
   const filterTuple: [T, ...T[]] = [filters[0], ...filters.slice(1)];
 
   const filter = z.union(filterTuple as [T, T, ...T[]]);

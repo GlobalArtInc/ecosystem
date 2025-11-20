@@ -50,10 +50,20 @@ const parseZodServiceSchema = (
         const request = args[0];
         const response = output;
 
+        let streaming: "client" | "server" | "bidirectional" | undefined;
+        const metadata = methodSchema.meta();
+        console.log(methodSchema.meta());
+        streaming = metadata?.streaming as
+          | "client"
+          | "server"
+          | "bidirectional"
+          | undefined;
+
         methods.push({
           name: methodName,
           request,
           response,
+          streaming,
         });
       }
     }
