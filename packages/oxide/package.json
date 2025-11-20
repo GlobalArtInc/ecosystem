@@ -46,7 +46,7 @@
     "@types/node": "^24.9.1",
     "typescript": "^5.9.3",
     "release-it": "19.0.6",
-    "tsdown": "0.16.5",
+    "tsdown": "0.16.6",
     "prettier": "^3.6.2"
   },
   "publishConfig": {
