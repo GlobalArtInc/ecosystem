@@ -1,4 +1,4 @@
-import { GlobalArtStrategy } from "@globalart/passport";
+import { GlobalArtAuthStrategy } from "@globalart/passport";
 import { randomBytes, createHash } from "crypto";
 
 const CLIENT_ID = process.env.CLIENT_ID;
@@ -9,11 +9,11 @@ async function demonstrateAuthFlow() {
   console.log("🚀 GlobalArt Passport Strategy Demonstration");
   console.log("==========================================");
 
-  const strategy = new GlobalArtStrategy({
+  const strategy = new GlobalArtAuthStrategy({
     clientId: CLIENT_ID,
     clientSecret: CLIENT_SECRET,
     redirectUri: REDIRECT_URI,
-    scope: "openid profile email",
+    scope: ["openid", "profile", "email"],
   });
 
   try {
@@ -80,7 +80,7 @@ async function handleCallback(
 ) {
   console.log("\n🔄 Processing callback...");
 
-  const strategy = new GlobalArtStrategy({
+  const strategy = new GlobalArtAuthStrategy({
     clientId: CLIENT_ID,
     clientSecret: CLIENT_SECRET,
     redirectUri: REDIRECT_URI,
@@ -107,7 +107,7 @@ async function handleCallback(
     console.log("\n👤 Getting user information...");
     const userInfo = await strategy.getUserInfo(tokenResponse.access_token);
     console.log("✅ User information:");
-    console.log(`Subject ID: ${userInfo.sub}`);
+    console.log(`Subject ID: ${userInfo.id}`);
     console.log(`Email: ${userInfo.email || "Not specified"}`);
     console.log(`Name: ${userInfo.name || "Not specified"}`);
 
@@ -132,7 +132,7 @@ async function handleCallback(
 async function revokeTokenExample(accessToken: string) {
   console.log("\n🗑️ Revoking token...");
 
-  const strategy = new GlobalArtStrategy({
+  const strategy = new GlobalArtAuthStrategy({
     clientId: CLIENT_ID,
     clientSecret: CLIENT_SECRET,
     redirectUri: REDIRECT_URI,

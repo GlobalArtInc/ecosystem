@@ -394,12 +394,31 @@ importers:
       '@types/node':
         specifier: ^24.9.1
         version: 24.9.1
+      express:
+        specifier: ^5.1.0
+        version: 5.1.0
+      express-session:
+        specifier: ^1.18.1
+        version: 1.18.2
+      passport:
+        specifier: ^0.7.0
+        version: 0.7.0
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@24.9.1)(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+    devDependencies:
+      '@types/express':
+        specifier: ^5.0.0
+        version: 5.0.3
+      '@types/express-session':
+        specifier: ^1.18.0
+        version: 1.18.2
+      '@types/passport':
+        specifier: ^1.0.17
+        version: 1.0.17
 
   examples/passport/nestjs:
     dependencies:
@@ -10605,11 +10624,11 @@ packages:
   /cookie@0.7.1:
     resolution: {integrity: sha512-6DnInpx7SJ2AK3+CTUE/ZM0vWTUboZCegxhC2xiIydHR9jNuTAASBrfEpHhiGOZw/nX51bHt6YQl8jsGo4y/0w==}
     engines: {node: '>= 0.6'}
+    dev: false
 
   /cookie@0.7.2:
     resolution: {integrity: sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==}
     engines: {node: '>= 0.6'}
-    dev: false
 
   /cookie@1.0.2:
     resolution: {integrity: sha512-9Kr/j4O16ISv8zBBhJoi4bXOYNTkFLOqSL3UDB0njXxCXNezjeyVrJyGOWtgfs/q2km1gwBcfH8q1yEGoMYunA==}
@@ -12699,7 +12718,7 @@ packages:
       body-parser: 2.2.0
       content-disposition: 1.0.0
       content-type: 1.0.5
-      cookie: 0.7.1
+      cookie: 0.7.2
       cookie-signature: 1.2.2
       debug: 4.4.3
       encodeurl: 2.0.0
