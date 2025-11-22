@@ -52,7 +52,6 @@ const parseZodServiceSchema = (
 
         let streaming: "client" | "server" | "bidirectional" | undefined;
         const metadata = methodSchema.meta();
-        console.log(methodSchema.meta());
         streaming = metadata?.streaming as
           | "client"
           | "server"
