@@ -9,7 +9,7 @@ export interface LockOptions {
 
 export interface DistributedLockService {
   acquire(key: string, options?: LockOptions): Promise<Lock | null>;
-  release(key: string): Promise<void>;
+  release(key: string): Promise<boolean>;
   isLocked(key: string): Promise<boolean>;
 }
 
@@ -73,9 +73,9 @@ export class EtcdDistributedLockFeatureService
     }
   }
 
-  async release(key: string): Promise<void> {
+  async release(key: string): Promise<boolean> {
     if (!this.hasFeatureEnabled) {
-      return;
+      return false;
     }
 
     try {
@@ -83,12 +83,14 @@ export class EtcdDistributedLockFeatureService
       const lockValue = await this.etcd.get(lockKey);
 
       if (lockValue === null) {
-        return;
+        return false;
       }
 
       await this.etcd.delete().key(lockKey);
+
+      return true;
     } catch (error) {
-      throw error;
+      return false;
     }
   }
 
@@ -103,7 +105,7 @@ export class EtcdDistributedLockFeatureService
 
       return lockValue !== null;
     } catch (error) {
-      throw error;
+      return false;
     }
   }
 }
