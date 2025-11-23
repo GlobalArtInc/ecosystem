@@ -8,11 +8,14 @@ import { Campaign, Etcd3 } from "etcd3";
 import {
   EtcdDistributedStateRepository,
   InjectDistributedSharedRepository,
-  InjectEtcdClient,
   InjectEtcdId,
   InjectEtcdOptions,
   type EtcdModuleOptions,
 } from "../core";
+
+export interface LeaderElectionService {
+  isLeader(): boolean;
+}
 
 @Injectable()
 export class EtcdLeaderElectionFeatureService

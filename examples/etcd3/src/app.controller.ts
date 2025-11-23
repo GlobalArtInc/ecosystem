@@ -1,24 +1,26 @@
 import { Controller, Get, Inject, Post, Body } from "@nestjs/common";
 import {
-  EtcdLeaderElectionFeatureService,
-  EtcdDistributedLockFeatureService,
+  InjectEtcdLeaderElectionService,
+  InjectEtcdDistributedLockService,
+  LeaderElectionService,
+  DistributedLockService,
 } from "@globalart/nestjs-etcd";
 import { ProcessDto } from "./app.dtos";
 
 @Controller()
 export class AppController {
   constructor(
-    @Inject(EtcdLeaderElectionFeatureService)
-    private readonly etcdLeaderElectionFeatureService: EtcdLeaderElectionFeatureService,
-    @Inject(EtcdDistributedLockFeatureService)
-    private readonly etcdDistributedLockFeatureService: EtcdDistributedLockFeatureService
+    @InjectEtcdLeaderElectionService()
+    private readonly leaderElectionService: LeaderElectionService,
+    @InjectEtcdDistributedLockService()
+    private readonly distributedLockService: DistributedLockService
   ) {}
 
   @Get("is-leader")
   async hello() {
     return {
       message: "Hello World",
-      isLeader: this.etcdLeaderElectionFeatureService.isLeader(),
+      isLeader: this.leaderElectionService.isLeader(),
     };
   }
 
@@ -33,13 +35,13 @@ export class AppController {
     //     resourceId: data.resourceId,
     //   };
     // }
-    await this.etcdDistributedLockFeatureService.acquire(lockKey);
+    await this.distributedLockService.acquire(lockKey);
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       return { message: "Processed successfully", resourceId: data.resourceId };
     } finally {
-      await this.etcdDistributedLockFeatureService.release(lockKey);
+      await this.distributedLockService.release(lockKey);
     }
   }
 }

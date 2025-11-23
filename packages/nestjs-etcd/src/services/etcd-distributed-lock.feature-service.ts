@@ -18,6 +18,12 @@ export interface LockOptions {
   retryInterval?: number;
 }
 
+export interface DistributedLockService {
+  acquire(key: string, options?: LockOptions): Promise<Lock>;
+  release(key: string): Promise<void>;
+  isLocked(key: string): Promise<boolean>;
+}
+
 @Injectable()
 export class EtcdDistributedLockFeatureService implements OnModuleInit {
   private hasFeatureEnabled: boolean = false;
