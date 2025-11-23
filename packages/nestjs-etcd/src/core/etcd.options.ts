@@ -10,8 +10,6 @@ export interface EtcdModuleOptions {
 }
 
 export interface EtcdModuleAsyncOptions {
-  useFactory: (
-    ...args: unknown[]
-  ) => EtcdModuleOptions | Promise<EtcdModuleOptions>;
+  useFactory: (...args: any[]) => EtcdModuleOptions;
   inject?: InjectionToken[];
 }
