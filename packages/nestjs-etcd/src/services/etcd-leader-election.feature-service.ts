@@ -60,6 +60,10 @@ export class EtcdLeaderElectionFeatureService
     return this.isLeaderFlag;
   }
 
+  public getCampaign(): Campaign | null {
+    return this.leaderCampaign;
+  }
+
   private async attemptToBecomeLeader() {
     this.leaderCampaign = await this.distributedSharedRepository.getElection(
       this.leaderKey,
