@@ -15,6 +15,7 @@ import {
 
 export interface LeaderElectionService {
   isLeader(): boolean;
+  getCampaign(): Campaign | null;
 }
 
 @Injectable()
