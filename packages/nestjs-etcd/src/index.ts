@@ -4,6 +4,7 @@ export {
   InjectDistributedSharedRepository,
   InjectEtcdClient,
 } from "./core/etcd.di-tokens";
+export { EtcdModuleOptions } from "./core/etcd.options";
 export {
   EtcdLeaderElectionFeatureService,
   EtcdDistributedLockFeatureService,
