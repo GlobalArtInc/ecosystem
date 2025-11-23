@@ -66,18 +66,13 @@ export class EtcdLeaderElectionFeatureService
       10,
       this.leaderId
     );
+
     this.leaderCampaign.on("elected", async () => {
       this.isLeaderFlag = true;
       this.logger.log(`I am leader ${this.leaderId}`);
     });
     this.leaderCampaign.on("error", async (err) => {
       this.isLeaderFlag = false;
-      this.logger.error({
-        message: "Leader election error",
-        metadata: {
-          error: err,
-        },
-      });
       await this.attemptToBecomeLeader();
     });
   }

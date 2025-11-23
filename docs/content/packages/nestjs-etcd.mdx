@@ -34,16 +34,16 @@ The `@globalart/nestjs-etcd` package provides a seamless integration with etcd3,
 Import `EtcdModule` in your root module:
 
 ```typescript
-import { Module } from '@nestjs/common';
-import { EtcdModule } from '@globalart/nestjs-etcd';
+import { Module } from "@nestjs/common";
+import { EtcdModule } from "@globalart/nestjs-etcd";
 
 @Module({
   imports: [
     EtcdModule.forRoot({
-      features: ['leaderElection', 'distributedLock'],
-      leaderElectionKey: 'my-app-leader',
+      features: ["leaderElection", "distributedLock"],
+      leaderElectionKey: "my-app-leader",
       etcdOptions: {
-        hosts: ['localhost:2379'],
+        hosts: ["localhost:2379"],
       },
     }),
   ],
@@ -56,19 +56,19 @@ export class AppModule {}
 For dynamic configuration, use `forRootAsync`:
 
 ```typescript
-import { Module } from '@nestjs/common';
-import { EtcdModule, EtcdModuleAsyncOptions } from '@globalart/nestjs-etcd';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Module } from "@nestjs/common";
+import { EtcdModule, EtcdModuleAsyncOptions } from "@globalart/nestjs-etcd";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 
 @Module({
   imports: [
     EtcdModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        features: ['leaderElection', 'distributedLock'],
-        leaderElectionKey: configService.get('ETCD_LEADER_KEY'),
+        features: ["leaderElection", "distributedLock"],
+        leaderElectionKey: configService.get("ETCD_LEADER_KEY"),
         etcdOptions: {
-          hosts: configService.get('ETCD_HOSTS').split(','),
+          hosts: configService.get("ETCD_HOSTS").split(","),
         },
       }),
       inject: [ConfigService],
@@ -82,11 +82,11 @@ export class AppModule {}
 
 ### EtcdModuleOptions
 
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `features` | `EtcdFeature[]` | No | Array of features to enable: `'leaderElection'`, `'distributedLock'` |
-| `leaderElectionKey` | `string` | No | Key used for leader election (default: `'etcd'`) |
-| `etcdOptions` | `IOptions` | Yes | etcd3 client configuration options |
+| Option              | Type            | Required | Description                                                          |
+| ------------------- | --------------- | -------- | -------------------------------------------------------------------- |
+| `features`          | `EtcdFeature[]` | No       | Array of features to enable: `'leaderElection'`, `'distributedLock'` |
+| `leaderElectionKey` | `string`        | No       | Key used for leader election (default: `'etcd'`)                     |
+| `etcdOptions`       | `IOptions`      | Yes      | etcd3 client configuration options                                   |
 
 ### EtcdFeature
 
@@ -118,11 +118,11 @@ The leader election service allows you to determine if the current instance is t
 ### Basic Usage
 
 ```typescript
-import { Controller, Get, Inject } from '@nestjs/common';
+import { Controller, Get, Inject } from "@nestjs/common";
 import {
   InjectEtcdLeaderElectionService,
   LeaderElectionService,
-} from '@globalart/nestjs-etcd';
+} from "@globalart/nestjs-etcd";
 
 @Controller()
 export class AppController {
@@ -131,21 +131,21 @@ export class AppController {
     private readonly leaderElectionService: LeaderElectionService
   ) {}
 
-  @Get('is-leader')
+  @Get("is-leader")
   isLeader() {
     return {
       isLeader: this.leaderElectionService.isLeader(),
     };
   }
 
-  @Get('leader-only-task')
+  @Get("leader-only-task")
   async leaderOnlyTask() {
     if (!this.leaderElectionService.isLeader()) {
-      return { message: 'Not the leader, skipping task' };
+      return { message: "Not the leader, skipping task" };
     }
 
     // Perform leader-only operations
-    return { message: 'Task executed by leader' };
+    return { message: "Task executed by leader" };
   }
 }
 ```
@@ -167,16 +167,24 @@ interface LeaderElectionService {
 
 ## Distributed Locking
 
-The distributed lock service allows you to acquire and release locks across multiple instances, ensuring only one instance can execute a critical section at a time.
+The distributed lock service allows you to acquire and release locks across multiple instances, ensuring only one instance can execute a critical section at a time. The service works directly with etcd storage, without maintaining local state.
+
+### How It Works
+
+1. When `acquire()` is called, it creates a lease with TTL and attempts to acquire the lock
+2. If the lock is already held by another instance, `EtcdLockFailedError` is thrown
+3. The lock is automatically released when the lease expires (based on TTL)
+4. The `release()` method removes the lock key directly from etcd
+5. The `isLocked()` method checks the lock status by querying etcd
 
 ### Basic Usage
 
 ```typescript
-import { Controller, Post, Body, Inject } from '@nestjs/common';
+import { Controller, Post, Body, Inject } from "@nestjs/common";
 import {
   InjectEtcdDistributedLockService,
   DistributedLockService,
-} from '@globalart/nestjs-etcd';
+} from "@globalart/nestjs-etcd";
 
 @Controller()
 export class AppController {
@@ -185,27 +193,34 @@ export class AppController {
     private readonly distributedLockService: DistributedLockService
   ) {}
 
-  @Post('process')
+  @Post("process")
   async processResource(@Body() data: { resourceId: string }) {
     const lockKey = `process:${data.resourceId}`;
 
     try {
       await this.distributedLockService.acquire(lockKey, {
         ttl: 30, // Lock expires after 30 seconds
-        timeout: 120000, // Wait up to 2 minutes to acquire lock
-        retryInterval: 100, // Retry every 100ms
       });
 
       // Critical section - only one instance can execute this
       await this.processResourceData(data.resourceId);
 
-      return { message: 'Processed successfully', resourceId: data.resourceId };
+      return { message: "Processed successfully", resourceId: data.resourceId };
+    } catch (error) {
+      // Handle lock acquisition failure
+      if (error.message.includes("already locked")) {
+        return {
+          message: "Resource is locked, try later",
+          resourceId: data.resourceId,
+        };
+      }
+      throw error;
     } finally {
       await this.distributedLockService.release(lockKey);
     }
   }
 
-  @Post('check-lock')
+  @Post("check-lock")
   async checkLock(@Body() data: { resourceId: string }) {
     const lockKey = `process:${data.resourceId}`;
     const isLocked = await this.distributedLockService.isLocked(lockKey);
@@ -224,44 +239,81 @@ export class AppController {
 
 ### Lock Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `ttl` | `number` | `30` | Time-to-live in seconds. Lock automatically expires after this time |
-| `timeout` | `number` | `120000` | Maximum time in milliseconds to wait for lock acquisition |
-| `retryInterval` | `number` | `100` | Interval in milliseconds between retry attempts |
+| Option | Type     | Default | Description                                                                         |
+| ------ | -------- | ------- | ----------------------------------------------------------------------------------- |
+| `ttl`  | `number` | `10`    | Time-to-live in seconds. Lock automatically expires after this time if not released |
 
 ### Lock Methods
 
 #### `acquire(key: string, options?: LockOptions): Promise<Lock>`
 
-Acquires a lock for the given key. The method will retry until the lock is acquired or the timeout is reached.
+Acquires a lock for the given key. This is a single attempt - if the lock is already held, an error is thrown immediately.
+
+**Parameters:**
+
+- `key` (string): The lock key identifier
+- `options` (optional): Lock configuration options
+
+**Returns:** Promise resolving to a `Lock` object from etcd3
+
+**Throws:**
+
+- `EtcdLockFailedError` if the lock cannot be acquired (already locked)
+- `Error` if the distributed lock feature is not enabled
 
 ```typescript
-const lock = await distributedLockService.acquire('my-resource', {
-  ttl: 60,
-  timeout: 5000,
-  retryInterval: 50,
-});
+try {
+  const lock = await distributedLockService.acquire("my-resource", {
+    ttl: 60, // Lock expires after 60 seconds
+  });
+  // Lock acquired successfully
+} catch (error) {
+  // Lock acquisition failed - resource is already locked
+  console.error("Failed to acquire lock:", error.message);
+}
 ```
 
 #### `release(key: string): Promise<void>`
 
-Releases the lock for the given key. Safe to call even if the lock doesn't exist.
+Releases the lock for the given key by removing it from etcd. Safe to call even if the lock doesn't exist.
+
+**Parameters:**
+
+- `key` (string): The lock key identifier
+
+**Returns:** Promise that resolves when the lock is released
 
 ```typescript
-await distributedLockService.release('my-resource');
+await distributedLockService.release("my-resource");
 ```
 
 #### `isLocked(key: string): Promise<boolean>`
 
-Checks if a lock exists for the given key.
+Checks if a lock exists for the given key by querying etcd storage.
+
+**Parameters:**
+
+- `key` (string): The lock key identifier
+
+**Returns:** Promise resolving to `true` if the lock exists, `false` otherwise
 
 ```typescript
-const locked = await distributedLockService.isLocked('my-resource');
+const locked = await distributedLockService.isLocked("my-resource");
 if (locked) {
   // Resource is currently locked
+  console.log("Resource is locked by another instance");
+} else {
+  // Resource is available
+  console.log("Resource is available");
 }
 ```
+
+### Lock Key Format
+
+Locks are stored in etcd with the prefix `acquire/` followed by your key. For example:
+
+- Input key: `process:123`
+- Stored in etcd as: `acquire/process:123`
 
 ### Use Cases
 
@@ -269,13 +321,16 @@ if (locked) {
 - **Database Migrations**: Prevent concurrent migration execution
 - **Cache Invalidation**: Coordinate cache updates across instances
 - **Rate Limiting**: Implement distributed rate limiting
+- **Critical Operations**: Protect critical sections that must run exclusively
 
 ### Best Practices
 
 - **Always use try/finally**: Ensure locks are released even if errors occur
-- **Set appropriate TTL**: Locks should expire to prevent deadlocks
-- **Use descriptive keys**: Include resource identifiers in lock keys
-- **Handle timeouts**: Implement proper error handling for lock acquisition failures
+- **Set appropriate TTL**: Locks should expire to prevent deadlocks if a process crashes
+- **Use descriptive keys**: Include resource identifiers in lock keys (e.g., `process:${resourceId}`)
+- **Handle acquisition failures**: Implement proper error handling for lock acquisition failures
+- **Check lock status before acquiring**: Use `isLocked()` to check availability before attempting to acquire
+- **Release locks promptly**: Don't hold locks longer than necessary
 
 ## API Reference
 
@@ -347,13 +402,13 @@ interface DistributedLockService {
 }
 ```
 
+**Note:** The service works directly with etcd storage. It does not maintain local state, making it suitable for distributed environments where instances may not share memory.
+
 #### LockOptions
 
 ```typescript
 interface LockOptions {
   ttl?: number;
-  timeout?: number;
-  retryInterval?: number;
 }
 ```
 
@@ -364,9 +419,9 @@ interface LockOptions {
 If you need direct access to etcd functionality, inject the etcd client:
 
 ```typescript
-import { Injectable, Inject } from '@nestjs/common';
-import { InjectEtcdClient } from '@globalart/nestjs-etcd';
-import { Etcd3 } from 'etcd3';
+import { Injectable, Inject } from "@nestjs/common";
+import { InjectEtcdClient } from "@globalart/nestjs-etcd";
+import { Etcd3 } from "etcd3";
 
 @Injectable()
 export class CustomService {
@@ -385,7 +440,7 @@ export class CustomService {
 
   async watchKey(key: string, callback: (value: string) => void) {
     const watcher = await this.etcd.watch().key(key).create();
-    watcher.on('put', (res) => {
+    watcher.on("put", (res) => {
       callback(res.value.toString());
     });
   }
@@ -397,8 +452,8 @@ export class CustomService {
 Each application instance gets a unique ID that can be used for logging or debugging:
 
 ```typescript
-import { Injectable, Inject } from '@nestjs/common';
-import { InjectEtcdId } from '@globalart/nestjs-etcd';
+import { Injectable, Inject } from "@nestjs/common";
+import { InjectEtcdId } from "@globalart/nestjs-etcd";
 
 @Injectable()
 export class MyService {
@@ -423,14 +478,19 @@ Leader election automatically retries on errors. If an error occurs, the service
 
 ### Lock Acquisition Failures
 
-If a lock cannot be acquired within the timeout period, an error is thrown:
+If a lock cannot be acquired (because it's already held by another instance), an `EtcdLockFailedError` is thrown:
 
 ```typescript
 try {
-  await distributedLockService.acquire('resource', { timeout: 5000 });
+  await distributedLockService.acquire("resource", { ttl: 30 });
 } catch (error) {
-  // Handle timeout - lock could not be acquired
-  console.error('Failed to acquire lock:', error.message);
+  if (error.name === "EtcdLockFailedError") {
+    // Lock is already held by another instance
+    console.error("Failed to acquire lock: resource is already locked");
+  } else {
+    // Other error occurred
+    console.error("Unexpected error:", error);
+  }
 }
 ```
 
@@ -440,10 +500,10 @@ Lock release errors are logged but don't throw by default. To handle them explic
 
 ```typescript
 try {
-  await distributedLockService.release('resource');
+  await distributedLockService.release("resource");
 } catch (error) {
   // Handle release error
-  console.error('Failed to release lock:', error);
+  console.error("Failed to release lock:", error);
 }
 ```
 
@@ -466,10 +526,11 @@ If you're experiencing connection issues:
 
 If locks are not releasing properly:
 
-1. Check if the TTL is too long
-2. Verify the lock key is correct
+1. Check if the TTL is too long - locks will auto-expire based on TTL
+2. Verify the lock key is correct (remember the `acquire/` prefix is added automatically)
 3. Ensure `release()` is called in a `finally` block
-4. Check etcd cluster health
+4. Check etcd cluster health and connectivity
+5. Verify the lock key matches between `acquire()` and `release()` calls
 
 ### Leader Not Electing
 
@@ -488,4 +549,3 @@ If leader election is not working:
 - **Handle errors gracefully**: Implement proper error handling for all operations
 - **Monitor etcd cluster**: Ensure etcd cluster health for reliable operations
 - **Use async configuration**: Use `forRootAsync` for environment-based configuration
-

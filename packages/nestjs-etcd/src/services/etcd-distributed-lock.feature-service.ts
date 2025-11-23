@@ -1,21 +1,10 @@
-import {
-  Injectable,
-  Logger,
-  OnModuleDestroy,
-  OnModuleInit,
-} from "@nestjs/common";
-import { Lock } from "etcd3";
-import {
-  EtcdDistributedStateRepository,
-  InjectDistributedSharedRepository,
-  InjectEtcdOptions,
-  type EtcdModuleOptions,
-} from "../core";
+import { Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common";
+import { InjectEtcdClient } from "../core/etcd.di-tokens";
+import { Etcd3, Lease, Lock } from "etcd3";
+import { InjectEtcdOptions, type EtcdModuleOptions } from "../core";
 
 export interface LockOptions {
   ttl?: number;
-  timeout?: number;
-  retryInterval?: number;
 }
 
 export interface DistributedLockService {
@@ -25,89 +14,96 @@ export interface DistributedLockService {
 }
 
 @Injectable()
-export class EtcdDistributedLockFeatureService implements OnModuleInit {
+export class EtcdDistributedLockFeatureService
+  implements DistributedLockService, OnModuleInit, OnModuleDestroy
+{
   private hasFeatureEnabled: boolean = false;
-  private readonly defaultTtl: number = 30;
-  private readonly defaultTimeout: number = 120000;
-  private readonly defaultRetryInterval: number = 100;
+  private readonly defaultTtl: number = 10;
 
   constructor(
-    @InjectDistributedSharedRepository()
-    private readonly distributedSharedRepository: EtcdDistributedStateRepository,
+    @InjectEtcdClient()
+    private readonly etcd: Etcd3,
     @InjectEtcdOptions()
-    etcdOptions: EtcdModuleOptions
-  ) {
-    this.hasFeatureEnabled =
-      etcdOptions.features?.includes("distributedLock") || false;
-  }
-
-  private readonly logger: Logger = new Logger(
-    EtcdDistributedLockFeatureService.name
-  );
+    private readonly etcdOptions: EtcdModuleOptions
+  ) {}
 
   async onModuleInit() {
-    if (this.hasFeatureEnabled) {
-      this.logger.log("Distributed Lock feature enabled");
+    this.hasFeatureEnabled =
+      this.etcdOptions.features?.includes("distributedLock") || false;
+  }
+
+  async onModuleDestroy() {
+    if (!this.hasFeatureEnabled) {
+      return;
     }
+
+    const lockKey = `acquire/*`;
+    const lockValue = await this.etcd.get(lockKey);
+
+    if (lockValue === null) {
+      return;
+    }
+
+    await this.etcd.delete().key(lockKey);
   }
 
   async acquire(key: string, options?: LockOptions): Promise<Lock> {
     if (!this.hasFeatureEnabled) {
       throw new Error(
-        "Distributed Lock feature is not enabled. Add 'distributedLock' to features array."
+        "Distributed lock feature is not enabled. Please enable it in EtcdModuleOptions."
       );
     }
 
     const ttl = options?.ttl ?? this.defaultTtl;
-    const timeout = options?.timeout ?? this.defaultTimeout;
-    const retryInterval = options?.retryInterval ?? this.defaultRetryInterval;
+    const lease = this.etcd.lease(ttl);
 
-    const startTime = Date.now();
+    try {
+      await lease.grant();
+      const lockKey = `acquire/${key}`;
 
-    while (Date.now() - startTime < timeout) {
-      try {
-        const lock = await this.distributedSharedRepository.acquireLock(
-          key,
-          ttl
-        );
-        return lock;
-      } catch (error) {
-        if (Date.now() - startTime >= timeout) {
-          throw new Error(
-            `Failed to acquire lock for key: ${key} within timeout`
-          );
-        }
-        await this.sleep(retryInterval);
+      const lock = this.etcd.lock(lockKey);
+      await lock.acquire();
+
+      return lock;
+    } catch (error) {
+      if (lease) {
+        await lease.revoke();
       }
+      throw error;
     }
-
-    throw new Error(`Failed to acquire lock for key: ${key} within timeout`);
   }
 
   async release(key: string): Promise<void> {
-    const lock = await this.distributedSharedRepository.getLock(key);
-    if (!lock) {
-      this.logger.warn(`No active lock found for key: ${key}`);
+    if (!this.hasFeatureEnabled) {
       return;
     }
 
     try {
-      await this.distributedSharedRepository.releaseLock(lock);
+      const lockKey = `acquire/${key}`;
+      const lockValue = await this.etcd.get(lockKey);
+
+      if (lockValue === null) {
+        return;
+      }
+
+      await this.etcd.delete().key(lockKey);
     } catch (error) {
-      this.logger.error({
-        message: `Failed to release lock for key: ${key}`,
-        metadata: { error },
-      });
       throw error;
     }
   }
 
   async isLocked(key: string): Promise<boolean> {
-    const lock = await this.distributedSharedRepository.getLock(key);
-    return !!lock;
-  }
+    if (!this.hasFeatureEnabled) {
+      return false;
+    }
 
-  private sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    try {
+      const lockKey = `acquire/${key}`;
+      const lockValue = await this.etcd.get(lockKey);
+
+      return lockValue !== null;
+    } catch (error) {
+      throw error;
+    }
   }
 }

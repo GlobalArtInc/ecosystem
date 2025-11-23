@@ -8,7 +8,7 @@ import { EtcdModule } from "@globalart/nestjs-etcd";
       features: ["leaderElection", "distributedLock"],
       leaderElectionKey: "etcd",
       etcdOptions: {
-        hosts: ["localhost:2370"],
+        hosts: ["localhost:2379"],
       },
     }),
   ],
