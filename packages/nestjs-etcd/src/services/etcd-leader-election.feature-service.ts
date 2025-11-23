@@ -31,12 +31,14 @@ export class EtcdLeaderElectionFeatureService
     @InjectDistributedSharedRepository()
     private readonly distributedSharedRepository: EtcdDistributedStateRepository,
     @InjectEtcdId()
-    private readonly leaderId: string,
-    private readonly logger: Logger
+    private readonly leaderId: string
   ) {
     this.hasFeatureEnabled =
       etcdOptions.features?.includes("leaderElection") || false;
   }
+  private readonly logger: Logger = new Logger(
+    EtcdLeaderElectionFeatureService.name
+  );
 
   async onModuleInit() {
     if (this.hasFeatureEnabled) {

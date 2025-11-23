@@ -6,6 +6,7 @@ import { EtcdModule } from "@globalart/nestjs-etcd";
   imports: [
     EtcdModule.forRoot({
       features: ["leaderElection"],
+      leaderElectionKey: "etcd",
       etcdOptions: {
         hosts: ["localhost:2379"],
       },

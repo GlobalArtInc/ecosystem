@@ -9,6 +9,7 @@ import { EtcdDistributedStateRepository } from "./core/distributed-state.reposit
 import { randomUUID } from "crypto";
 import { Etcd3, IOptions as EtcdOptions } from "etcd3";
 import { EtcdModuleAsyncOptions, EtcdModuleOptions } from "./core/etcd.options";
+import { EtcdLeaderElectionFeatureService } from "./services";
 
 const createBaseProviders = (): Provider[] => [
   {
@@ -25,12 +26,15 @@ const createEtcdClient = (options: EtcdOptions) => {
   return new Etcd3(options);
 };
 
+const featureServicesProviders = [EtcdLeaderElectionFeatureService];
+
 @Module({})
 export class EtcdModule {
   static forRoot(moduleOptions: EtcdModuleOptions): DynamicModule {
     const etcdClient = createEtcdClient(moduleOptions.etcdOptions);
     const providers = [
       ...createBaseProviders(),
+      ...featureServicesProviders,
       {
         provide: ETCD_CLIENT,
         useValue: etcdClient,
@@ -68,6 +72,7 @@ export class EtcdModule {
     };
     const providers = [
       ...createBaseProviders(),
+      ...featureServicesProviders,
       etcdClientProvider,
       etcdOptionsProvider,
     ];
