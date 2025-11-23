@@ -8,7 +8,7 @@ export interface LockOptions {
 }
 
 export interface DistributedLockService {
-  acquire(key: string, options?: LockOptions): Promise<Lock>;
+  acquire(key: string, options?: LockOptions): Promise<Lock | null>;
   release(key: string): Promise<void>;
   isLocked(key: string): Promise<boolean>;
 }
@@ -47,7 +47,7 @@ export class EtcdDistributedLockFeatureService
     await this.etcd.delete().key(lockKey);
   }
 
-  async acquire(key: string, options?: LockOptions): Promise<Lock> {
+  async acquire(key: string, options?: LockOptions): Promise<Lock | null> {
     if (!this.hasFeatureEnabled) {
       throw new Error(
         "Distributed lock feature is not enabled. Please enable it in EtcdModuleOptions."
@@ -69,7 +69,7 @@ export class EtcdDistributedLockFeatureService
       if (lease) {
         await lease.revoke();
       }
-      throw error;
+      return null;
     }
   }
 
