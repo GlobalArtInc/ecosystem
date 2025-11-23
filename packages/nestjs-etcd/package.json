@@ -1,6 +1,6 @@
 {
   "name": "@globalart/nestjs-etcd",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "A etcd modules for NestJS",
   "author": {
     "name": "GlobalArt, Inc"
