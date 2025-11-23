@@ -13,6 +13,7 @@ const sidebars: SidebarsConfig = {
         'packages/nestjs-typeorm-pagination',
         'packages/nestjs-microservices',
         'packages/nestjs-logger',
+        'packages/nestjs-etcd',
         'packages/ddd',
       ],
     },

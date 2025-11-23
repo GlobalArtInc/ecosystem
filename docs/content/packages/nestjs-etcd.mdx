@@ -1,0 +1,491 @@
+---
+sidebar_position: 5
+---
+
+# NestJS etcd
+
+A NestJS module for integrating etcd3 distributed coordination services. This package provides leader election and distributed locking capabilities for NestJS applications.
+
+## Installation
+
+```bash npm2yarn
+npm install @globalart/nestjs-etcd etcd3
+```
+
+## Overview
+
+The `@globalart/nestjs-etcd` package provides a seamless integration with etcd3, enabling distributed coordination features in your NestJS applications. It offers two main features:
+
+- **Leader Election**: Automatically elect a leader among multiple application instances
+- **Distributed Locking**: Acquire and release distributed locks across multiple instances
+
+## Key Features
+
+- **Leader Election** - Automatic leader selection with failover support
+- **Distributed Locking** - Reliable distributed locks with TTL support
+- **Type-safe** - Full TypeScript support with proper type definitions
+- **Feature-based** - Enable only the features you need
+- **Global Module** - Available throughout your application
+
+## Quick Start
+
+### Basic Setup
+
+Import `EtcdModule` in your root module:
+
+```typescript
+import { Module } from '@nestjs/common';
+import { EtcdModule } from '@globalart/nestjs-etcd';
+
+@Module({
+  imports: [
+    EtcdModule.forRoot({
+      features: ['leaderElection', 'distributedLock'],
+      leaderElectionKey: 'my-app-leader',
+      etcdOptions: {
+        hosts: ['localhost:2379'],
+      },
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+### Async Configuration
+
+For dynamic configuration, use `forRootAsync`:
+
+```typescript
+import { Module } from '@nestjs/common';
+import { EtcdModule, EtcdModuleAsyncOptions } from '@globalart/nestjs-etcd';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
+@Module({
+  imports: [
+    EtcdModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        features: ['leaderElection', 'distributedLock'],
+        leaderElectionKey: configService.get('ETCD_LEADER_KEY'),
+        etcdOptions: {
+          hosts: configService.get('ETCD_HOSTS').split(','),
+        },
+      }),
+      inject: [ConfigService],
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+## Configuration
+
+### EtcdModuleOptions
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `features` | `EtcdFeature[]` | No | Array of features to enable: `'leaderElection'`, `'distributedLock'` |
+| `leaderElectionKey` | `string` | No | Key used for leader election (default: `'etcd'`) |
+| `etcdOptions` | `IOptions` | Yes | etcd3 client configuration options |
+
+### EtcdFeature
+
+- `'leaderElection'`: Enables leader election functionality
+- `'distributedLock'`: Enables distributed locking functionality
+
+### etcd3 Options
+
+The `etcdOptions` parameter accepts all configuration options from the etcd3 library. Common options include:
+
+- `hosts`: Array of etcd server addresses (e.g., `['localhost:2379']`)
+- `auth`: Authentication credentials
+- `namespace`: Key namespace prefix
+- `grpcOptions`: gRPC client options
+
+Refer to the [etcd3 documentation](https://github.com/microsoft/etcd3) for complete configuration options.
+
+## Leader Election
+
+The leader election service allows you to determine if the current instance is the leader among multiple instances.
+
+### How It Works
+
+1. When the module initializes, each instance attempts to become the leader
+2. Only one instance will be elected as the leader
+3. If the leader instance goes down, etcd automatically elects a new leader
+4. The `isLeader()` method returns `true` only for the elected leader instance
+
+### Basic Usage
+
+```typescript
+import { Controller, Get, Inject } from '@nestjs/common';
+import {
+  InjectEtcdLeaderElectionService,
+  LeaderElectionService,
+} from '@globalart/nestjs-etcd';
+
+@Controller()
+export class AppController {
+  constructor(
+    @InjectEtcdLeaderElectionService()
+    private readonly leaderElectionService: LeaderElectionService
+  ) {}
+
+  @Get('is-leader')
+  isLeader() {
+    return {
+      isLeader: this.leaderElectionService.isLeader(),
+    };
+  }
+
+  @Get('leader-only-task')
+  async leaderOnlyTask() {
+    if (!this.leaderElectionService.isLeader()) {
+      return { message: 'Not the leader, skipping task' };
+    }
+
+    // Perform leader-only operations
+    return { message: 'Task executed by leader' };
+  }
+}
+```
+
+### Use Cases
+
+- **Scheduled Tasks**: Only the leader instance runs scheduled cron jobs
+- **Resource Management**: Leader manages shared resources
+- **Health Checks**: Leader performs cluster-wide health monitoring
+- **Cache Warming**: Leader preloads cache data
+
+### Leader Election Service API
+
+```typescript
+interface LeaderElectionService {
+  isLeader(): boolean;
+}
+```
+
+## Distributed Locking
+
+The distributed lock service allows you to acquire and release locks across multiple instances, ensuring only one instance can execute a critical section at a time.
+
+### Basic Usage
+
+```typescript
+import { Controller, Post, Body, Inject } from '@nestjs/common';
+import {
+  InjectEtcdDistributedLockService,
+  DistributedLockService,
+} from '@globalart/nestjs-etcd';
+
+@Controller()
+export class AppController {
+  constructor(
+    @InjectEtcdDistributedLockService()
+    private readonly distributedLockService: DistributedLockService
+  ) {}
+
+  @Post('process')
+  async processResource(@Body() data: { resourceId: string }) {
+    const lockKey = `process:${data.resourceId}`;
+
+    try {
+      await this.distributedLockService.acquire(lockKey, {
+        ttl: 30, // Lock expires after 30 seconds
+        timeout: 120000, // Wait up to 2 minutes to acquire lock
+        retryInterval: 100, // Retry every 100ms
+      });
+
+      // Critical section - only one instance can execute this
+      await this.processResourceData(data.resourceId);
+
+      return { message: 'Processed successfully', resourceId: data.resourceId };
+    } finally {
+      await this.distributedLockService.release(lockKey);
+    }
+  }
+
+  @Post('check-lock')
+  async checkLock(@Body() data: { resourceId: string }) {
+    const lockKey = `process:${data.resourceId}`;
+    const isLocked = await this.distributedLockService.isLocked(lockKey);
+
+    return {
+      resourceId: data.resourceId,
+      isLocked,
+    };
+  }
+
+  private async processResourceData(resourceId: string) {
+    // Your business logic here
+  }
+}
+```
+
+### Lock Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `ttl` | `number` | `30` | Time-to-live in seconds. Lock automatically expires after this time |
+| `timeout` | `number` | `120000` | Maximum time in milliseconds to wait for lock acquisition |
+| `retryInterval` | `number` | `100` | Interval in milliseconds between retry attempts |
+
+### Lock Methods
+
+#### `acquire(key: string, options?: LockOptions): Promise<Lock>`
+
+Acquires a lock for the given key. The method will retry until the lock is acquired or the timeout is reached.
+
+```typescript
+const lock = await distributedLockService.acquire('my-resource', {
+  ttl: 60,
+  timeout: 5000,
+  retryInterval: 50,
+});
+```
+
+#### `release(key: string): Promise<void>`
+
+Releases the lock for the given key. Safe to call even if the lock doesn't exist.
+
+```typescript
+await distributedLockService.release('my-resource');
+```
+
+#### `isLocked(key: string): Promise<boolean>`
+
+Checks if a lock exists for the given key.
+
+```typescript
+const locked = await distributedLockService.isLocked('my-resource');
+if (locked) {
+  // Resource is currently locked
+}
+```
+
+### Use Cases
+
+- **Resource Processing**: Ensure only one instance processes a specific resource
+- **Database Migrations**: Prevent concurrent migration execution
+- **Cache Invalidation**: Coordinate cache updates across instances
+- **Rate Limiting**: Implement distributed rate limiting
+
+### Best Practices
+
+- **Always use try/finally**: Ensure locks are released even if errors occur
+- **Set appropriate TTL**: Locks should expire to prevent deadlocks
+- **Use descriptive keys**: Include resource identifiers in lock keys
+- **Handle timeouts**: Implement proper error handling for lock acquisition failures
+
+## API Reference
+
+### Decorators
+
+#### `@InjectEtcdLeaderElectionService()`
+
+Injects the `LeaderElectionService` instance.
+
+```typescript
+constructor(
+  @InjectEtcdLeaderElectionService()
+  private readonly leaderService: LeaderElectionService
+) {}
+```
+
+#### `@InjectEtcdDistributedLockService()`
+
+Injects the `DistributedLockService` instance.
+
+```typescript
+constructor(
+  @InjectEtcdDistributedLockService()
+  private readonly lockService: DistributedLockService
+) {}
+```
+
+#### `@InjectEtcdClient()`
+
+Injects the raw etcd3 client instance for advanced usage.
+
+```typescript
+import { Etcd3 } from 'etcd3';
+
+constructor(
+  @InjectEtcdClient()
+  private readonly etcd: Etcd3
+) {}
+```
+
+#### `@InjectEtcdId()`
+
+Injects the unique instance ID (UUID) generated for this application instance.
+
+```typescript
+constructor(
+  @InjectEtcdId()
+  private readonly instanceId: string
+) {}
+```
+
+### Services
+
+#### LeaderElectionService
+
+```typescript
+interface LeaderElectionService {
+  isLeader(): boolean;
+}
+```
+
+#### DistributedLockService
+
+```typescript
+interface DistributedLockService {
+  acquire(key: string, options?: LockOptions): Promise<Lock>;
+  release(key: string): Promise<void>;
+  isLocked(key: string): Promise<boolean>;
+}
+```
+
+#### LockOptions
+
+```typescript
+interface LockOptions {
+  ttl?: number;
+  timeout?: number;
+  retryInterval?: number;
+}
+```
+
+## Advanced Usage
+
+### Custom etcd Operations
+
+If you need direct access to etcd functionality, inject the etcd client:
+
+```typescript
+import { Injectable, Inject } from '@nestjs/common';
+import { InjectEtcdClient } from '@globalart/nestjs-etcd';
+import { Etcd3 } from 'etcd3';
+
+@Injectable()
+export class CustomService {
+  constructor(
+    @InjectEtcdClient()
+    private readonly etcd: Etcd3
+  ) {}
+
+  async getValue(key: string) {
+    return await this.etcd.get(key).string();
+  }
+
+  async setValue(key: string, value: string) {
+    await this.etcd.put(key).value(value);
+  }
+
+  async watchKey(key: string, callback: (value: string) => void) {
+    const watcher = await this.etcd.watch().key(key).create();
+    watcher.on('put', (res) => {
+      callback(res.value.toString());
+    });
+  }
+}
+```
+
+### Instance Identification
+
+Each application instance gets a unique ID that can be used for logging or debugging:
+
+```typescript
+import { Injectable, Inject } from '@nestjs/common';
+import { InjectEtcdId } from '@globalart/nestjs-etcd';
+
+@Injectable()
+export class MyService {
+  constructor(
+    @InjectEtcdId()
+    private readonly instanceId: string
+  ) {
+    console.log(`Instance ID: ${instanceId}`);
+  }
+}
+```
+
+## Error Handling
+
+### Leader Election Errors
+
+Leader election automatically retries on errors. If an error occurs, the service will:
+
+1. Set `isLeader()` to `false`
+2. Log the error
+3. Attempt to rejoin the election
+
+### Lock Acquisition Failures
+
+If a lock cannot be acquired within the timeout period, an error is thrown:
+
+```typescript
+try {
+  await distributedLockService.acquire('resource', { timeout: 5000 });
+} catch (error) {
+  // Handle timeout - lock could not be acquired
+  console.error('Failed to acquire lock:', error.message);
+}
+```
+
+### Lock Release Errors
+
+Lock release errors are logged but don't throw by default. To handle them explicitly:
+
+```typescript
+try {
+  await distributedLockService.release('resource');
+} catch (error) {
+  // Handle release error
+  console.error('Failed to release lock:', error);
+}
+```
+
+## Examples
+
+See the [examples directory](https://github.com/GlobalArtInc/ecosystem/tree/main/examples/etcd3) for complete working examples.
+
+## Troubleshooting
+
+### Connection Issues
+
+If you're experiencing connection issues:
+
+1. Verify etcd is running and accessible
+2. Check the `hosts` configuration in `etcdOptions`
+3. Ensure network connectivity between your application and etcd cluster
+4. Check etcd logs for errors
+
+### Lock Not Releasing
+
+If locks are not releasing properly:
+
+1. Check if the TTL is too long
+2. Verify the lock key is correct
+3. Ensure `release()` is called in a `finally` block
+4. Check etcd cluster health
+
+### Leader Not Electing
+
+If leader election is not working:
+
+1. Verify the `leaderElection` feature is enabled
+2. Check the `leaderElectionKey` configuration
+3. Ensure multiple instances are running
+4. Check etcd cluster connectivity
+
+## Best Practices
+
+- **Enable only needed features**: Only enable features you actually use
+- **Use descriptive lock keys**: Include resource identifiers in lock keys
+- **Set appropriate TTLs**: Prevent deadlocks with reasonable TTL values
+- **Handle errors gracefully**: Implement proper error handling for all operations
+- **Monitor etcd cluster**: Ensure etcd cluster health for reliable operations
+- **Use async configuration**: Use `forRootAsync` for environment-based configuration
+
