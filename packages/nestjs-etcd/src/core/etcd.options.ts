@@ -1,6 +1,7 @@
+import { InjectionToken } from "@nestjs/common";
 import { IOptions as EtcdOptions } from "etcd3";
 
-export type EtcdFeature = "leaderElection";
+export type EtcdFeature = "leaderElection" | "distributedLock";
 
 export interface EtcdModuleOptions {
   features?: EtcdFeature[];
@@ -12,5 +13,5 @@ export interface EtcdModuleAsyncOptions {
   useFactory: (
     ...args: unknown[]
   ) => EtcdModuleOptions | Promise<EtcdModuleOptions>;
-  inject?: any[];
+  inject?: InjectionToken[];
 }

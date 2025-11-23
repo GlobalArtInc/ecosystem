@@ -10,6 +10,7 @@ import { randomUUID } from "crypto";
 import { Etcd3, IOptions as EtcdOptions } from "etcd3";
 import { EtcdModuleAsyncOptions, EtcdModuleOptions } from "./core/etcd.options";
 import { EtcdLeaderElectionFeatureService } from "./services";
+import { EtcdDistributedLockFeatureService } from "./services/etcd-distributed-lock.feature-service";
 
 const createBaseProviders = (): Provider[] => [
   {
@@ -26,7 +27,10 @@ const createEtcdClient = (options: EtcdOptions) => {
   return new Etcd3(options);
 };
 
-const featureServicesProviders = [EtcdLeaderElectionFeatureService];
+const featureServicesProviders = [
+  EtcdLeaderElectionFeatureService,
+  EtcdDistributedLockFeatureService,
+];
 
 @Module({})
 export class EtcdModule {

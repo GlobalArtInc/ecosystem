@@ -24,8 +24,6 @@ export class EtcdLeaderElectionFeatureService
   private leaderCampaign: Campaign | null = null;
 
   constructor(
-    @InjectEtcdClient()
-    private readonly etcd: Etcd3,
     @InjectEtcdOptions()
     private readonly etcdOptions: EtcdModuleOptions,
     @InjectDistributedSharedRepository()
@@ -60,19 +58,14 @@ export class EtcdLeaderElectionFeatureService
   }
 
   private async attemptToBecomeLeader() {
-    this.leaderCampaign = this.distributedSharedRepository.getElection(
+    this.leaderCampaign = await this.distributedSharedRepository.getElection(
       this.leaderKey,
       10,
       this.leaderId
     );
     this.leaderCampaign.on("elected", async () => {
       this.isLeaderFlag = true;
-      this.logger.log({
-        message: `I am leader ${this.leaderId}`,
-        metadata: {
-          leaderId: this.leaderId,
-        },
-      });
+      this.logger.log(`I am leader ${this.leaderId}`);
     });
     this.leaderCampaign.on("error", async (err) => {
       this.isLeaderFlag = false;

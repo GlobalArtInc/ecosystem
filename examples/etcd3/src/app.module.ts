@@ -5,10 +5,10 @@ import { EtcdModule } from "@globalart/nestjs-etcd";
 @Module({
   imports: [
     EtcdModule.forRoot({
-      features: ["leaderElection"],
+      features: ["leaderElection", "distributedLock"],
       leaderElectionKey: "etcd",
       etcdOptions: {
-        hosts: ["localhost:2379"],
+        hosts: ["localhost:2370"],
       },
     }),
   ],
