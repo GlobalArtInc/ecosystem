@@ -5,6 +5,7 @@ export {
   InjectEtcdId,
   InjectDistributedSharedRepository,
   InjectEtcdClient,
+  EtcdDistributedStateRepository,
   type EtcdModuleOptions,
   type EtcdModuleAsyncOptions,
 } from "./core";
