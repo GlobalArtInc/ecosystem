@@ -25,18 +25,18 @@ export class AppController {
   @Post("acquire")
   async process(@Body() data: ProcessDto) {
     const lockKey = `process:${data.resourceId}`;
-    const hasAcquiredLock =
-      this.etcdDistributedLockFeatureService.isLocked(lockKey);
-    if (hasAcquiredLock) {
-      return {
-        message: "Resource is locked, try later",
-        resourceId: data.resourceId,
-      };
-    }
+    // const hasAcquiredLock =
+    //   this.etcdDistributedLockFeatureService.isLocked(lockKey);
+    // if (hasAcquiredLock) {
+    //   return {
+    //     message: "Resource is locked, try later",
+    //     resourceId: data.resourceId,
+    //   };
+    // }
     await this.etcdDistributedLockFeatureService.acquire(lockKey);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 12000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       return { message: "Processed successfully", resourceId: data.resourceId };
     } finally {
       await this.etcdDistributedLockFeatureService.release(lockKey);

@@ -19,11 +19,8 @@ export interface LockOptions {
 }
 
 @Injectable()
-export class EtcdDistributedLockFeatureService
-  implements OnModuleInit, OnModuleDestroy
-{
+export class EtcdDistributedLockFeatureService implements OnModuleInit {
   private hasFeatureEnabled: boolean = false;
-  private activeLocks: Map<string, Lock> = new Map();
   private readonly defaultTtl: number = 30;
   private readonly defaultTimeout: number = 120000;
   private readonly defaultRetryInterval: number = 100;
@@ -48,10 +45,6 @@ export class EtcdDistributedLockFeatureService
     }
   }
 
-  async onModuleDestroy() {
-    await this.releaseAllLocks();
-  }
-
   async acquire(key: string, options?: LockOptions): Promise<Lock> {
     if (!this.hasFeatureEnabled) {
       throw new Error(
@@ -71,7 +64,6 @@ export class EtcdDistributedLockFeatureService
           key,
           ttl
         );
-        this.activeLocks.set(key, lock);
         return lock;
       } catch (error) {
         if (Date.now() - startTime >= timeout) {
@@ -87,7 +79,7 @@ export class EtcdDistributedLockFeatureService
   }
 
   async release(key: string): Promise<void> {
-    const lock = this.activeLocks.get(key);
+    const lock = await this.distributedSharedRepository.getLock(key);
     if (!lock) {
       this.logger.warn(`No active lock found for key: ${key}`);
       return;
@@ -95,7 +87,6 @@ export class EtcdDistributedLockFeatureService
 
     try {
       await this.distributedSharedRepository.releaseLock(lock);
-      this.activeLocks.delete(key);
     } catch (error) {
       this.logger.error({
         message: `Failed to release lock for key: ${key}`,
@@ -105,46 +96,9 @@ export class EtcdDistributedLockFeatureService
     }
   }
 
-  async tryAcquire(key: string, ttl?: number): Promise<Lock | null> {
-    if (!this.hasFeatureEnabled) {
-      return null;
-    }
-
-    try {
-      const lockTtl = ttl ?? this.defaultTtl;
-      const lock = await this.distributedSharedRepository.acquireLock(
-        key,
-        lockTtl
-      );
-      this.activeLocks.set(key, lock);
-
-      return lock;
-    } catch (error) {
-      this.logger.debug(`Failed to acquire lock for key: ${key}`);
-      return null;
-    }
-  }
-
-  isLocked(key: string): boolean {
-    return this.activeLocks.has(key);
-  }
-
-  private async releaseAllLocks(): Promise<void> {
-    const releasePromises = Array.from(this.activeLocks.entries()).map(
-      async ([key, lock]) => {
-        try {
-          await this.distributedSharedRepository.releaseLock(lock);
-        } catch (error) {
-          this.logger.error({
-            message: `Failed to release lock for key: ${key} during shutdown`,
-            metadata: { error },
-          });
-        }
-      }
-    );
-
-    await Promise.all(releasePromises);
-    this.activeLocks.clear();
+  async isLocked(key: string): Promise<boolean> {
+    const lock = await this.distributedSharedRepository.getLock(key);
+    return !!lock;
   }
 
   private sleep(ms: number): Promise<void> {

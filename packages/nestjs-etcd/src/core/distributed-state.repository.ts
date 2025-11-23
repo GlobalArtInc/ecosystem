@@ -34,6 +34,10 @@ export class EtcdDistributedStateRepository
     return this.etcd.election(name, ttl).campaign(participantId);
   }
 
+  async getLock(key: string): Promise<Lock> {
+    return this.etcd.lock(key);
+  }
+
   async acquireLock(key: string, ttl: number): Promise<Lock> {
     await this.etcd.lease(ttl).grant();
     return this.etcd.lock(key).acquire();
