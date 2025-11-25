@@ -28,6 +28,11 @@ export class PaginationQueryDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @Transform(({ value }) => {
+    if (Array.isArray(value)) return value;
+    if (typeof value === "string") return value.split(",").filter(Boolean);
+    return undefined;
+  })
   filter?: string[];
 
   @ApiPropertyOptional({ type: String, description: "orderBy" })
