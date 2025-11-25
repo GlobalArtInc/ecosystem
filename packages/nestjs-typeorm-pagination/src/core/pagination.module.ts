@@ -5,15 +5,16 @@ import {
   DEFAULT_PAGINATION_CONFIG,
   PAGINATION_CONFIG_TOKEN,
 } from "../constants";
-import { getPaginationToken } from "../decorators";
+import { getCursorPaginationToken, getPaginationToken } from "../decorators";
 import { PaginationConfig, PaginationModuleOptions } from "../types";
+import { CursorPaginationService } from "./cursor-pagination.service";
 import { PaginationService } from "./pagination.service";
 
 export interface PaginationModuleAsyncOptions {
   useFactory: (
-    ...args: any[]
+    ...args: unknown[]
   ) => PaginationModuleOptions | Promise<PaginationModuleOptions>;
-  inject?: any[];
+  inject?: Array<string | symbol | Function>;
 }
 
 @Module({})
@@ -25,7 +26,9 @@ export class PaginationModule {
     return {
       module: PaginationModule,
       providers,
-      exports: providers.map((p: any) => p.provide || p),
+      exports: providers.map((p) =>
+        typeof p === "object" && "provide" in p ? p.provide : p
+      ),
       global: true,
     };
   }
@@ -33,7 +36,7 @@ export class PaginationModule {
   static forRootAsync(options: PaginationModuleAsyncOptions): DynamicModule {
     const configProvider: Provider = {
       provide: PAGINATION_CONFIG_TOKEN,
-      useFactory: async (...args: any[]) => {
+      useFactory: async (...args: unknown[]) => {
         const userOptions = await options.useFactory(...args);
         return this.createConfiguration(userOptions);
       },
@@ -45,26 +48,42 @@ export class PaginationModule {
     return {
       module: PaginationModule,
       providers,
-      exports: providers.map((p: any) => p.provide || p),
+      exports: providers.map((p) =>
+        typeof p === "object" && "provide" in p ? p.provide : p
+      ),
       global: false,
     };
   }
 
   static forFeature<TEntity extends ObjectLiteral>(
-    entity: EntityTarget<TEntity>
+    entity: EntityTarget<TEntity>,
+    options: { withCursorPagination?: boolean } = {}
   ): DynamicModule {
-    const provider: Provider = {
-      provide: getPaginationToken(entity as any),
-      useFactory: (dataSource: DataSource, config: PaginationConfig) =>
-        new PaginationService<TEntity>(dataSource, entity, config),
-      inject: [DataSource, PAGINATION_CONFIG_TOKEN],
-    };
+    const providers: Provider[] = [
+      {
+        provide: getPaginationToken(entity),
+        useFactory: (dataSource: DataSource, config: PaginationConfig) =>
+          new PaginationService<TEntity>(dataSource, entity, config),
+        inject: [DataSource, PAGINATION_CONFIG_TOKEN],
+      },
+    ];
+
+    if (options.withCursorPagination) {
+      providers.push({
+        provide: getCursorPaginationToken(entity),
+        useFactory: (dataSource: DataSource, config: PaginationConfig) =>
+          new CursorPaginationService<TEntity>(dataSource, entity, config),
+        inject: [DataSource, PAGINATION_CONFIG_TOKEN],
+      });
+    }
 
     return {
       module: PaginationModule,
       imports: [TypeOrmModule],
-      providers: [provider],
-      exports: [provider.provide],
+      providers,
+      exports: providers.map((p) =>
+        typeof p === "object" && "provide" in p ? p.provide : p
+      ),
     };
   }
 

@@ -1,54 +1,95 @@
+import { Injectable } from "@nestjs/common";
 import {
   DataSource,
   EntityTarget,
   FindManyOptions,
   FindOptionsOrder,
-  ILike,
-  In,
-  LessThan,
-  LessThanOrEqual,
-  Like,
-  MoreThan,
-  MoreThanOrEqual,
-  Not,
   ObjectLiteral,
   Repository,
+  SelectQueryBuilder,
 } from "typeorm";
 import { PaginationQueryDto } from "../dtos/pagination-query.dto";
-import { PaginationConfig, PaginationResult } from "../types";
+import {
+  PaginationConfig,
+  PaginationOptions,
+  PaginationResult,
+} from "../types";
+import { FilterBuilder } from "../builders/filter.builder";
+import { OrderBuilder } from "../builders/order.builder";
 
 export class PaginationService<TEntity extends ObjectLiteral> {
   private readonly repository: Repository<TEntity>;
+  private readonly filterBuilder: FilterBuilder<TEntity>;
+  private readonly orderBuilder: OrderBuilder<TEntity>;
 
   constructor(
     private readonly dataSource: DataSource,
     private readonly entity: EntityTarget<TEntity>,
     private readonly config: PaginationConfig
   ) {
-    this.repository = this.dataSource.getRepository(this.entity);
+    this.repository = this.dataSource.getRepository(entity);
+    this.filterBuilder = new FilterBuilder<TEntity>();
+    this.orderBuilder = new OrderBuilder<TEntity>();
   }
 
   async paginate(
-    query: PaginationQueryDto = {},
-    options: FindManyOptions<TEntity> = {}
+    query: PaginationQueryDto,
+    options: PaginationOptions<TEntity> = {},
+    findOptions: FindManyOptions<TEntity> = {}
   ): Promise<PaginationResult<TEntity>> {
-    const requestedLimit = Number(query.limit) || this.config.defaultLimit;
-    const limit = Math.min(Math.max(1, requestedLimit), this.config.maxLimit);
+    const limit = this.normalizeLimit(query.limit);
+    const offset = Math.max(0, query.offset ?? 0);
 
-    const offset = Math.max(0, Number(query.offset) || 0);
+    const order = this.orderBuilder.build(query.sort, {
+      allowed: options.allowedOrderBy,
+      default: options.defaultOrderBy,
+      defaultDirection: options.defaultOrder,
+    });
 
-    const order: FindOptionsOrder<TEntity> | undefined = this.buildOrder(query);
-
-    const where = options.where ?? this.buildWhere(query);
+    const where =
+      findOptions.where ??
+      this.filterBuilder.build(query.filters, {
+        allowed: options.allowedFilters,
+      });
+    console.log(query);
 
     const [items, total] = await this.repository.findAndCount({
-      ...options,
+      ...findOptions,
       where,
       skip: offset,
       take: limit,
-      order: order as any,
+      order,
     });
 
+    return this.buildResult(items, total, limit, offset);
+  }
+
+  async paginateQueryBuilder(
+    queryBuilder: SelectQueryBuilder<TEntity>,
+    query: PaginationQueryDto
+  ): Promise<PaginationResult<TEntity>> {
+    const limit = this.normalizeLimit(query.limit);
+    const offset = Math.max(0, query.offset ?? 0);
+
+    const [items, total] = await queryBuilder
+      .skip(offset)
+      .take(limit)
+      .getManyAndCount();
+
+    return this.buildResult(items, total, limit, offset);
+  }
+
+  private normalizeLimit(requested?: number): number {
+    const limit = requested ?? this.config.defaultLimit;
+    return Math.min(Math.max(1, limit), this.config.maxLimit);
+  }
+
+  private buildResult(
+    items: TEntity[],
+    total: number,
+    limit: number,
+    offset: number
+  ): PaginationResult<TEntity> {
     const totalPages = Math.max(1, Math.ceil(total / limit));
     const currentPage = Math.floor(offset / limit) + 1;
 
@@ -60,77 +101,9 @@ export class PaginationService<TEntity extends ObjectLiteral> {
         itemsPerPage: limit,
         totalPages,
         currentPage,
+        hasNextPage: currentPage < totalPages,
+        hasPreviousPage: currentPage > 1,
       },
     };
-  }
-
-  private buildOrder(
-    query: PaginationQueryDto
-  ): FindOptionsOrder<TEntity> | undefined {
-    if (!query.orderBy || !query.sortBy) return undefined;
-    const direction =
-      String(query.sortBy).toUpperCase() === "DESC" ? "DESC" : "ASC";
-    return { [query.orderBy as keyof TEntity]: direction } as any;
-  }
-
-  private buildWhere(query: PaginationQueryDto) {
-    const filter =
-      (query as { "filter[]": string[] })["filter[]"] ?? query.filter ?? [];
-    const filters = typeof filter === "string" ? [filter] : filter;
-
-    if (filters.length === 0) return undefined;
-    const conditions: Array<Record<string, any>> = [];
-    for (const raw of filters) {
-      const [field, operator, value] = String(raw).split("||");
-
-      if (!field || !operator || !value) continue;
-
-      const normalizedOperator = operator.replace(/^\$/, "").toLowerCase();
-      let condition: any;
-
-      switch (normalizedOperator) {
-        case "eq":
-          condition = value;
-          break;
-        case "ne":
-          condition = Not(value);
-          break;
-        case "like":
-          condition = Like(`%${value}%`);
-          break;
-        case "ilike":
-          condition = ILike(`%${value}%`);
-          break;
-        case "gt":
-          condition = MoreThan(value);
-          break;
-        case "gte":
-          condition = MoreThanOrEqual(value);
-          break;
-        case "lt":
-          condition = LessThan(value);
-          break;
-        case "lte":
-          condition = LessThanOrEqual(value);
-          break;
-        case "in":
-          condition = In(String(value).split(","));
-          break;
-        default:
-          condition = value;
-      }
-
-      conditions.push({ [field]: condition });
-    }
-
-    if (conditions.length === 0) {
-      return undefined;
-    }
-
-    if (conditions.length === 1) {
-      return conditions[0];
-    }
-
-    return conditions;
   }
 }

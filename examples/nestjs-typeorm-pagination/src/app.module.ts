@@ -1,9 +1,6 @@
 import { Module } from "@nestjs/common";
 import { AppController } from "./app.controller";
-import {
-  PaginationModule,
-  PaginationService,
-} from "@globalart/nestjs-typeorm-pagination";
+import { PaginationModule } from "@globalart/nestjs-typeorm-pagination";
 import { UserEntity } from "./app.entity";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
@@ -24,7 +21,9 @@ import { TypeOrmModule } from "@nestjs/typeorm";
       defaultLimit: 10,
       maxLimit: 100,
     }),
-    PaginationModule.forFeature(UserEntity),
+    PaginationModule.forFeature(UserEntity, {
+      withCursorPagination: true,
+    }),
   ],
   controllers: [AppController],
 })
