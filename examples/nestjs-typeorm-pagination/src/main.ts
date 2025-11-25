@@ -1,9 +1,12 @@
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { ZodValidationPipe } from "@globalart/nestjs-zod";
 import { AppModule } from "./app.module";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.useGlobalPipes(new ZodValidationPipe());
 
   const config = new DocumentBuilder()
     .setTitle("Cats example")

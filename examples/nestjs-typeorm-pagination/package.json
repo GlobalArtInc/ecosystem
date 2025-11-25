@@ -20,6 +20,7 @@
   "dependencies": {
     "@globalart/nestjs-swagger": "workspace:*",
     "@globalart/nestjs-typeorm-pagination": "workspace:*",
+    "@globalart/nestjs-zod": "1.0.0",
     "@nestjs/common": "^11.1.9",
     "@nestjs/core": "^11.1.9",
     "@nestjs/platform-express": "^11.1.9",
