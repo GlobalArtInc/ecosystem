@@ -51,7 +51,6 @@ export class PaginationService<TEntity extends ObjectLiteral> {
       this.filterBuilder.build(query.filters, {
         allowed: options.allowedFilters,
       });
-    console.log(query);
 
     const [items, total] = await this.repository.findAndCount({
       ...findOptions,
