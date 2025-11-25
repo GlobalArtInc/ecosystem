@@ -32,13 +32,13 @@ importers:
         version: 3.9.2(@mdx-js/react@3.1.1)(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)(typescript@5.9.3)
       '@docusaurus/preset-classic':
         specifier: 3.9.2
-        version: 3.9.2(@algolia/client-search@5.44.0)(@mdx-js/react@3.1.1)(@types/react@19.2.6)(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)(search-insights@2.17.3)(typescript@5.9.3)
+        version: 3.9.2(@algolia/client-search@5.44.0)(@mdx-js/react@3.1.1)(@types/react@19.2.7)(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)(search-insights@2.17.3)(typescript@5.9.3)
       '@docusaurus/remark-plugin-npm2yarn':
         specifier: 3.9.2
         version: 3.9.2
       '@mdx-js/react':
         specifier: ^3.1.1
-        version: 3.1.1(@types/react@19.2.6)(react@19.2.0)
+        version: 3.1.1(@types/react@19.2.7)(react@19.2.0)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -65,11 +65,11 @@ importers:
         specifier: 3.9.2
         version: 3.9.2(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)
       '@types/react':
-        specifier: 19.2.6
-        version: 19.2.6
+        specifier: 19.2.7
+        version: 19.2.7
       '@types/react-dom':
         specifier: 19.2.3
-        version: 19.2.3(@types/react@19.2.6)
+        version: 19.2.3(@types/react@19.2.7)
       typescript:
         specifier: ~5.9.3
         version: 5.9.3
@@ -818,15 +818,15 @@ importers:
         specifier: 13.0.0
         version: 13.0.0
       zod:
-        specifier: 4.1.12
-        version: 4.1.12
+        specifier: 4.1.13
+        version: 4.1.13
     devDependencies:
       release-it:
         specifier: 19.0.6
         version: 19.0.6(@types/node@24.10.1)
       tsdown:
-        specifier: 0.16.6
-        version: 0.16.6(typescript@5.9.3)
+        specifier: 0.16.7
+        version: 0.16.7(typescript@5.9.3)
 
   packages/nestjs-etcd:
     dependencies:
@@ -847,8 +847,8 @@ importers:
         specifier: 19.0.6
         version: 19.0.6(@types/node@24.10.1)
       tsdown:
-        specifier: 0.16.6
-        version: 0.16.6(typescript@5.9.3)
+        specifier: 0.16.7
+        version: 0.16.7(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -917,8 +917,8 @@ importers:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@24.10.1)(typescript@5.9.3)
       tsdown:
-        specifier: 0.16.6
-        version: 0.16.6(typescript@5.9.3)
+        specifier: 0.16.7
+        version: 0.16.7(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -975,8 +975,8 @@ importers:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@24.10.1)(typescript@5.9.3)
       tsdown:
-        specifier: 0.16.6
-        version: 0.16.6(typescript@5.9.3)
+        specifier: 0.16.7
+        version: 0.16.7(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -1036,8 +1036,8 @@ importers:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@24.10.1)(typescript@5.9.3)
       tsdown:
-        specifier: 0.16.6
-        version: 0.16.6(typescript@5.9.3)
+        specifier: 0.16.7
+        version: 0.16.7(typescript@5.9.3)
       typeorm:
         specifier: 0.3.27
         version: 0.3.27(pg@8.16.3)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2)
@@ -1097,8 +1097,8 @@ importers:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@24.10.1)(typescript@5.9.3)
       tsdown:
-        specifier: 0.16.6
-        version: 0.16.6(typescript@5.9.3)
+        specifier: 0.16.7
+        version: 0.16.7(typescript@5.9.3)
       typeorm:
         specifier: 0.3.27
         version: 0.3.27(pg@8.16.3)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2)
@@ -1109,7 +1109,7 @@ importers:
   packages/nestjs-typeorm-pagination:
     dependencies:
       '@globalart/nestjs-zod':
-        specifier: workspace:*
+        specifier: 1.0.0
         version: link:../nestjs-zod
       '@nestjs/swagger':
         specifier: ^11.2.3
@@ -1191,8 +1191,8 @@ importers:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@24.10.1)(typescript@5.9.3)
       tsdown:
-        specifier: 0.16.6
-        version: 0.16.6(typescript@5.9.3)
+        specifier: 0.16.7
+        version: 0.16.7(typescript@5.9.3)
       typeorm:
         specifier: ^0.3.27
         version: 0.3.27(pg@8.16.3)(reflect-metadata@0.2.2)(sqlite3@5.1.7)(ts-node@10.9.2)
@@ -1343,8 +1343,8 @@ importers:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@24.10.1)(typescript@5.9.3)
       tsdown:
-        specifier: 0.16.6
-        version: 0.16.6(typescript@5.9.3)
+        specifier: 0.16.7
+        version: 0.16.7(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -1377,27 +1377,27 @@ importers:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@24.10.1)(typescript@5.9.3)
       tsdown:
-        specifier: 0.16.6
-        version: 0.16.6(typescript@5.9.3)
+        specifier: 0.16.7
+        version: 0.16.7(typescript@5.9.3)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
 
 packages:
 
-  /@ai-sdk/gateway@2.0.14(zod@4.1.12):
+  /@ai-sdk/gateway@2.0.14(zod@4.1.13):
     resolution: {integrity: sha512-QU+ZVizSXN/V5uWgwapXrCLvkUEmmJeojAbikMH4gLgbeQF3oRugcQm3D8X9B+Rnestbz5cevNap7vKyJT/jfA==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.17(zod@4.1.12)
+      '@ai-sdk/provider-utils': 3.0.17(zod@4.1.13)
       '@vercel/oidc': 3.0.5
-      zod: 4.1.12
+      zod: 4.1.13
     dev: false
 
-  /@ai-sdk/provider-utils@3.0.17(zod@4.1.12):
+  /@ai-sdk/provider-utils@3.0.17(zod@4.1.13):
     resolution: {integrity: sha512-TR3Gs4I3Tym4Ll+EPdzRdvo/rc8Js6c4nVhFLuvGLX/Y4V9ZcQMa/HTiYsHEgmYrf1zVi6Q145UEZUfleOwOjw==}
     engines: {node: '>=18'}
     peerDependencies:
@@ -1406,7 +1406,7 @@ packages:
       '@ai-sdk/provider': 2.0.0
       '@standard-schema/spec': 1.0.0
       eventsource-parser: 3.0.6
-      zod: 4.1.12
+      zod: 4.1.13
     dev: false
 
   /@ai-sdk/provider@2.0.0:
@@ -1416,7 +1416,7 @@ packages:
       json-schema: 0.4.0
     dev: false
 
-  /@ai-sdk/react@2.0.100(react@19.2.0)(zod@4.1.12):
+  /@ai-sdk/react@2.0.100(react@19.2.0)(zod@4.1.13):
     resolution: {integrity: sha512-bC4cEoX9xfBKKnVyhyrhdRraji71uxpCKlNAwD6u1xPgcsCnz99X+9ByoBKvOHRzBtSFUq2K6016huip8Cvq6w==}
     engines: {node: '>=18'}
     peerDependencies:
@@ -1426,12 +1426,12 @@ packages:
       zod:
         optional: true
     dependencies:
-      '@ai-sdk/provider-utils': 3.0.17(zod@4.1.12)
-      ai: 5.0.100(zod@4.1.12)
+      '@ai-sdk/provider-utils': 3.0.17(zod@4.1.13)
+      ai: 5.0.100(zod@4.1.13)
       react: 19.2.0
       swr: 2.3.6(react@19.2.0)
       throttleit: 2.1.0
-      zod: 4.1.12
+      zod: 4.1.13
     dev: false
 
   /@algolia/abtesting@1.10.0:
@@ -5025,7 +5025,7 @@ packages:
     engines: {node: '>=10.0.0'}
     dev: false
 
-  /@docsearch/core@4.3.1(@types/react@19.2.6)(react-dom@19.2.0)(react@19.2.0):
+  /@docsearch/core@4.3.1(@types/react@19.2.7)(react-dom@19.2.0)(react@19.2.0):
     resolution: {integrity: sha512-ktVbkePE+2h9RwqCUMbWXOoebFyDOxHqImAqfs+lC8yOU+XwEW4jgvHGJK079deTeHtdhUNj0PXHSnhJINvHzQ==}
     peerDependencies:
       '@types/react': '>= 16.8.0 < 20.0.0'
@@ -5039,7 +5039,7 @@ packages:
       react-dom:
         optional: true
     dependencies:
-      '@types/react': 19.2.6
+      '@types/react': 19.2.7
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
     dev: false
@@ -5048,7 +5048,7 @@ packages:
     resolution: {integrity: sha512-K3Yhay9MgkBjJJ0WEL5MxnACModX9xuNt3UlQQkDEDZJZ0+aeWKtOkxHNndMRkMBnHdYvQjxkm6mdlneOtU1IQ==}
     dev: false
 
-  /@docsearch/react@4.3.2(@algolia/client-search@5.44.0)(@types/react@19.2.6)(react-dom@19.2.0)(react@19.2.0)(search-insights@2.17.3):
+  /@docsearch/react@4.3.2(@algolia/client-search@5.44.0)(@types/react@19.2.7)(react-dom@19.2.0)(react@19.2.0)(search-insights@2.17.3):
     resolution: {integrity: sha512-74SFD6WluwvgsOPqifYOviEEVwDxslxfhakTlra+JviaNcs7KK/rjsPj89kVEoQc9FUxRkAofaJnHIR7pb4TSQ==}
     peerDependencies:
       '@types/react': '>= 16.8.0 < 20.0.0'
@@ -5065,18 +5065,18 @@ packages:
       search-insights:
         optional: true
     dependencies:
-      '@ai-sdk/react': 2.0.100(react@19.2.0)(zod@4.1.12)
+      '@ai-sdk/react': 2.0.100(react@19.2.0)(zod@4.1.13)
       '@algolia/autocomplete-core': 1.19.2(@algolia/client-search@5.44.0)(algoliasearch@5.44.0)(search-insights@2.17.3)
-      '@docsearch/core': 4.3.1(@types/react@19.2.6)(react-dom@19.2.0)(react@19.2.0)
+      '@docsearch/core': 4.3.1(@types/react@19.2.7)(react-dom@19.2.0)(react@19.2.0)
       '@docsearch/css': 4.3.2
-      '@types/react': 19.2.6
-      ai: 5.0.100(zod@4.1.12)
+      '@types/react': 19.2.7
+      ai: 5.0.100(zod@4.1.13)
       algoliasearch: 5.44.0
       marked: 16.4.2
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
       search-insights: 2.17.3
-      zod: 4.1.12
+      zod: 4.1.13
     transitivePeerDependencies:
       - '@algolia/client-search'
     dev: false
@@ -5177,7 +5177,7 @@ packages:
       '@docusaurus/utils': 3.9.2(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)
       '@docusaurus/utils-common': 3.9.2(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)
       '@docusaurus/utils-validation': 3.9.2(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)
-      '@mdx-js/react': 3.1.1(@types/react@19.2.6)(react@19.2.0)
+      '@mdx-js/react': 3.1.1(@types/react@19.2.7)(react@19.2.0)
       boxen: 6.2.1
       chalk: 4.1.2
       chokidar: 3.6.0
@@ -5302,7 +5302,7 @@ packages:
     dependencies:
       '@docusaurus/types': 3.9.2(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)
       '@types/history': 4.7.11
-      '@types/react': 19.2.6
+      '@types/react': 19.2.7
       '@types/react-router-config': 5.0.11
       '@types/react-router-dom': 5.3.3
       react: 19.2.0
@@ -5691,7 +5691,7 @@ packages:
       - webpack-cli
     dev: false
 
-  /@docusaurus/preset-classic@3.9.2(@algolia/client-search@5.44.0)(@mdx-js/react@3.1.1)(@types/react@19.2.6)(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)(search-insights@2.17.3)(typescript@5.9.3):
+  /@docusaurus/preset-classic@3.9.2(@algolia/client-search@5.44.0)(@mdx-js/react@3.1.1)(@types/react@19.2.7)(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)(search-insights@2.17.3)(typescript@5.9.3):
     resolution: {integrity: sha512-IgyYO2Gvaigi21LuDIe+nvmN/dfGXAiMcV/murFqcpjnZc7jxFAxW+9LEjdPt61uZLxG4ByW/oUmX/DDK9t/8w==}
     engines: {node: '>=20.0'}
     peerDependencies:
@@ -5709,9 +5709,9 @@ packages:
       '@docusaurus/plugin-google-tag-manager': 3.9.2(@mdx-js/react@3.1.1)(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)(typescript@5.9.3)
       '@docusaurus/plugin-sitemap': 3.9.2(@mdx-js/react@3.1.1)(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)(typescript@5.9.3)
       '@docusaurus/plugin-svgr': 3.9.2(@mdx-js/react@3.1.1)(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)(typescript@5.9.3)
-      '@docusaurus/theme-classic': 3.9.2(@types/react@19.2.6)(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)(typescript@5.9.3)
+      '@docusaurus/theme-classic': 3.9.2(@types/react@19.2.7)(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)(typescript@5.9.3)
       '@docusaurus/theme-common': 3.9.2(@docusaurus/plugin-content-docs@3.9.2)(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)
-      '@docusaurus/theme-search-algolia': 3.9.2(@algolia/client-search@5.44.0)(@mdx-js/react@3.1.1)(@types/react@19.2.6)(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)(search-insights@2.17.3)(typescript@5.9.3)
+      '@docusaurus/theme-search-algolia': 3.9.2(@algolia/client-search@5.44.0)(@mdx-js/react@3.1.1)(@types/react@19.2.7)(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)(search-insights@2.17.3)(typescript@5.9.3)
       '@docusaurus/types': 3.9.2(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
@@ -5743,7 +5743,7 @@ packages:
     peerDependencies:
       react: '*'
     dependencies:
-      '@types/react': 19.2.6
+      '@types/react': 19.2.7
       react: 19.2.0
 
   /@docusaurus/remark-plugin-npm2yarn@3.9.2:
@@ -5759,7 +5759,7 @@ packages:
       - supports-color
     dev: false
 
-  /@docusaurus/theme-classic@3.9.2(@types/react@19.2.6)(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)(typescript@5.9.3):
+  /@docusaurus/theme-classic@3.9.2(@types/react@19.2.7)(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)(typescript@5.9.3):
     resolution: {integrity: sha512-IGUsArG5hhekXd7RDb11v94ycpJpFdJPkLnt10fFQWOVxAtq5/D7hT6lzc2fhyQKaaCE62qVajOMKL7OiAFAIA==}
     engines: {node: '>=20.0'}
     peerDependencies:
@@ -5779,7 +5779,7 @@ packages:
       '@docusaurus/utils': 3.9.2(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)
       '@docusaurus/utils-common': 3.9.2(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)
       '@docusaurus/utils-validation': 3.9.2(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)
-      '@mdx-js/react': 3.1.1(@types/react@19.2.6)(react@19.2.0)
+      '@mdx-js/react': 3.1.1(@types/react@19.2.7)(react@19.2.0)
       clsx: 2.1.1
       infima: 0.2.0-alpha.45
       lodash: 4.17.21
@@ -5827,7 +5827,7 @@ packages:
       '@docusaurus/utils': 3.9.2(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)
       '@docusaurus/utils-common': 3.9.2(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)
       '@types/history': 4.7.11
-      '@types/react': 19.2.6
+      '@types/react': 19.2.7
       '@types/react-router-config': 5.0.11
       clsx: 2.1.1
       parse-numeric-range: 1.3.0
@@ -5845,14 +5845,14 @@ packages:
       - webpack-cli
     dev: false
 
-  /@docusaurus/theme-search-algolia@3.9.2(@algolia/client-search@5.44.0)(@mdx-js/react@3.1.1)(@types/react@19.2.6)(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)(search-insights@2.17.3)(typescript@5.9.3):
+  /@docusaurus/theme-search-algolia@3.9.2(@algolia/client-search@5.44.0)(@mdx-js/react@3.1.1)(@types/react@19.2.7)(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)(search-insights@2.17.3)(typescript@5.9.3):
     resolution: {integrity: sha512-GBDSFNwjnh5/LdkxCKQHkgO2pIMX1447BxYUBG2wBiajS21uj64a+gH/qlbQjDLxmGrbrllBrtJkUHxIsiwRnw==}
     engines: {node: '>=20.0'}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
     dependencies:
-      '@docsearch/react': 4.3.2(@algolia/client-search@5.44.0)(@types/react@19.2.6)(react-dom@19.2.0)(react@19.2.0)(search-insights@2.17.3)
+      '@docsearch/react': 4.3.2(@algolia/client-search@5.44.0)(@types/react@19.2.7)(react-dom@19.2.0)(react@19.2.0)(search-insights@2.17.3)
       '@docusaurus/core': 3.9.2(@mdx-js/react@3.1.1)(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)(typescript@5.9.3)
       '@docusaurus/logger': 3.9.2
       '@docusaurus/plugin-content-docs': 3.9.2(@mdx-js/react@3.1.1)(acorn@8.15.0)(react-dom@19.2.0)(react@19.2.0)(typescript@5.9.3)
@@ -5914,7 +5914,7 @@ packages:
       '@mdx-js/mdx': 3.1.0(acorn@8.15.0)
       '@types/history': 4.7.11
       '@types/mdast': 4.0.4
-      '@types/react': 19.2.6
+      '@types/react': 19.2.7
       commander: 5.1.0
       joi: 17.13.3
       react: 19.2.0
@@ -7430,14 +7430,14 @@ packages:
       - supports-color
     dev: false
 
-  /@mdx-js/react@3.1.1(@types/react@19.2.6)(react@19.2.0):
+  /@mdx-js/react@3.1.1(@types/react@19.2.7)(react@19.2.0):
     resolution: {integrity: sha512-f++rKLQgUVYDAtECQ6fn/is15GkEH9+nZPM3MS0RcxVqoTfawHvDlSCH7JbMhAM6uJ32v3eXLvLmLvjGu7PTQw==}
     peerDependencies:
       '@types/react': '>=16'
       react: '>=16'
     dependencies:
       '@types/mdx': 2.0.13
-      '@types/react': 19.2.6
+      '@types/react': 19.2.7
       react: 19.2.0
     dev: false
 
@@ -9047,36 +9047,36 @@ packages:
   /@types/range-parser@1.2.7:
     resolution: {integrity: sha512-hKormJbkJqzQGhziax5PItDUTMAM9uE2XXQmM37dyd4hVM+5aVl7oVxMVUiVQn2oCQFN/LKCZdvSM0pFRqbSmQ==}
 
-  /@types/react-dom@19.2.3(@types/react@19.2.6):
+  /@types/react-dom@19.2.3(@types/react@19.2.7):
     resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
     peerDependencies:
       '@types/react': ^19.2.0
     dependencies:
-      '@types/react': 19.2.6
+      '@types/react': 19.2.7
     dev: true
 
   /@types/react-router-config@5.0.11:
     resolution: {integrity: sha512-WmSAg7WgqW7m4x8Mt4N6ZyKz0BubSj/2tVUMsAHp+Yd2AMwcSbeFq9WympT19p5heCFmF97R9eD5uUR/t4HEqw==}
     dependencies:
       '@types/history': 4.7.11
-      '@types/react': 19.2.6
+      '@types/react': 19.2.7
       '@types/react-router': 5.1.20
 
   /@types/react-router-dom@5.3.3:
     resolution: {integrity: sha512-kpqnYK4wcdm5UaWI3fLcELopqLrHgLqNsdpHauzlQktfkHL3npOSwtj1Uz9oKBAzs7lFtVkV8j83voAz2D8fhw==}
     dependencies:
       '@types/history': 4.7.11
-      '@types/react': 19.2.6
+      '@types/react': 19.2.7
       '@types/react-router': 5.1.20
 
   /@types/react-router@5.1.20:
     resolution: {integrity: sha512-jGjmu/ZqS7FjSH6owMcD5qpq19+1RS9DeVRqfl1FeBMxTDQAGwlMWOcs52NDoXaNKyG3d1cYQFMs9rCrb88o9Q==}
     dependencies:
       '@types/history': 4.7.11
-      '@types/react': 19.2.6
+      '@types/react': 19.2.7
 
-  /@types/react@19.2.6:
-    resolution: {integrity: sha512-p/jUvulfgU7oKtj6Xpk8cA2Y1xKTtICGpJYeJXz2YVO2UcvjQgeRMLDGfDeqeRW2Ta+0QNFwcc8X3GH8SxZz6w==}
+  /@types/react@19.2.7:
+    resolution: {integrity: sha512-MWtvHrGZLFttgeEj28VXHxpmwYbor/ATPYbBfSFZEIRK0ecCFLl2Qo55z52Hss+UV9CRN7trSeq1zbgx7YDWWg==}
     dependencies:
       csstype: 3.2.3
 
@@ -9786,17 +9786,17 @@ packages:
       clean-stack: 2.2.0
       indent-string: 4.0.0
 
-  /ai@5.0.100(zod@4.1.12):
+  /ai@5.0.100(zod@4.1.13):
     resolution: {integrity: sha512-+ANP4EJomTcUKdEF3UpVAWEl6DGn+ozDLxVZKXmTV7NRfyEC2cLYcKwoU4o3sKJpqXMUKNzpFlJFBKOcsKdMyg==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
     dependencies:
-      '@ai-sdk/gateway': 2.0.14(zod@4.1.12)
+      '@ai-sdk/gateway': 2.0.14(zod@4.1.13)
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.17(zod@4.1.12)
+      '@ai-sdk/provider-utils': 3.0.17(zod@4.1.13)
       '@opentelemetry/api': 1.9.0
-      zod: 4.1.12
+      zod: 4.1.13
     dev: false
 
   /ajv-formats@2.1.1(ajv@8.17.1):
@@ -17651,6 +17651,10 @@ packages:
     resolution: {integrity: sha512-uu/tgLPoa75CFA7UDkmqspKbefvZh1WMPwkU3bNr0PY746a/+xwXVgbw5co5C3GvJj3h5u8g/pbxXzI0gd1QFg==}
     dev: true
 
+  /obug@2.1.1:
+    resolution: {integrity: sha512-uTqF9MuPraAQ+IsnPf366RG4cP9RtUi7MLO1N3KEc+wb0a6yKpeL0lmk2IB1jY5KHPAlTc6T/JRdC/YqxHNwkQ==}
+    dev: true
+
   /ohash@2.0.11:
     resolution: {integrity: sha512-RdR9FQrFwNBNXAr4GixM8YaRZRJ5PUWbKYbE5eOsrwAjJW0q2REGcf79oYPsLyskQCZG1PLN+S/K1V00joZAoQ==}
     dev: true
@@ -20102,6 +20106,40 @@ packages:
       - oxc-resolver
     dev: true
 
+  /rolldown-plugin-dts@0.18.1(rolldown@1.0.0-beta.51)(typescript@5.9.3):
+    resolution: {integrity: sha512-uIgNMix6OI+6bSkw0nw6O+G/ydPRCWKwvvcEyL6gWkVkSFVGWWO23DX4ZYVOqC7w5u2c8uPY9Q74U0QCKvegFA==}
+    engines: {node: '>=20.19.0'}
+    peerDependencies:
+      '@ts-macro/tsc': ^0.3.6
+      '@typescript/native-preview': '>=7.0.0-dev.20250601.1'
+      rolldown: ^1.0.0-beta.51
+      typescript: ^5.0.0
+      vue-tsc: ~3.1.0
+    peerDependenciesMeta:
+      '@ts-macro/tsc':
+        optional: true
+      '@typescript/native-preview':
+        optional: true
+      typescript:
+        optional: true
+      vue-tsc:
+        optional: true
+    dependencies:
+      '@babel/generator': 7.28.5
+      '@babel/parser': 7.28.5
+      '@babel/types': 7.28.5
+      ast-kit: 2.2.0
+      birpc: 2.8.0
+      dts-resolver: 2.1.3
+      get-tsconfig: 4.13.0
+      magic-string: 0.30.21
+      obug: 2.1.1
+      rolldown: 1.0.0-beta.51
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - oxc-resolver
+    dev: true
+
   /rolldown@1.0.0-beta.51:
     resolution: {integrity: sha512-ZRLgPlS91l4JztLYEZnmMcd3Umcla1hkXJgiEiR4HloRJBBoeaX8qogTu5Jfu36rRMVLndzqYv0h+M5gJAkUfg==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -21692,6 +21730,55 @@ packages:
       obug: 2.1.0
       rolldown: 1.0.0-beta.51
       rolldown-plugin-dts: 0.18.0(rolldown@1.0.0-beta.51)(typescript@5.9.3)
+      semver: 7.7.3
+      tinyexec: 1.0.2
+      tinyglobby: 0.2.15
+      tree-kill: 1.2.2
+      typescript: 5.9.3
+      unconfig-core: 7.4.1
+      unrun: 0.2.11
+    transitivePeerDependencies:
+      - '@ts-macro/tsc'
+      - '@typescript/native-preview'
+      - oxc-resolver
+      - synckit
+      - vue-tsc
+    dev: true
+
+  /tsdown@0.16.7(typescript@5.9.3):
+    resolution: {integrity: sha512-3rGG74MGc16rJ70ID7WyKnJBM5TIqGX5uYbmUCdiFIc2c3+KXka4nCeji3RRxhBw/hL7Xbs8pCY8x2cn0J+O0w==}
+    engines: {node: '>=20.19.0'}
+    hasBin: true
+    peerDependencies:
+      '@arethetypeswrong/core': ^0.18.1
+      '@vitejs/devtools': ^0.0.0-alpha.18
+      publint: ^0.3.0
+      typescript: ^5.0.0
+      unplugin-lightningcss: ^0.4.0
+      unplugin-unused: ^0.5.0
+    peerDependenciesMeta:
+      '@arethetypeswrong/core':
+        optional: true
+      '@vitejs/devtools':
+        optional: true
+      publint:
+        optional: true
+      typescript:
+        optional: true
+      unplugin-lightningcss:
+        optional: true
+      unplugin-unused:
+        optional: true
+    dependencies:
+      ansis: 4.2.0
+      cac: 6.7.14
+      chokidar: 4.0.3
+      diff: 8.0.2
+      empathic: 2.0.0
+      hookable: 5.5.3
+      obug: 2.1.1
+      rolldown: 1.0.0-beta.51
+      rolldown-plugin-dts: 0.18.1(rolldown@1.0.0-beta.51)(typescript@5.9.3)
       semver: 7.7.3
       tinyexec: 1.0.2
       tinyglobby: 0.2.15
