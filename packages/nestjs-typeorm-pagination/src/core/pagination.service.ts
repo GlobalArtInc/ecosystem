@@ -74,7 +74,8 @@ export class PaginationService<TEntity extends ObjectLiteral> {
   }
 
   private buildWhere(query: PaginationQueryDto) {
-    const filter = (query as { "filter[]": string[] })["filter[]"];
+    const filter =
+      (query as { "filter[]": string[] })["filter[]"] ?? query.filter ?? [];
     const filters = typeof filter === "string" ? [filter] : filter;
 
     if (filters.length === 0) return undefined;
