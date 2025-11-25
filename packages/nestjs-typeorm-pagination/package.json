@@ -75,7 +75,7 @@
     "sqlite3": "^5.1.7",
     "ts-jest": "^29.4.5",
     "ts-node": "^10.9.2",
-    "tsdown": "0.16.6",
+    "tsdown": "0.16.7",
     "typeorm": "^0.3.27",
     "typescript": "^5.9.3"
   },
