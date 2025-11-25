@@ -73,49 +73,63 @@ export class PaginationService<TEntity extends ObjectLiteral> {
     return { [query.orderBy as keyof TEntity]: direction } as any;
   }
 
-  private buildWhere(query: PaginationQueryDto): any | undefined {
-    if (!query.filter || query.filter.length === 0) return undefined;
+  private buildWhere(query: PaginationQueryDto) {
+    const filter = (query as { "filter[]": string[] })["filter[]"];
+    const filters = typeof filter === "string" ? [filter] : filter;
 
-    const where: Record<string, any> = {};
+    if (filters.length === 0) return undefined;
+    const conditions: Array<Record<string, any>> = [];
+    for (const raw of filters) {
+      const [field, operator, value] = String(raw).split("||");
 
-    for (const raw of query.filter) {
-      const [field, op, value] = String(raw).split("||");
-      if (!field || value === undefined) continue;
-      const normalizedOp = (op || "eq").toLowerCase();
+      if (!field || !operator || !value) continue;
 
-      switch (normalizedOp) {
+      const normalizedOperator = operator.replace(/^\$/, "").toLowerCase();
+      let condition: any;
+
+      switch (normalizedOperator) {
         case "eq":
-          where[field] = value;
+          condition = value;
           break;
         case "ne":
-          where[field] = Not(value as any);
+          condition = Not(value);
           break;
         case "like":
-          where[field] = Like(`%${value}%`);
+          condition = Like(`%${value}%`);
           break;
         case "ilike":
-          where[field] = ILike(`%${value}%` as any);
+          condition = ILike(`%${value}%`);
           break;
         case "gt":
-          where[field] = MoreThan(value as any);
+          condition = MoreThan(value);
           break;
         case "gte":
-          where[field] = MoreThanOrEqual(value as any);
+          condition = MoreThanOrEqual(value);
           break;
         case "lt":
-          where[field] = LessThan(value as any);
+          condition = LessThan(value);
           break;
         case "lte":
-          where[field] = LessThanOrEqual(value as any);
+          condition = LessThanOrEqual(value);
           break;
         case "in":
-          where[field] = In(String(value).split(",") as any[]);
+          condition = In(String(value).split(","));
           break;
         default:
-          where[field] = value;
+          condition = value;
       }
+
+      conditions.push({ [field]: condition });
     }
 
-    return where;
+    if (conditions.length === 0) {
+      return undefined;
+    }
+
+    if (conditions.length === 1) {
+      return conditions[0];
+    }
+
+    return conditions;
   }
 }
