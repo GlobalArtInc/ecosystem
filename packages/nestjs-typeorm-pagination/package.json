@@ -83,12 +83,10 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@globalart/nestjs-zod": "1.0.0",
     "@nestjs/swagger": "^11.2.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
-    "lodash": "^4.17.21",
-    "zod": "4.1.13"
+    "lodash": "^4.17.21"
   },
   "peerDependencies": {
     "@nestjs/typeorm": "^10.0.0",
