@@ -1108,6 +1108,9 @@ importers:
 
   packages/nestjs-typeorm-pagination:
     dependencies:
+      '@globalart/nestjs-zod':
+        specifier: workspace:*
+        version: link:../nestjs-zod
       '@nestjs/swagger':
         specifier: ^11.2.3
         version: 11.2.3(@nestjs/common@11.1.9)(@nestjs/core@11.1.9)(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)
@@ -1120,6 +1123,9 @@ importers:
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
+      zod:
+        specifier: 4.1.13
+        version: 4.1.13
     devDependencies:
       '@nestjs/common':
         specifier: ^11.1.9
