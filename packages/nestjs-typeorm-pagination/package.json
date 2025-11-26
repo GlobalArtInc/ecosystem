@@ -58,7 +58,7 @@
   },
   "devDependencies": {
     "@nestjs/common": "^11.1.9",
-    "@nestjs/typeorm": "^10.0.0",
+    "@nestjs/typeorm": "^11.0.0",
     "@types/express": "^5.0.5",
     "@types/jest": "^30.0.0",
     "@types/lodash": "^4.17.21",
@@ -91,7 +91,7 @@
     "zod": "4.1.13"
   },
   "peerDependencies": {
-    "@nestjs/typeorm": "^10.0.0",
+    "@nestjs/typeorm": "^11.0.0",
     "typeorm": "^0.3.0"
   },
   "jest": {
