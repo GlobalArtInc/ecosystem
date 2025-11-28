@@ -1,4 +1,4 @@
-import type { RedlockOptions } from '@redis-kit/lock';
+import type { RedlockOptions } from './core/types';
 import type {
   RedisClientType,
   RedisClusterType,

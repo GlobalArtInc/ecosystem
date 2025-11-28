@@ -1,12 +1,12 @@
-export { RedisModule } from './module';
-export { InjectRedis } from './decorators';
+export { RedisModule } from './redis-client.module';
+export { InjectRedis } from './redis-client.decorators';
 export type {
   RedisModuleOptions,
   RedisConnectionConfig,
   RedisModuleForRootOptions,
   RedisOptions,
-} from './types';
-export { RedisToken } from './tokens';
+} from './redis-client.types';
+export { RedisToken } from './redis-client.di-tokens';
 export type {
   RedisOptionsFactory,
   RedisModuleAsyncOptions,

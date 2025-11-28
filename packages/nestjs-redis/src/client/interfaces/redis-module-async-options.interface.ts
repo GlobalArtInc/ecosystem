@@ -1,6 +1,6 @@
 import { ConfigurableModuleAsyncOptions } from '@nestjs/common';
 import { RedisOptionsFactory } from './redis-options-factory.interface';
-import { RedisModuleOptions } from '../types';
+import { RedisModuleOptions } from '../redis-client.types';
 
 /**
  * Options for dynamically configuring the Redis module.

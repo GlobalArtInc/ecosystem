@@ -12,8 +12,8 @@ import {
   ConfigurableModuleClass,
   MODULE_OPTIONS_TOKEN,
 } from './redis-client.module-definition';
-import { RedisToken } from './tokens';
-import { RedisModuleForRootOptions, RedisModuleOptions } from './types';
+import { RedisToken } from './redis-client.di-tokens';
+import { RedisModuleForRootOptions, RedisModuleOptions } from './redis-client.types';
 
 type RedisInstance =
   | ReturnType<typeof createClient>
@@ -29,26 +29,31 @@ export class RedisModule
 
   protected connectionName?: string;
 
-  constructor(private moduleRef: ModuleRef) {
-    super();
-  }
-
   public static forRoot(
     options: RedisModuleForRootOptions = {},
   ): DynamicModule {
     const baseModule = super.forRoot(options);
 
     return {
-      global: options?.isGlobal ?? false,
-      module: class extends RedisModule {
-        override connectionName = options?.connectionName;
-      },
+      global: true,
+      module: RedisModule,
       providers: [
         ...(baseModule.providers || []),
         this.getRedisClientProvider(options?.connectionName),
       ],
       exports: [RedisToken(options?.connectionName)],
-    };
+    }
+    // return {
+    //   global: options?.isGlobal ?? false,
+    //   module: class extends RedisModule {
+    //     override connectionName = options?.connectionName;
+    //   },
+    //   providers: [
+    //     ...(baseModule.providers || []),
+    //     this.getRedisClientProvider(options?.connectionName),
+    //   ],
+    //   exports: [RedisToken(options?.connectionName)],
+    // };
   }
 
   public static forRootAsync(options: RedisModuleAsyncOptions): DynamicModule {

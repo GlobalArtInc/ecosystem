@@ -1,6 +1,6 @@
 {
   "name": "@globalart/nestjs-redis",
-  "version": "1.0.14",
+  "version": "1.0.0",
   "description": "A redis modules for NestJS",
   "author": {
     "name": "GlobalArt, Inc"
