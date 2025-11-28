@@ -1,4 +1,4 @@
-import { Module, DynamicModule, Provider } from "@nestjs/common";
+import { Module, DynamicModule, Provider, OnModuleDestroy, OnModuleInit, Logger } from "@nestjs/common";
 import {
   DISTRIBUTED_SHARED_REPOSITORY,
   ETCD_CLIENT,
@@ -11,6 +11,7 @@ import { Etcd3, IOptions as EtcdOptions } from "etcd3";
 import { EtcdModuleAsyncOptions, EtcdModuleOptions } from "./core/etcd.options";
 import { EtcdLeaderElectionFeatureService } from "./services";
 import { EtcdDistributedLockFeatureService } from "./services/etcd-distributed-lock.feature-service";
+import { ModuleRef } from "@nestjs/core";
 
 const createBaseProviders = (): Provider[] => [
   {
@@ -24,7 +25,9 @@ const createBaseProviders = (): Provider[] => [
 ];
 
 const createEtcdClient = (options: EtcdOptions) => {
-  return new Etcd3(options);
+  return new Etcd3({
+    ...options,
+  });
 };
 
 const featureServicesProviders = [
@@ -33,7 +36,25 @@ const featureServicesProviders = [
 ];
 
 @Module({})
-export class EtcdModule {
+export class EtcdModule implements OnModuleDestroy {
+  private readonly logger = new Logger(EtcdModule.name);
+  private healthCheckInterval?: NodeJS.Timeout;
+
+  constructor(private readonly moduleRef: ModuleRef) {}
+
+  async onModuleDestroy() {
+    if (this.healthCheckInterval) {
+      clearInterval(this.healthCheckInterval);
+    }
+
+    const etcdClient = this.moduleRef.get<Etcd3>(ETCD_CLIENT, { strict: false });
+    if (etcdClient) {
+      this.logger.log('Closing Etcd client...');
+      etcdClient.close();
+      this.logger.log('Etcd client closed successfully');
+    }
+  }
+
   static forRoot(moduleOptions: EtcdModuleOptions): DynamicModule {
     const etcdClient = createEtcdClient(moduleOptions.etcdOptions);
     const providers = [
