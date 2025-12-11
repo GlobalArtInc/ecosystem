@@ -54,7 +54,7 @@
     "@types/node": "^25.0.0",
     "@types/passport": "^1.0.17",
     "prettier": "^3.6.2",
-    "release-it": "19.0.6",
+    "release-it": "19.1.0",
     "ts-node": "^10.9.2",
     "tsdown": "0.17.2",
     "typescript": "^5.9.3"
