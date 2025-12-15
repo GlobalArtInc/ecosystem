@@ -57,7 +57,7 @@
     "prettier": "^3.6.2",
     "ts-pattern": "5.9.0",
     "uuid": "13.0.0",
-    "zod": "4.1.13"
+    "zod": "4.2.0"
   },
   "devDependencies": {
     "release-it": "19.1.0",
