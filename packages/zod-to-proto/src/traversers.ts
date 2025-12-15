@@ -359,7 +359,7 @@ export const traverseKey = ({
     const enumFields = value.options
       .map(
         (option: string | number, index: number) =>
-          `    ${String(option)} = ${index};`
+          `    ${String(option)} = ${index};`,
       )
       .join("\n");
     let enumName = toPascalCase({ value: key });
@@ -458,8 +458,8 @@ export const traverseKey = ({
       tupleMessageName,
       tupleFields.map(
         (field, index) =>
-          `  ${field.types.join(" ")} ${field.name} = ${index + 1};`
-      )
+          `  ${field.types.join(" ")} ${field.name} = ${index + 1};`,
+      ),
     );
     return [
       {
@@ -526,6 +526,6 @@ export const traverseSchema = ({
 
   return fields.map(
     (field, index) =>
-      `${protobufFieldToType({ field })} ${field.name} = ${index + 1};`
+      `${protobufFieldToType({ field })} ${field.name} = ${index + 1};`,
   );
 };

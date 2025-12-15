@@ -12,6 +12,8 @@ export type ServicesInput =
  * Options for converting Zod schemas to protobuf definitions.
  */
 export interface ZodToProtobufOptions {
+  /** Whether to add the warning declaration to the protobuf definition */
+  warningDeclaration?: boolean;
   /** Package name for the generated protobuf file */
   packageName?: string;
   /** Name of the root message (default: "Message") */

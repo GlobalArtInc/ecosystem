@@ -32,7 +32,7 @@ interface ServiceGenerationContext {
  */
 const parseZodServiceSchema = (
   name: string,
-  schema: ZodObject<Record<string, ZodTypeAny>>
+  schema: ZodObject<Record<string, ZodTypeAny>>,
 ): ServiceDefinition => {
   const shape = schema.shape as Record<string, ZodTypeAny>;
   const methods: ServiceMethod[] = [];
@@ -88,7 +88,7 @@ const normalizeServices = (services: ServicesInput): ServiceDefinition[] => {
   }
 
   return Object.entries(services).map(([name, schema]) =>
-    parseZodServiceSchema(name, schema)
+    parseZodServiceSchema(name, schema),
   );
 };
 
@@ -101,7 +101,7 @@ const normalizeServices = (services: ServicesInput): ServiceDefinition[] => {
  * @returns ZodObject containing the original schema
  */
 const ensureZodObject = (
-  schema: ZodTypeAny
+  schema: ZodTypeAny,
 ): ZodObject<Record<string, ZodTypeAny>> => {
   const schemaType =
     (schema.def as { type?: string }).type || schema.constructor.name;
@@ -124,7 +124,7 @@ const ensureZodObject = (
  */
 const generateRequestMessageName = (
   methodName: string,
-  typePrefix: string | null
+  typePrefix: string | null,
 ): string => {
   const messageName = toPascalCase({ value: `${methodName}Request` });
   return typePrefix ? `${typePrefix}${messageName}` : messageName;
@@ -139,7 +139,7 @@ const generateRequestMessageName = (
  */
 const generateResponseMessageName = (
   methodName: string,
-  typePrefix: string | null
+  typePrefix: string | null,
 ): string => {
   const messageName = toPascalCase({ value: `${methodName}Response` });
   return typePrefix ? `${typePrefix}${messageName}` : messageName;
@@ -155,7 +155,7 @@ const generateResponseMessageName = (
  */
 const processServiceMethod = (
   method: ServiceMethod,
-  context: ServiceGenerationContext
+  context: ServiceGenerationContext,
 ): { requestName: string; responseName: string } => {
   const { messages, enums, typePrefix } = context;
 
@@ -199,7 +199,7 @@ const processServiceMethod = (
  */
 export const generateServices = (
   services: ServicesInput,
-  context: ServiceGenerationContext
+  context: ServiceGenerationContext,
 ): string[] => {
   const normalizedServices = normalizeServices(services);
 
@@ -207,7 +207,7 @@ export const generateServices = (
     const methods = service.methods.map((method) => {
       const { requestName, responseName } = processServiceMethod(
         method,
-        context
+        context,
       );
 
       const requestStreaming =
