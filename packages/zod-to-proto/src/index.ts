@@ -1,1 +1,1 @@
-export { zodToProtobuf, zodToProtobufService } from "./zod-to-protobuf";
+export { zodToProtobufService } from "./zod-to-protobuf";

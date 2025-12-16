@@ -21,7 +21,7 @@ export interface ZodToProtobufOptions {
   /** Prefix to add to all generated type names */
   typePrefix?: string;
   /** Service definitions to include in the protobuf output */
-  services?: ServicesInput;
+  services?: any;
   /** Whether to skip generating the root message */
   skipRootMessage?: boolean;
 }
