@@ -88,7 +88,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "lodash": "^4.17.21",
-    "zod": "4.2.0"
+    "zod": "4.2.1"
   },
   "peerDependencies": {
     "@nestjs/typeorm": "^11.0.0",
