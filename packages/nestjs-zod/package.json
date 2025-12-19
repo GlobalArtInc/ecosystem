@@ -40,7 +40,7 @@
     "publish:npm": "release-it --config ../../.release-it.json"
   },
   "devDependencies": {
-    "@golevelup/ts-jest": "^0.7.0",
+    "@golevelup/ts-jest": "^1.1.1",
     "@nestjs/common": "^11.1.9",
     "@nestjs/core": "^11.1.9",
     "@nestjs/swagger": "^11.2.3",
