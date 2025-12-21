@@ -19,3 +19,4 @@ export * from "./utils";
 export * from "./value-objects";
 export * from "./value-objects/id.vo";
 export * from "./value-objects/nanoid.vo";
+export * from "./classes";
