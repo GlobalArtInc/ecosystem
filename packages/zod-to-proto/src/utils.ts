@@ -9,7 +9,7 @@ import type { ProtobufField } from "./types";
  * @returns Protobuf number type name ("int32" or "double")
  */
 export const getNumberTypeName = ({ value }: { value: ZodNumber }): string => {
-  return value.isInt ? "int32" : "double";
+  return ['float32', 'float64'].includes(value.format ?? '') ? "double" : "int32";
 };
 
 /**
