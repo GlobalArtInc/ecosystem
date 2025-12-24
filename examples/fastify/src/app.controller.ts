@@ -10,22 +10,19 @@ import {
 import { ExcludeLogging, InjectLogger } from "@globalart/nestjs-logger";
 import { LoggerService } from "@globalart/nestjs-logger";
 import {
-  UploadedFile,
   UploadedFiles,
+  UploadedFile,
   MultipartInterceptor,
   MultiPartFile,
 } from "@globalart/nestjs-fastify";
 import { IsEmail, IsNotEmpty, IsOptional, IsString } from "class-validator";
 import { ApiConsumes, ApiPropertyOptional } from "@nestjs/swagger";
 
-class dto {
-  @ApiPropertyOptional({
-    description: "File",
-    type: "string",
-    format: "binary",
-  })
+export class Data {
+  @ApiPropertyOptional({ description: "Test", type: 'string' })
   @IsOptional()
-  file?: any;
+  @IsString()
+  test: string;
 }
 
 @Controller()
@@ -39,14 +36,12 @@ export class AppController {
   @ApiConsumes("multipart/form-data")
   @Post("info")
   loggerInfo(
-    @Body()
-    body: dto,
+    @Body() data: Data,
     @UploadedFile("file")
     singleFile: MultiPartFile,
-    @UploadedFiles("file")
-    allFiles: MultiPartFile[]
+    @UploadedFile("file2")
+    singleFile2: MultiPartFile,
   ) {
     console.log("Single file:", singleFile);
-    console.log("All files:", allFiles);
   }
 }

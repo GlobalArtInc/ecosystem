@@ -61,6 +61,7 @@
   "devDependencies": {
     "@types/jest": "catalog:dev",
     "@types/node": "catalog:dev",
+    "class-validator": "catalog:dev",
     "coveralls": "catalog:dev",
     "jest": "catalog:dev",
     "prettier": "catalog:dev",
@@ -75,6 +76,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "peerDependencies": {},
+  "peerDependencies": {
+    "class-validator": "^0.14.0"
+  },
   "optionalDependencies": {}
 }
