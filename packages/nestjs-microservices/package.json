@@ -47,28 +47,28 @@
     "publish:npm": "release-it --config ../../.release-it.json"
   },
   "dependencies": {
-    "@nestjs/common": "catalog:prod",
-    "@nestjs/core": "catalog:prod",
-    "@nestjs/microservices": "catalog:prod",
-    "@nestjs/swagger": "catalog:prod",
-    "@nestjs/testing": "catalog:prod",
-    "@nestjs/typeorm": "catalog:prod",
-    "mysql": "catalog:prod"
+    "@nestjs/common": "11.1.10",
+    "@nestjs/core": "11.1.10",
+    "@nestjs/microservices": "11.1.10",
+    "@nestjs/swagger": "^11.2.3",
+    "@nestjs/testing": "11.1.10",
+    "@nestjs/typeorm": "^11.0.0",
+    "mysql": "^2.18.1"
   },
   "devDependencies": {
-    "@types/jest": "catalog:dev",
-    "@types/node": "catalog:dev",
-    "coveralls": "catalog:dev",
-    "jest": "catalog:dev",
-    "prettier": "catalog:dev",
-    "reflect-metadata": "catalog:dev",
-    "release-it": "catalog:dev",
-    "rxjs": "catalog:dev",
-    "ts-jest": "catalog:dev",
-    "ts-node": "catalog:dev",
-    "tsdown": "catalog:dev",
-    "typeorm": "catalog:dev",
-    "typescript": "catalog:dev"
+    "@types/jest": "^30.0.0",
+    "@types/node": "25.0.3",
+    "coveralls": "^3.1.1",
+    "jest": "^30.2.0",
+    "prettier": "3.7.4",
+    "reflect-metadata": "^0.2.2",
+    "release-it": "19.2.1",
+    "rxjs": "^7.8.2",
+    "ts-jest": "29.4.6",
+    "ts-node": "^10.9.2",
+    "tsdown": "0.18.3",
+    "typeorm": "0.3.28",
+    "typescript": "^5.9.3"
   },
   "jest": {
     "coveragePathIgnorePatterns": [
