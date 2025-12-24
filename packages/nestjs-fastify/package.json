@@ -53,6 +53,7 @@
     "@nestjs/core": "catalog:prod",
     "@nestjs/microservices": "catalog:prod",
     "@nestjs/platform-fastify": "catalog:prod",
+    "class-validator": "catalog:prod",
     "@nestjs/swagger": "catalog:prod",
     "@nestjs/testing": "catalog:prod",
     "@nestjs/typeorm": "catalog:prod",
@@ -76,8 +77,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "peerDependencies": {
-    "class-validator": "^0.14.0"
-  },
-  "optionalDependencies": {}
+  "optionalDependencies": {},
+  "peerDependencies": {}
 }
