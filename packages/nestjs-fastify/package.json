@@ -1,6 +1,6 @@
 {
   "name": "@globalart/nestjs-fastify",
-  "version": "1.0.12",
+  "version": "2.0.1",
   "description": "A fastify for NestJS",
   "author": {
     "name": "GlobalArt, Inc"
