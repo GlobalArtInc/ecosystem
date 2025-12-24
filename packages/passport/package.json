@@ -45,23 +45,25 @@
   ],
   "description": "OpenID Connect strategy for GlobalArt SSO integration",
   "devDependencies": {
-    "@types/express": "^5.0.5",
-    "@types/node": "^25.0.0",
-    "@types/passport": "^1.0.17",
-    "prettier": "^3.6.2",
-    "release-it": "19.2.0",
-    "ts-node": "^10.9.2",
-    "tsdown": "0.18.2",
-    "typescript": "^5.9.3"
+    "@types/express": "catalog:dev",
+    "@types/node": "catalog:dev",
+    "@types/passport": "catalog:dev",
+    "prettier": "catalog:dev",
+    "release-it": "catalog:dev",
+    "ts-node": "catalog:dev",
+    "tsdown": "catalog:dev",
+    "typescript": "catalog:dev"
   },
   "dependencies": {
-    "express": "^5.1.0",
-    "node-fetch": "^3.3.2",
-    "openid-connect": "^1.2.4",
-    "passport": "^0.7.0",
-    "url": "0.11.4"
+    "express": "catalog:prod",
+    "node-fetch": "catalog:prod",
+    "openid-connect": "catalog:prod",
+    "passport": "catalog:prod",
+    "url": "catalog:prod"
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "peerDependencies": {},
+  "optionalDependencies": {}
 }

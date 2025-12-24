@@ -48,17 +48,19 @@
     "publish:npm": "release-it --config ../../.release-it.json"
   },
   "dependencies": {
-    "@nestjs/common": "11.1.10",
-    "@nestjs/core": "^11.1.9",
-    "etcd3": "1.1.2"
+    "@nestjs/common": "catalog:prod",
+    "@nestjs/core": "catalog:prod",
+    "etcd3": "catalog:prod"
   },
   "devDependencies": {
-    "reflect-metadata": "^0.2.2",
-    "release-it": "19.2.0",
-    "tsdown": "0.18.2",
-    "typescript": "^5.9.3"
+    "reflect-metadata": "catalog:dev",
+    "release-it": "catalog:dev",
+    "tsdown": "catalog:dev",
+    "typescript": "catalog:dev"
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "peerDependencies": {},
+  "optionalDependencies": {}
 }

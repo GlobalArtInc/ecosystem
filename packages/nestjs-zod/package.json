@@ -40,33 +40,33 @@
     "publish:npm": "release-it --config ../../.release-it.json"
   },
   "devDependencies": {
-    "@golevelup/ts-jest": "^1.1.1",
-    "@nestjs/common": "^11.1.9",
-    "@nestjs/core": "^11.1.9",
-    "@nestjs/swagger": "^11.2.3",
-    "@nestjs/testing": "^11.1.9",
-    "@types/express": "^5.0.5",
-    "@types/jest": "^30.0.0",
-    "@types/lodash": "^4.17.21",
-    "@types/merge-deep": "^3.0.0",
-    "@types/node": "^25.0.0",
-    "@types/supertest": "^6.0.3",
-    "class-transformer": "^0.5.1",
-    "class-validator": "^0.14.2",
-    "esbuild": "^0.27.0",
-    "eslint": "^9.39.1",
-    "eslint-kit": "^11.39.0",
-    "express": "^5.1.0",
-    "jest": "^30.2.0",
-    "lodash": "^4.17.21",
-    "reflect-metadata": "^0.2.0",
-    "release-it": "19.2.0",
-    "rxjs": "^7.8.1",
-    "supertest": "^7.1.3",
-    "ts-jest": "^29.4.5",
-    "tsdown": "0.18.2",
-    "typescript": "5.9.3",
-    "zod": "^4.0.5"
+    "@golevelup/ts-jest": "catalog:dev",
+    "@nestjs/common": "catalog:dev",
+    "@nestjs/core": "catalog:dev",
+    "@nestjs/swagger": "catalog:dev",
+    "@nestjs/testing": "catalog:dev",
+    "@types/express": "catalog:dev",
+    "@types/jest": "catalog:dev",
+    "@types/lodash": "catalog:dev",
+    "@types/merge-deep": "catalog:dev",
+    "@types/node": "catalog:dev",
+    "@types/supertest": "catalog:dev",
+    "class-transformer": "catalog:dev",
+    "class-validator": "catalog:dev",
+    "esbuild": "catalog:dev",
+    "eslint": "catalog:dev",
+    "eslint-kit": "catalog:dev",
+    "express": "catalog:dev",
+    "jest": "catalog:dev",
+    "lodash": "catalog:dev",
+    "reflect-metadata": "catalog:dev",
+    "release-it": "catalog:dev",
+    "rxjs": "catalog:dev",
+    "supertest": "catalog:dev",
+    "ts-jest": "catalog:dev",
+    "tsdown": "catalog:dev",
+    "typescript": "catalog:dev",
+    "zod": "catalog:dev"
   },
   "peerDependencies": {
     "@nestjs/common": "^10.0.0 || ^11.0.0",
@@ -80,6 +80,7 @@
     }
   },
   "dependencies": {
-    "deepmerge": "^4.3.1"
-  }
+    "deepmerge": "catalog:prod"
+  },
+  "optionalDependencies": {}
 }

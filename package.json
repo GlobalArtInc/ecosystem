@@ -26,7 +26,7 @@
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
   },
-  "packageManager": "pnpm@8.15.0",
+  "packageManager": "pnpm@10.26.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/GlobalArtInc/ecosystem.git"
@@ -47,6 +47,18 @@
   "pnpm": {
     "overrides": {
       "css-select": "4.3.0"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "@parcel/watcher",
+      "@scarf/scarf",
+      "core-js",
+      "core-js-pure",
+      "esbuild",
+      "hiredis",
+      "protobufjs",
+      "sqlite3",
+      "unrs-resolver"
+    ]
   }
 }

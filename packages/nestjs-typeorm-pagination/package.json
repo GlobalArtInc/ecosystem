@@ -57,38 +57,38 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"
   },
   "devDependencies": {
-    "@nestjs/common": "^11.1.9",
-    "@nestjs/typeorm": "^11.0.0",
-    "@types/express": "^5.0.5",
-    "@types/jest": "^30.0.0",
-    "@types/lodash": "^4.17.21",
-    "@types/node": "^25.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.47.0",
-    "@typescript-eslint/parser": "^8.47.0",
-    "eslint": "^9.39.1",
-    "eslint-config-prettier": "^10.1.5",
-    "eslint-plugin-prettier": "^5.5.4",
-    "fastify": "^5.6.2",
-    "jest": "^30.2.0",
-    "pg": "^8.16.3",
-    "prettier": "^3.6.2",
-    "reflect-metadata": "^0.2.2",
-    "release-it": "19.2.0",
-    "rxjs": "^7.8.2",
-    "sqlite3": "^5.1.7",
-    "ts-jest": "^29.4.5",
-    "ts-node": "^10.9.2",
-    "tsdown": "0.18.2",
-    "typeorm": "^0.3.27",
-    "typescript": "^5.9.3"
+    "@nestjs/common": "catalog:dev",
+    "@nestjs/typeorm": "catalog:dev",
+    "@types/express": "catalog:dev",
+    "@types/jest": "catalog:dev",
+    "@types/lodash": "catalog:dev",
+    "@types/node": "catalog:dev",
+    "@typescript-eslint/eslint-plugin": "catalog:dev",
+    "@typescript-eslint/parser": "catalog:dev",
+    "eslint": "catalog:dev",
+    "eslint-config-prettier": "catalog:dev",
+    "eslint-plugin-prettier": "catalog:dev",
+    "fastify": "catalog:dev",
+    "jest": "catalog:dev",
+    "pg": "catalog:dev",
+    "prettier": "catalog:dev",
+    "reflect-metadata": "catalog:dev",
+    "release-it": "catalog:dev",
+    "rxjs": "catalog:dev",
+    "sqlite3": "catalog:dev",
+    "ts-jest": "catalog:dev",
+    "ts-node": "catalog:dev",
+    "tsdown": "catalog:dev",
+    "typeorm": "catalog:dev",
+    "typescript": "catalog:dev"
   },
   "dependencies": {
-    "@globalart/nestjs-zod": "1.0.0",
-    "@nestjs/swagger": "^11.2.3",
-    "class-transformer": "^0.5.1",
-    "class-validator": "^0.14.0",
-    "lodash": "^4.17.21",
-    "zod": "4.2.1"
+    "@globalart/nestjs-zod": "catalog:prod",
+    "@nestjs/swagger": "catalog:prod",
+    "class-transformer": "catalog:prod",
+    "class-validator": "catalog:prod",
+    "lodash": "catalog:prod",
+    "zod": "catalog:prod"
   },
   "peerDependencies": {
     "@nestjs/typeorm": "^11.0.0",
@@ -115,5 +115,6 @@
     "branches": [
       "master"
     ]
-  }
+  },
+  "optionalDependencies": {}
 }

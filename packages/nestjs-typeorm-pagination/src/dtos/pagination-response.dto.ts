@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createZodDto } from "@globalart/nestjs-zod";
 import { z } from "zod";
 

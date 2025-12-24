@@ -48,21 +48,23 @@
     "publish:npm": "release-it --config ../../.release-it.json"
   },
   "dependencies": {
-    "@nestjs/common": "11.1.10",
-    "@nestjs/core": "^11.1.9",
-    "redis": "^5.10.0",
-    "@nestjs/throttler": "^6.4.0",
-    "@nestjs/platform-socket.io": "11.1.9",
-    "@nestjs/terminus": "11.0.0",
-    "@socket.io/redis-adapter": "^8.3.0"
+    "@nestjs/common": "catalog:prod",
+    "@nestjs/core": "catalog:prod",
+    "redis": "catalog:prod",
+    "@nestjs/throttler": "catalog:prod",
+    "@nestjs/platform-socket.io": "catalog:prod",
+    "@nestjs/terminus": "catalog:prod",
+    "@socket.io/redis-adapter": "catalog:prod"
   },
   "devDependencies": {
-    "reflect-metadata": "^0.2.2",
-    "release-it": "19.2.0",
-    "tsdown": "0.18.2",
-    "typescript": "^5.9.3"
+    "reflect-metadata": "catalog:dev",
+    "release-it": "catalog:dev",
+    "tsdown": "catalog:dev",
+    "typescript": "catalog:dev"
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "peerDependencies": {},
+  "optionalDependencies": {}
 }

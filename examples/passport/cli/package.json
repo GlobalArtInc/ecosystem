@@ -25,5 +25,7 @@
     "@types/passport": "^1.0.17",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
-  }
+  },
+  "peerDependencies": {},
+  "optionalDependencies": {}
 }
