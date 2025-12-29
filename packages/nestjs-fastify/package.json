@@ -51,7 +51,7 @@
     "@fastify/multipart": "9.3.0",
     "@nestjs/common": "11.1.10",
     "@nestjs/core": "11.1.11",
-    "@nestjs/microservices": "11.1.10",
+    "@nestjs/microservices": "11.1.11",
     "@nestjs/platform-fastify": "11.1.11",
     "class-validator": "0.14.3",
     "@nestjs/swagger": "^11.2.3",
