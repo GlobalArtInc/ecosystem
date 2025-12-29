@@ -47,7 +47,7 @@
     "publish:npm": "release-it --config ../../.release-it.json"
   },
   "dependencies": {
-    "@nestjs/common": "11.1.10",
+    "@nestjs/common": "11.1.11",
     "@nestjs/core": "11.1.10",
     "@nestjs/microservices": "11.1.10",
     "@nestjs/swagger": "^11.2.3",
