@@ -50,7 +50,7 @@
     "@fastify/cookie": "11.0.2",
     "@fastify/multipart": "9.3.0",
     "@nestjs/common": "11.1.10",
-    "@nestjs/core": "11.1.10",
+    "@nestjs/core": "11.1.11",
     "@nestjs/microservices": "11.1.10",
     "@nestjs/platform-fastify": "11.1.10",
     "class-validator": "0.14.3",
