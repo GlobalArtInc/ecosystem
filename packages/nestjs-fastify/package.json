@@ -53,10 +53,10 @@
     "@nestjs/core": "11.1.11",
     "@nestjs/microservices": "11.1.11",
     "@nestjs/platform-fastify": "11.1.11",
-    "class-validator": "0.14.3",
     "@nestjs/swagger": "^11.2.3",
     "@nestjs/testing": "11.1.11",
     "@nestjs/typeorm": "^11.0.0",
+    "class-validator": "0.14.3",
     "fastify": "^5.6.2"
   },
   "devDependencies": {
@@ -71,12 +71,10 @@
     "rxjs": "^7.8.2",
     "ts-jest": "29.4.6",
     "ts-node": "^10.9.2",
-    "tsdown": "0.18.4",
+    "tsdown": "0.19.0-beta.2",
     "typescript": "^5.9.3"
   },
   "publishConfig": {
     "access": "public"
-  },
-  "optionalDependencies": {},
-  "peerDependencies": {}
+  }
 }

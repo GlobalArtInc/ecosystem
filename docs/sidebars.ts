@@ -14,6 +14,7 @@ const sidebars: SidebarsConfig = {
         'packages/nestjs-microservices',
         'packages/nestjs-logger',
         'packages/nestjs-etcd',
+        'packages/nestjs-grpc',
         'packages/ddd',
       ],
     },

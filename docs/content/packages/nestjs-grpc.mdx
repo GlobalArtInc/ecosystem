@@ -1,0 +1,424 @@
+---
+sidebar_position: 6
+---
+
+# NestJS gRPC
+
+A NestJS module for working with gRPC clients and servers. Provides a convenient API for creating and using gRPC clients, as well as configuring gRPC servers with health checks and reflection support.
+
+## Installation
+
+```bash npm2yarn
+npm install @globalart/nestjs-grpc @nestjs/microservices
+```
+
+## Overview
+
+The `@globalart/nestjs-grpc` package simplifies working with gRPC in NestJS applications by providing:
+
+- **Easy client creation** - Configure multiple gRPC clients through configuration
+- **Type safety** - Full TypeScript support with proper types
+- **Abstract client** - Simplified API for calling gRPC methods
+- **Server configuration** - Ready-to-use configuration with health checks and reflection
+- **Global module** - Available throughout your application
+
+## Key Features
+
+- **Multiple clients** - Configure multiple gRPC clients with unique names
+- **Abstract client** - Base class for simplifying gRPC calls
+- **Health Checks** - Automatic gRPC health check setup for servers
+- **Reflection** - gRPC reflection support for development
+- **Type safety** - Full TypeScript support
+
+## Quick Start
+
+### Module Setup
+
+Import `GrpcModule` in your root module:
+
+```typescript
+import { Module } from "@nestjs/common";
+import { GrpcModule } from "@globalart/nestjs-grpc";
+
+@Module({
+  imports: [
+    GrpcModule.forRoot({
+      clients: [
+        {
+          clientName: "userService",
+          packageName: "user",
+          protoPath: "./proto/user.proto",
+          url: "localhost:5000",
+        },
+        {
+          clientName: "orderService",
+          packageName: "order",
+          protoPath: "./proto/order.proto",
+          url: "localhost:5001",
+        },
+      ],
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+### Using the Client
+
+Use the `InjectGrpcClient` decorator to inject the client:
+
+```typescript
+import { Injectable, Inject } from "@nestjs/common";
+import { InjectGrpcClient, AbstractGrpcClient } from "@globalart/nestjs-grpc";
+import { ClientGrpc } from "@nestjs/microservices";
+import { Observable } from "rxjs";
+
+interface UserService {
+  getUser(data: { id: string }): Observable<{ id: string; name: string }>;
+  createUser(data: { name: string }): Observable<{ id: string; name: string }>;
+}
+
+@Injectable()
+export class UserService extends AbstractGrpcClient<UserService> {
+  constructor(
+    @InjectGrpcClient("userService")
+    private readonly client: ClientGrpc
+  ) {
+    super(client);
+  }
+
+  async getUserById(id: string) {
+    return this.call<UserService, "getUser">("UserService", "getUser", { id });
+  }
+
+  async createUser(name: string) {
+    return this.call<UserService, "createUser">("UserService", "createUser", {
+      name,
+    });
+  }
+}
+```
+
+### Configuring gRPC Server
+
+Use `getGrpcConfig` to configure a gRPC server:
+
+```typescript
+import { NestFactory } from "@nestjs/core";
+import { MicroserviceOptions } from "@nestjs/microservices";
+import { getGrpcConfig } from "@globalart/nestjs-grpc";
+import { AppModule } from "./app.module";
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  const grpcOptions: MicroserviceOptions = getGrpcConfig({
+    url: "0.0.0.0:5000",
+    packageName: "user",
+    protoPath: "./proto/user.proto",
+  });
+
+  app.connectMicroservice(grpcOptions);
+  await app.startAllMicroservices();
+  await app.listen(3000);
+}
+
+bootstrap();
+```
+
+## Configuration
+
+### GrpcModuleOptions
+
+| Option    | Type                  | Required | Description                      |
+| --------- | --------------------- | -------- | -------------------------------- |
+| `clients` | `GrpcOptionsClient[]` | Yes      | Array of gRPC client configurations |
+
+### GrpcOptionsClient
+
+| Option       | Type     | Required | Description              |
+| ------------ | -------- | -------- | ------------------------ |
+| `clientName` | `string` | Yes      | Unique client name       |
+| `packageName` | `string` | Yes      | Proto package name       |
+| `protoPath`  | `string` | Yes      | Path to proto file       |
+| `url`        | `string` | Yes      | gRPC server URL          |
+
+## Usage
+
+### Direct ClientGrpc Usage
+
+You can use the client directly without the abstract class:
+
+```typescript
+import { Injectable, Inject } from "@nestjs/common";
+import { InjectGrpcClient } from "@globalart/nestjs-grpc";
+import { ClientGrpc } from "@nestjs/microservices";
+import { firstValueFrom } from "rxjs";
+import { Observable } from "rxjs";
+
+interface UserService {
+  getUser(data: { id: string }): Observable<{ id: string; name: string }>;
+}
+
+@Injectable()
+export class UserService {
+  private userService: UserService;
+
+  constructor(
+    @InjectGrpcClient("userService")
+    private readonly client: ClientGrpc
+  ) {}
+
+  onModuleInit() {
+    this.userService = this.client.getService<UserService>("UserService");
+  }
+
+  async getUserById(id: string) {
+    return firstValueFrom(this.userService.getUser({ id }));
+  }
+}
+```
+
+### Using AbstractGrpcClient
+
+The abstract class simplifies working with gRPC calls:
+
+```typescript
+import { Injectable } from "@nestjs/common";
+import { InjectGrpcClient, AbstractGrpcClient } from "@globalart/nestjs-grpc";
+import { ClientGrpc } from "@nestjs/microservices";
+import { Observable } from "rxjs";
+
+interface OrderService {
+  getOrder(data: { id: string }): Observable<{ id: string; total: number }>;
+  createOrder(data: { items: string[] }): Observable<{ id: string }>;
+}
+
+@Injectable()
+export class OrderService extends AbstractGrpcClient<OrderService> {
+  constructor(
+    @InjectGrpcClient("orderService")
+    private readonly client: ClientGrpc
+  ) {
+    super(client);
+  }
+
+  async getOrderById(id: string) {
+    return this.call<OrderService, "getOrder">("OrderService", "getOrder", {
+      id,
+    });
+  }
+
+  async createOrder(items: string[]) {
+    return this.call<OrderService, "createOrder">(
+      "OrderService",
+      "createOrder",
+      { items }
+    );
+  }
+}
+```
+
+## API Reference
+
+### GrpcModule
+
+#### `forRoot(options: GrpcOptions): DynamicModule`
+
+Creates a global module with configured gRPC clients.
+
+**Parameters:**
+
+- `options` - Module configuration with an array of clients
+
+**Returns:** `DynamicModule` - Configured module
+
+### AbstractGrpcClient
+
+Base class for simplifying work with gRPC clients.
+
+#### `call<K extends keyof T>(serviceName: string, methodName: string, payload?: Parameters<T[K]>[0]): Promise<UnwrapObservable<ReturnType<T[K]>>>`
+
+Calls a gRPC method and returns the result.
+
+**Parameters:**
+
+- `serviceName` - Service name in the proto file
+- `methodName` - Method name to call
+- `payload` - Data to pass to the method
+
+**Returns:** Promise with the call result
+
+**Example:**
+
+```typescript
+const result = await this.call<UserService, "getUser">(
+  "UserService",
+  "getUser",
+  { id: "123" }
+);
+```
+
+### InjectGrpcClient
+
+Decorator for injecting a gRPC client.
+
+**Parameters:**
+
+- `name` - Client name specified in the configuration
+
+**Example:**
+
+```typescript
+constructor(
+  @InjectGrpcClient("userService")
+  private readonly client: ClientGrpc
+) {}
+```
+
+### getGrpcConfig
+
+Function for creating gRPC server configuration with health checks and reflection support.
+
+**Parameters:**
+
+- `options` - Server configuration:
+  - `url` - URL to listen on
+  - `packageName` - Proto package name
+  - `protoPath` - Path to proto file
+
+**Returns:** `MicroserviceOptions` - Configuration for NestJS microservice
+
+**Example:**
+
+```typescript
+const grpcOptions = getGrpcConfig({
+  url: "0.0.0.0:5000",
+  packageName: "user",
+  protoPath: "./proto/user.proto",
+});
+```
+
+## Features
+
+### Health Checks
+
+When using `getGrpcConfig`, the gRPC health check service is automatically configured. This allows you to use standard tools for service health checks.
+
+### Reflection
+
+gRPC reflection is also automatically configured, which simplifies development and debugging with tools like `grpcurl` or `Postman`.
+
+### Global Module
+
+`GrpcModule` is registered as a global module, meaning all configured clients are available in all application modules without needing to import `GrpcModule` in each module.
+
+## Usage Examples
+
+### Error Handling
+
+```typescript
+import { Injectable } from "@nestjs/common";
+import { InjectGrpcClient, AbstractGrpcClient } from "@globalart/nestjs-grpc";
+import { ClientGrpc, RpcException } from "@nestjs/microservices";
+import { Observable } from "rxjs";
+
+interface UserService {
+  getUser(data: { id: string }): Observable<{ id: string; name: string }>;
+}
+
+@Injectable()
+export class UserService extends AbstractGrpcClient<UserService> {
+  constructor(
+    @InjectGrpcClient("userService")
+    private readonly client: ClientGrpc
+  ) {
+    super(client);
+  }
+
+  async getUserById(id: string) {
+    try {
+      return await this.call<UserService, "getUser">(
+        "UserService",
+        "getUser",
+        { id }
+      );
+    } catch (error) {
+      if (error instanceof RpcException) {
+        throw new Error(`gRPC error: ${error.message}`);
+      }
+      throw error;
+    }
+  }
+}
+```
+
+### Using Multiple Clients
+
+```typescript
+import { Module } from "@nestjs/common";
+import { GrpcModule } from "@globalart/nestjs-grpc";
+
+@Module({
+  imports: [
+    GrpcModule.forRoot({
+      clients: [
+        {
+          clientName: "userService",
+          packageName: "user",
+          protoPath: "./proto/user.proto",
+          url: "localhost:5000",
+        },
+        {
+          clientName: "orderService",
+          packageName: "order",
+          protoPath: "./proto/order.proto",
+          url: "localhost:5001",
+        },
+        {
+          clientName: "paymentService",
+          packageName: "payment",
+          protoPath: "./proto/payment.proto",
+          url: "localhost:5002",
+        },
+      ],
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+## Best Practices
+
+- **Use types** - Define interfaces for your gRPC services for type safety
+- **Handle errors** - Always handle errors from gRPC calls
+- **Use AbstractGrpcClient** - Simplifies code and makes it more readable
+- **Configure health checks** - Use `getGrpcConfig` for automatic health check setup
+- **Organize proto files** - Store proto files in a separate directory
+
+## Troubleshooting
+
+### Client Not Found
+
+If you get a "Grpc client not found" error, make sure:
+
+1. The client name in `InjectGrpcClient` matches the `clientName` in the configuration
+2. `GrpcModule` is imported in the root module
+3. The client is used after module initialization
+
+### Connection Errors
+
+If you experience connection issues:
+
+1. Check that the gRPC server is running and accessible
+2. Ensure the URL is specified correctly
+3. Check network settings and firewalls
+4. Make sure the proto file exists and the path is correct
+
+### Type Issues
+
+If TypeScript cannot determine types:
+
+1. Make sure you've defined an interface for your gRPC service
+2. Use generics when calling the `call` method
+3. Verify that types in the interface match the proto definition

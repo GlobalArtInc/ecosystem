@@ -55,12 +55,10 @@
   "devDependencies": {
     "reflect-metadata": "^0.2.2",
     "release-it": "19.2.2",
-    "tsdown": "0.18.4",
+    "tsdown": "0.19.0-beta.2",
     "typescript": "^5.9.3"
   },
   "publishConfig": {
     "access": "public"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }
