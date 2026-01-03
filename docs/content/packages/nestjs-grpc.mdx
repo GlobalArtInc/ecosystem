@@ -68,7 +68,7 @@ export class AppModule {}
 Use the `InjectGrpcClient` decorator to inject the client:
 
 ```typescript
-import { Injectable, Inject } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { InjectGrpcClient, AbstractGrpcClient } from "@globalart/nestjs-grpc";
 import { ClientGrpc } from "@nestjs/microservices";
 import { Observable } from "rxjs";
@@ -79,7 +79,7 @@ interface UserService {
 }
 
 @Injectable()
-export class UserService extends AbstractGrpcClient<UserService> {
+export class UserService extends AbstractGrpcClient {
   constructor(
     @InjectGrpcClient("userService")
     private readonly client: ClientGrpc
@@ -195,7 +195,7 @@ interface OrderService {
 }
 
 @Injectable()
-export class OrderService extends AbstractGrpcClient<OrderService> {
+export class OrderService extends AbstractGrpcClient {
   constructor(
     @InjectGrpcClient("orderService")
     private readonly client: ClientGrpc
@@ -235,9 +235,9 @@ Creates a global module with configured gRPC clients.
 
 ### AbstractGrpcClient
 
-Base class for simplifying work with gRPC clients.
+Base class for simplifying work with gRPC clients. Requires only a `ClientGrpc` instance in the constructor.
 
-#### `call<K extends keyof T>(serviceName: string, methodName: string, payload?: Parameters<T[K]>[0]): Promise<UnwrapObservable<ReturnType<T[K]>>>`
+#### `call<T extends Record<string, any>, K extends keyof T>(serviceName: string, methodName: string, payload?: Parameters<T[K]>[0]): Promise<UnwrapObservable<ReturnType<T[K]>>>`
 
 Calls a gRPC method and returns the result.
 
@@ -247,11 +247,20 @@ Calls a gRPC method and returns the result.
 - `methodName` - Method name to call
 - `payload` - Data to pass to the method
 
+**Type Parameters:**
+
+- `T` - Interface describing the gRPC service methods
+- `K` - Key of the service interface (method name)
+
 **Returns:** Promise with the call result
 
 **Example:**
 
 ```typescript
+interface UserService {
+  getUser(data: { id: string }): Observable<{ id: string; name: string }>;
+}
+
 const result = await this.call<UserService, "getUser">(
   "UserService",
   "getUser",
@@ -328,7 +337,7 @@ interface UserService {
 }
 
 @Injectable()
-export class UserService extends AbstractGrpcClient<UserService> {
+export class UserService extends AbstractGrpcClient {
   constructor(
     @InjectGrpcClient("userService")
     private readonly client: ClientGrpc
@@ -392,7 +401,8 @@ export class AppModule {}
 
 - **Use types** - Define interfaces for your gRPC services for type safety
 - **Handle errors** - Always handle errors from gRPC calls
-- **Use AbstractGrpcClient** - Simplifies code and makes it more readable
+- **Use AbstractGrpcClient** - Simplifies code and makes it more readable. Just pass `ClientGrpc` to the constructor
+- **Specify types in call method** - Always specify the service interface and method name as type parameters when calling `call`
 - **Configure health checks** - Use `getGrpcConfig` for automatic health check setup
 - **Organize proto files** - Store proto files in a separate directory
 
@@ -420,5 +430,6 @@ If you experience connection issues:
 If TypeScript cannot determine types:
 
 1. Make sure you've defined an interface for your gRPC service
-2. Use generics when calling the `call` method
+2. Always specify both type parameters when calling the `call` method: `call<ServiceInterface, "methodName">`
 3. Verify that types in the interface match the proto definition
+4. Ensure the service interface methods return `Observable<T>` where T is the response type
