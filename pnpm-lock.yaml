@@ -4,238 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-catalogs:
-  dev:
-    '@golevelup/ts-jest':
-      specifier: ^1.1.1
-      version: 1.1.1
-    '@nestjs/common':
-      specifier: 11.1.10
-      version: 11.1.10
-    '@nestjs/core':
-      specifier: 11.1.10
-      version: 11.1.10
-    '@nestjs/swagger':
-      specifier: ^11.2.3
-      version: 11.2.3
-    '@nestjs/testing':
-      specifier: 11.1.10
-      version: 11.1.10
-    '@nestjs/typeorm':
-      specifier: ^11.0.0
-      version: 11.0.0
-    '@types/express':
-      specifier: 5.0.6
-      version: 5.0.6
-    '@types/jest':
-      specifier: ^30.0.0
-      version: 30.0.0
-    '@types/lodash':
-      specifier: ^4.17.21
-      version: 4.17.21
-    '@types/merge-deep':
-      specifier: 3.0.3
-      version: 3.0.3
-    '@types/node':
-      specifier: 25.0.3
-      version: 25.0.3
-    '@types/passport':
-      specifier: ^1.0.17
-      version: 1.0.17
-    '@types/supertest':
-      specifier: ^6.0.3
-      version: 6.0.3
-    '@typescript-eslint/eslint-plugin':
-      specifier: 8.50.1
-      version: 8.50.1
-    '@typescript-eslint/parser':
-      specifier: 8.50.1
-      version: 8.50.1
-    class-transformer:
-      specifier: ^0.5.1
-      version: 0.5.1
-    class-validator:
-      specifier: 0.14.3
-      version: 0.14.3
-    coveralls:
-      specifier: ^3.1.1
-      version: 3.1.1
-    esbuild:
-      specifier: 0.27.2
-      version: 0.27.2
-    eslint:
-      specifier: 9.39.2
-      version: 9.39.2
-    eslint-config-prettier:
-      specifier: 10.1.8
-      version: 10.1.8
-    eslint-kit:
-      specifier: ^11.39.0
-      version: 11.39.0
-    eslint-plugin-prettier:
-      specifier: ^5.5.4
-      version: 5.5.4
-    express:
-      specifier: 5.2.1
-      version: 5.2.1
-    fastify:
-      specifier: ^5.6.2
-      version: 5.6.2
-    jest:
-      specifier: ^30.2.0
-      version: 30.2.0
-    lodash:
-      specifier: ^4.17.21
-      version: 4.17.21
-    pg:
-      specifier: ^8.16.3
-      version: 8.16.3
-    prettier:
-      specifier: 3.7.4
-      version: 3.7.4
-    reflect-metadata:
-      specifier: ^0.2.2
-      version: 0.2.2
-    release-it:
-      specifier: 19.2.1
-      version: 19.2.1
-    rxjs:
-      specifier: ^7.8.2
-      version: 7.8.2
-    sqlite3:
-      specifier: ^5.1.7
-      version: 5.1.7
-    supertest:
-      specifier: 7.1.4
-      version: 7.1.4
-    ts-jest:
-      specifier: 29.4.6
-      version: 29.4.6
-    ts-node:
-      specifier: ^10.9.2
-      version: 10.9.2
-    tsdown:
-      specifier: 0.18.3
-      version: 0.18.3
-    typeorm:
-      specifier: 0.3.28
-      version: 0.3.28
-    typescript:
-      specifier: ^5.9.3
-      version: 5.9.3
-    zod:
-      specifier: 4.2.1
-      version: 4.2.1
-  prod:
-    '@fastify/cookie':
-      specifier: 11.0.2
-      version: 11.0.2
-    '@fastify/multipart':
-      specifier: 9.3.0
-      version: 9.3.0
-    '@globalart/nestjs-zod':
-      specifier: 1.0.0
-      version: 1.0.0
-    '@globalart/oxide':
-      specifier: 1.0.0
-      version: 1.0.0
-    '@nestjs/common':
-      specifier: 11.1.10
-      version: 11.1.10
-    '@nestjs/core':
-      specifier: 11.1.10
-      version: 11.1.10
-    '@nestjs/microservices':
-      specifier: 11.1.10
-      version: 11.1.10
-    '@nestjs/platform-fastify':
-      specifier: 11.1.10
-      version: 11.1.10
-    '@nestjs/platform-socket.io':
-      specifier: 11.1.10
-      version: 11.1.10
-    '@nestjs/swagger':
-      specifier: ^11.2.3
-      version: 11.2.3
-    '@nestjs/terminus':
-      specifier: 11.0.0
-      version: 11.0.0
-    '@nestjs/testing':
-      specifier: 11.1.10
-      version: 11.1.10
-    '@nestjs/throttler':
-      specifier: 6.5.0
-      version: 6.5.0
-    '@nestjs/typeorm':
-      specifier: ^11.0.0
-      version: 11.0.0
-    '@socket.io/redis-adapter':
-      specifier: ^8.3.0
-      version: 8.3.0
-    class-transformer:
-      specifier: ^0.5.1
-      version: 0.5.1
-    class-validator:
-      specifier: 0.14.3
-      version: 0.14.3
-    date-fns:
-      specifier: 4.1.0
-      version: 4.1.0
-    deepmerge:
-      specifier: ^4.3.1
-      version: 4.3.1
-    dequal:
-      specifier: 2.0.3
-      version: 2.0.3
-    etcd3:
-      specifier: 1.1.2
-      version: 1.1.2
-    express:
-      specifier: 5.2.1
-      version: 5.2.1
-    fastify:
-      specifier: ^5.6.2
-      version: 5.6.2
-    inflection:
-      specifier: 3.0.2
-      version: 3.0.2
-    lodash:
-      specifier: ^4.17.21
-      version: 4.17.21
-    mysql:
-      specifier: ^2.18.1
-      version: 2.18.1
-    nanoid:
-      specifier: 5.1.6
-      version: 5.1.6
-    node-fetch:
-      specifier: ^3.3.2
-      version: 3.3.2
-    openid-connect:
-      specifier: ^1.2.4
-      version: 1.2.4
-    passport:
-      specifier: ^0.7.0
-      version: 0.7.0
-    prettier:
-      specifier: 3.7.4
-      version: 3.7.4
-    redis:
-      specifier: ^5.10.0
-      version: 5.10.0
-    ts-pattern:
-      specifier: 5.9.0
-      version: 5.9.0
-    url:
-      specifier: 0.11.4
-      version: 0.11.4
-    uuid:
-      specifier: 13.0.0
-      version: 13.0.0
-    zod:
-      specifier: 4.2.1
-      version: 4.2.1
-
 overrides:
   css-select: 4.3.0
 
@@ -1147,630 +915,673 @@ importers:
   packages/ddd:
     dependencies:
       '@globalart/oxide':
-        specifier: catalog:prod
+        specifier: 1.0.0
         version: 1.0.0
       date-fns:
-        specifier: catalog:prod
+        specifier: 4.1.0
         version: 4.1.0
       dequal:
-        specifier: catalog:prod
+        specifier: 2.0.3
         version: 2.0.3
       nanoid:
-        specifier: catalog:prod
+        specifier: 5.1.6
         version: 5.1.6
       prettier:
-        specifier: catalog:prod
+        specifier: 3.7.4
         version: 3.7.4
       ts-pattern:
-        specifier: catalog:prod
+        specifier: 5.9.0
         version: 5.9.0
       uuid:
-        specifier: catalog:prod
+        specifier: 13.0.0
         version: 13.0.0
       zod:
-        specifier: catalog:prod
+        specifier: 4.2.1
         version: 4.2.1
     devDependencies:
       release-it:
-        specifier: catalog:dev
+        specifier: 19.2.1
         version: 19.2.1(@types/node@25.0.3)
       tsdown:
-        specifier: catalog:dev
+        specifier: 0.18.3
         version: 0.18.3(synckit@0.11.11)(typescript@5.9.3)
 
   packages/nestjs-etcd:
     dependencies:
       '@nestjs/common':
-        specifier: catalog:prod
+        specifier: 11.1.10
         version: 11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core':
-        specifier: catalog:prod
+        specifier: 11.1.10
         version: 11.1.10(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/microservices@11.1.10)(@nestjs/platform-express@11.1.9)(@nestjs/websockets@11.1.10)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       etcd3:
-        specifier: catalog:prod
+        specifier: 1.1.2
         version: 1.1.2
     devDependencies:
       reflect-metadata:
-        specifier: catalog:dev
+        specifier: ^0.2.2
         version: 0.2.2
       release-it:
-        specifier: catalog:dev
+        specifier: 19.2.1
         version: 19.2.1(@types/node@25.0.3)
       tsdown:
-        specifier: catalog:dev
+        specifier: 0.18.3
         version: 0.18.3(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: ^5.9.3
         version: 5.9.3
 
   packages/nestjs-fastify:
     dependencies:
       '@fastify/cookie':
-        specifier: catalog:prod
+        specifier: 11.0.2
         version: 11.0.2
       '@fastify/multipart':
-        specifier: catalog:prod
+        specifier: 9.3.0
         version: 9.3.0
       '@nestjs/common':
-        specifier: catalog:prod
+        specifier: 11.1.10
         version: 11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core':
-        specifier: catalog:prod
+        specifier: 11.1.10
         version: 11.1.10(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/microservices@11.1.10)(@nestjs/platform-express@11.1.9)(@nestjs/websockets@11.1.10)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/microservices':
-        specifier: catalog:prod
+        specifier: 11.1.10
         version: 11.1.10(@grpc/grpc-js@1.14.3)(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(@nestjs/websockets@11.1.10)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/platform-fastify':
-        specifier: catalog:prod
+        specifier: 11.1.10
         version: 11.1.10(@fastify/static@8.3.0)(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)
       '@nestjs/swagger':
-        specifier: catalog:prod
+        specifier: ^11.2.3
         version: 11.2.3(@fastify/static@8.3.0)(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)
       '@nestjs/testing':
-        specifier: catalog:prod
+        specifier: 11.1.10
         version: 11.1.10(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(@nestjs/microservices@11.1.10)(@nestjs/platform-express@11.1.9)
       '@nestjs/typeorm':
-        specifier: catalog:prod
+        specifier: ^11.0.0
         version: 11.0.0(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.28(pg@8.16.3)(redis@5.10.0)(sqlite3@5.1.7)(ts-node@10.9.2(@types/node@25.0.3)(typescript@5.9.3)))
       class-validator:
-        specifier: catalog:prod
+        specifier: 0.14.3
         version: 0.14.3
       fastify:
-        specifier: catalog:prod
+        specifier: ^5.6.2
         version: 5.6.2
     devDependencies:
       '@types/jest':
-        specifier: catalog:dev
+        specifier: ^30.0.0
         version: 30.0.0
       '@types/node':
-        specifier: catalog:dev
+        specifier: 25.0.3
         version: 25.0.3
       coveralls:
-        specifier: catalog:dev
+        specifier: ^3.1.1
         version: 3.1.1
       jest:
-        specifier: catalog:dev
+        specifier: ^30.2.0
         version: 30.2.0(@types/node@25.0.3)(ts-node@10.9.2(@types/node@25.0.3)(typescript@5.9.3))
       prettier:
-        specifier: catalog:dev
+        specifier: 3.7.4
         version: 3.7.4
       reflect-metadata:
-        specifier: catalog:dev
+        specifier: ^0.2.2
         version: 0.2.2
       release-it:
-        specifier: catalog:dev
+        specifier: 19.2.1
         version: 19.2.1(@types/node@25.0.3)
       rxjs:
-        specifier: catalog:dev
+        specifier: ^7.8.2
         version: 7.8.2
       ts-jest:
-        specifier: catalog:dev
+        specifier: 29.4.6
         version: 29.4.6(@babel/core@7.28.5)(@jest/transform@30.2.0)(@jest/types@30.2.0)(babel-jest@30.2.0(@babel/core@7.28.5))(jest-util@30.2.0)(jest@30.2.0(@types/node@25.0.3)(ts-node@10.9.2(@types/node@25.0.3)(typescript@5.9.3)))(typescript@5.9.3)
       ts-node:
-        specifier: catalog:dev
+        specifier: ^10.9.2
         version: 10.9.2(@types/node@25.0.3)(typescript@5.9.3)
       tsdown:
-        specifier: catalog:dev
+        specifier: 0.18.3
         version: 0.18.3(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/nestjs-grpc:
+    dependencies:
+      '@grpc/reflection':
+        specifier: ^1.0.4
+        version: 1.0.4(@grpc/grpc-js@1.14.3)
+      '@nestjs/common':
+        specifier: 11.1.10
+        version: 11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/core':
+        specifier: 11.1.10
+        version: 11.1.10(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/microservices@11.1.10)(@nestjs/platform-express@11.1.9)(@nestjs/websockets@11.1.10)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/microservices':
+        specifier: 11.1.10
+        version: 11.1.10(@grpc/grpc-js@1.14.3)(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(@nestjs/websockets@11.1.10)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/platform-socket.io':
+        specifier: 11.1.10
+        version: 11.1.10(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/websockets@11.1.10)(rxjs@7.8.2)
+      '@nestjs/terminus':
+        specifier: 11.0.0
+        version: 11.0.0(@grpc/grpc-js@1.14.3)(@grpc/proto-loader@0.8.0)(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(@nestjs/microservices@11.1.10)(@nestjs/typeorm@11.0.0(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.28(pg@8.16.3)(redis@5.10.0)(sqlite3@5.1.7)(ts-node@10.9.2(@types/node@25.0.3)(typescript@5.9.3))))(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.28(pg@8.16.3)(redis@5.10.0)(sqlite3@5.1.7)(ts-node@10.9.2(@types/node@25.0.3)(typescript@5.9.3)))
+      '@nestjs/throttler':
+        specifier: 6.5.0
+        version: 6.5.0(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(reflect-metadata@0.2.2)
+      grpc-health-check:
+        specifier: ^2.1.0
+        version: 2.1.0
+      rxjs:
+        specifier: ^7.8.1
+        version: 7.8.2
+    devDependencies:
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+      release-it:
+        specifier: 19.2.1
+        version: 19.2.1(@types/node@25.0.3)
+      tsdown:
+        specifier: 0.18.3
+        version: 0.18.3(synckit@0.11.11)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.9.3
         version: 5.9.3
 
   packages/nestjs-logger:
     dependencies:
       '@nestjs/common':
-        specifier: catalog:prod
+        specifier: 11.1.10
         version: 11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core':
-        specifier: catalog:prod
+        specifier: 11.1.10
         version: 11.1.10(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/microservices@11.1.10)(@nestjs/platform-express@11.1.9)(@nestjs/websockets@11.1.10)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/microservices':
-        specifier: catalog:prod
+        specifier: 11.1.10
         version: 11.1.10(@grpc/grpc-js@1.14.3)(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(@nestjs/websockets@11.1.10)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/swagger':
-        specifier: catalog:prod
+        specifier: ^11.2.3
         version: 11.2.3(@fastify/static@8.3.0)(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)
       '@nestjs/testing':
-        specifier: catalog:prod
+        specifier: 11.1.10
         version: 11.1.10(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(@nestjs/microservices@11.1.10)(@nestjs/platform-express@11.1.9)
       '@nestjs/typeorm':
-        specifier: catalog:prod
+        specifier: ^11.0.0
         version: 11.0.0(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.28(pg@8.16.3)(redis@5.10.0)(sqlite3@5.1.7)(ts-node@10.9.2(@types/node@25.0.3)(typescript@5.9.3)))
     devDependencies:
       '@types/jest':
-        specifier: catalog:dev
+        specifier: ^30.0.0
         version: 30.0.0
       '@types/node':
-        specifier: catalog:dev
+        specifier: 25.0.3
         version: 25.0.3
       coveralls:
-        specifier: catalog:dev
+        specifier: ^3.1.1
         version: 3.1.1
       jest:
-        specifier: catalog:dev
+        specifier: ^30.2.0
         version: 30.2.0(@types/node@25.0.3)(ts-node@10.9.2(@types/node@25.0.3)(typescript@5.9.3))
       prettier:
-        specifier: catalog:dev
+        specifier: 3.7.4
         version: 3.7.4
       reflect-metadata:
-        specifier: catalog:dev
+        specifier: ^0.2.2
         version: 0.2.2
       release-it:
-        specifier: catalog:dev
+        specifier: 19.2.1
         version: 19.2.1(@types/node@25.0.3)
       rxjs:
-        specifier: catalog:dev
+        specifier: ^7.8.2
         version: 7.8.2
       ts-jest:
-        specifier: catalog:dev
+        specifier: 29.4.6
         version: 29.4.6(@babel/core@7.28.5)(@jest/transform@30.2.0)(@jest/types@30.2.0)(babel-jest@30.2.0(@babel/core@7.28.5))(jest-util@30.2.0)(jest@30.2.0(@types/node@25.0.3)(ts-node@10.9.2(@types/node@25.0.3)(typescript@5.9.3)))(typescript@5.9.3)
       ts-node:
-        specifier: catalog:dev
+        specifier: ^10.9.2
         version: 10.9.2(@types/node@25.0.3)(typescript@5.9.3)
       tsdown:
-        specifier: catalog:dev
+        specifier: 0.18.3
         version: 0.18.3(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: ^5.9.3
         version: 5.9.3
 
   packages/nestjs-microservices:
     dependencies:
       '@nestjs/common':
-        specifier: catalog:prod
+        specifier: 11.1.10
         version: 11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core':
-        specifier: catalog:prod
+        specifier: 11.1.10
         version: 11.1.10(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/microservices@11.1.10)(@nestjs/platform-express@11.1.9)(@nestjs/websockets@11.1.10)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/microservices':
-        specifier: catalog:prod
+        specifier: 11.1.10
         version: 11.1.10(@grpc/grpc-js@1.14.3)(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(@nestjs/websockets@11.1.10)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/swagger':
-        specifier: catalog:prod
+        specifier: ^11.2.3
         version: 11.2.3(@fastify/static@8.3.0)(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)
       '@nestjs/testing':
-        specifier: catalog:prod
+        specifier: 11.1.10
         version: 11.1.10(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(@nestjs/microservices@11.1.10)(@nestjs/platform-express@11.1.9)
       '@nestjs/typeorm':
-        specifier: catalog:prod
+        specifier: ^11.0.0
         version: 11.0.0(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.28(pg@8.16.3)(redis@5.10.0)(sqlite3@5.1.7)(ts-node@10.9.2(@types/node@25.0.3)(typescript@5.9.3)))
       mysql:
-        specifier: catalog:prod
+        specifier: ^2.18.1
         version: 2.18.1
     devDependencies:
       '@types/jest':
-        specifier: catalog:dev
+        specifier: ^30.0.0
         version: 30.0.0
       '@types/node':
-        specifier: catalog:dev
+        specifier: 25.0.3
         version: 25.0.3
       coveralls:
-        specifier: catalog:dev
+        specifier: ^3.1.1
         version: 3.1.1
       jest:
-        specifier: catalog:dev
+        specifier: ^30.2.0
         version: 30.2.0(@types/node@25.0.3)(ts-node@10.9.2(@types/node@25.0.3)(typescript@5.9.3))
       prettier:
-        specifier: catalog:dev
+        specifier: 3.7.4
         version: 3.7.4
       reflect-metadata:
-        specifier: catalog:dev
+        specifier: ^0.2.2
         version: 0.2.2
       release-it:
-        specifier: catalog:dev
+        specifier: 19.2.1
         version: 19.2.1(@types/node@25.0.3)
       rxjs:
-        specifier: catalog:dev
+        specifier: ^7.8.2
         version: 7.8.2
       ts-jest:
-        specifier: catalog:dev
+        specifier: 29.4.6
         version: 29.4.6(@babel/core@7.28.5)(@jest/transform@30.2.0)(@jest/types@30.2.0)(babel-jest@30.2.0(@babel/core@7.28.5))(jest-util@30.2.0)(jest@30.2.0(@types/node@25.0.3)(ts-node@10.9.2(@types/node@25.0.3)(typescript@5.9.3)))(typescript@5.9.3)
       ts-node:
-        specifier: catalog:dev
+        specifier: ^10.9.2
         version: 10.9.2(@types/node@25.0.3)(typescript@5.9.3)
       tsdown:
-        specifier: catalog:dev
+        specifier: 0.18.3
         version: 0.18.3(synckit@0.11.11)(typescript@5.9.3)
       typeorm:
-        specifier: catalog:dev
+        specifier: 0.3.28
         version: 0.3.28(pg@8.16.3)(redis@5.10.0)(sqlite3@5.1.7)(ts-node@10.9.2(@types/node@25.0.3)(typescript@5.9.3))
       typescript:
-        specifier: catalog:dev
+        specifier: ^5.9.3
         version: 5.9.3
 
   packages/nestjs-redis:
     dependencies:
       '@nestjs/common':
-        specifier: catalog:prod
+        specifier: 11.1.10
         version: 11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core':
-        specifier: catalog:prod
+        specifier: 11.1.10
         version: 11.1.10(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/microservices@11.1.10)(@nestjs/platform-express@11.1.9)(@nestjs/websockets@11.1.10)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/platform-socket.io':
-        specifier: catalog:prod
+        specifier: 11.1.10
         version: 11.1.10(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/websockets@11.1.10)(rxjs@7.8.2)
       '@nestjs/terminus':
-        specifier: catalog:prod
+        specifier: 11.0.0
         version: 11.0.0(@grpc/grpc-js@1.14.3)(@grpc/proto-loader@0.8.0)(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(@nestjs/microservices@11.1.10)(@nestjs/typeorm@11.0.0(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.28(pg@8.16.3)(redis@5.10.0)(sqlite3@5.1.7)(ts-node@10.9.2(@types/node@25.0.3)(typescript@5.9.3))))(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.28(pg@8.16.3)(redis@5.10.0)(sqlite3@5.1.7)(ts-node@10.9.2(@types/node@25.0.3)(typescript@5.9.3)))
       '@nestjs/throttler':
-        specifier: catalog:prod
+        specifier: 6.5.0
         version: 6.5.0(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(reflect-metadata@0.2.2)
       '@socket.io/redis-adapter':
-        specifier: catalog:prod
+        specifier: ^8.3.0
         version: 8.3.0(socket.io-adapter@2.5.6)
       redis:
-        specifier: catalog:prod
+        specifier: ^5.10.0
         version: 5.10.0
     devDependencies:
       reflect-metadata:
-        specifier: catalog:dev
+        specifier: ^0.2.2
         version: 0.2.2
       release-it:
-        specifier: catalog:dev
+        specifier: 19.2.1
         version: 19.2.1(@types/node@25.0.3)
       tsdown:
-        specifier: catalog:dev
+        specifier: 0.18.3
         version: 0.18.3(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: ^5.9.3
         version: 5.9.3
 
   packages/nestjs-swagger:
     dependencies:
       '@nestjs/common':
-        specifier: catalog:prod
+        specifier: 11.1.10
         version: 11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core':
-        specifier: catalog:prod
+        specifier: 11.1.10
         version: 11.1.10(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/microservices@11.1.10)(@nestjs/platform-express@11.1.9)(@nestjs/websockets@11.1.10)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/swagger':
-        specifier: catalog:prod
+        specifier: ^11.2.3
         version: 11.2.3(@fastify/static@8.3.0)(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)
       '@nestjs/testing':
-        specifier: catalog:prod
+        specifier: 11.1.10
         version: 11.1.10(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(@nestjs/microservices@11.1.10)(@nestjs/platform-express@11.1.9)
       '@nestjs/typeorm':
-        specifier: catalog:prod
+        specifier: ^11.0.0
         version: 11.0.0(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.28(pg@8.16.3)(redis@5.10.0)(sqlite3@5.1.7)(ts-node@10.9.2(@types/node@25.0.3)(typescript@5.9.3)))
       mysql:
-        specifier: catalog:prod
+        specifier: ^2.18.1
         version: 2.18.1
     devDependencies:
       '@types/jest':
-        specifier: catalog:dev
+        specifier: ^30.0.0
         version: 30.0.0
       '@types/node':
-        specifier: catalog:dev
+        specifier: 25.0.3
         version: 25.0.3
       coveralls:
-        specifier: catalog:dev
+        specifier: ^3.1.1
         version: 3.1.1
       jest:
-        specifier: catalog:dev
+        specifier: ^30.2.0
         version: 30.2.0(@types/node@25.0.3)(ts-node@10.9.2(@types/node@25.0.3)(typescript@5.9.3))
       prettier:
-        specifier: catalog:dev
+        specifier: 3.7.4
         version: 3.7.4
       reflect-metadata:
-        specifier: catalog:dev
+        specifier: ^0.2.2
         version: 0.2.2
       release-it:
-        specifier: catalog:dev
+        specifier: 19.2.1
         version: 19.2.1(@types/node@25.0.3)
       rxjs:
-        specifier: catalog:dev
+        specifier: ^7.8.2
         version: 7.8.2
       ts-jest:
-        specifier: catalog:dev
+        specifier: 29.4.6
         version: 29.4.6(@babel/core@7.28.5)(@jest/transform@30.2.0)(@jest/types@30.2.0)(babel-jest@30.2.0(@babel/core@7.28.5))(jest-util@30.2.0)(jest@30.2.0(@types/node@25.0.3)(ts-node@10.9.2(@types/node@25.0.3)(typescript@5.9.3)))(typescript@5.9.3)
       ts-node:
-        specifier: catalog:dev
+        specifier: ^10.9.2
         version: 10.9.2(@types/node@25.0.3)(typescript@5.9.3)
       tsdown:
-        specifier: catalog:dev
+        specifier: 0.18.3
         version: 0.18.3(synckit@0.11.11)(typescript@5.9.3)
       typeorm:
-        specifier: catalog:dev
+        specifier: 0.3.28
         version: 0.3.28(pg@8.16.3)(redis@5.10.0)(sqlite3@5.1.7)(ts-node@10.9.2(@types/node@25.0.3)(typescript@5.9.3))
       typescript:
-        specifier: catalog:dev
+        specifier: ^5.9.3
         version: 5.9.3
 
   packages/nestjs-typeorm-pagination:
     dependencies:
       '@globalart/nestjs-zod':
-        specifier: catalog:prod
+        specifier: 1.0.0
         version: 1.0.0(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/swagger@11.2.3(@fastify/static@8.3.0)(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2))(rxjs@7.8.2)(zod@4.2.1)
       '@nestjs/swagger':
-        specifier: catalog:prod
+        specifier: ^11.2.3
         version: 11.2.3(@fastify/static@8.3.0)(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)
       class-transformer:
-        specifier: catalog:prod
+        specifier: ^0.5.1
         version: 0.5.1
       class-validator:
-        specifier: catalog:prod
+        specifier: 0.14.3
         version: 0.14.3
       lodash:
-        specifier: catalog:prod
+        specifier: ^4.17.21
         version: 4.17.21
       zod:
-        specifier: catalog:prod
+        specifier: 4.2.1
         version: 4.2.1
     devDependencies:
       '@nestjs/common':
-        specifier: catalog:dev
+        specifier: 11.1.10
         version: 11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/typeorm':
-        specifier: catalog:dev
+        specifier: ^11.0.0
         version: 11.0.0(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.28(pg@8.16.3)(redis@5.10.0)(sqlite3@5.1.7)(ts-node@10.9.2(@types/node@25.0.3)(typescript@5.9.3)))
       '@types/express':
-        specifier: catalog:dev
+        specifier: 5.0.6
         version: 5.0.6
       '@types/jest':
-        specifier: catalog:dev
+        specifier: ^30.0.0
         version: 30.0.0
       '@types/lodash':
-        specifier: catalog:dev
+        specifier: ^4.17.21
         version: 4.17.21
       '@types/node':
-        specifier: catalog:dev
+        specifier: 25.0.3
         version: 25.0.3
       '@typescript-eslint/eslint-plugin':
-        specifier: catalog:dev
+        specifier: 8.50.1
         version: 8.50.1(@typescript-eslint/parser@8.50.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: catalog:dev
+        specifier: 8.50.1
         version: 8.50.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
       eslint:
-        specifier: catalog:dev
+        specifier: 9.39.2
         version: 9.39.2(jiti@2.6.1)
       eslint-config-prettier:
-        specifier: catalog:dev
+        specifier: 10.1.8
         version: 10.1.8(eslint@9.39.2(jiti@2.6.1))
       eslint-plugin-prettier:
-        specifier: catalog:dev
+        specifier: ^5.5.4
         version: 5.5.4(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1))(prettier@3.7.4)
       fastify:
-        specifier: catalog:dev
+        specifier: ^5.6.2
         version: 5.6.2
       jest:
-        specifier: catalog:dev
+        specifier: ^30.2.0
         version: 30.2.0(@types/node@25.0.3)(ts-node@10.9.2(@types/node@25.0.3)(typescript@5.9.3))
       pg:
-        specifier: catalog:dev
+        specifier: ^8.16.3
         version: 8.16.3
       prettier:
-        specifier: catalog:dev
+        specifier: 3.7.4
         version: 3.7.4
       reflect-metadata:
-        specifier: catalog:dev
+        specifier: ^0.2.2
         version: 0.2.2
       release-it:
-        specifier: catalog:dev
+        specifier: 19.2.1
         version: 19.2.1(@types/node@25.0.3)
       rxjs:
-        specifier: catalog:dev
+        specifier: ^7.8.2
         version: 7.8.2
       sqlite3:
-        specifier: catalog:dev
+        specifier: ^5.1.7
         version: 5.1.7
       ts-jest:
-        specifier: catalog:dev
+        specifier: 29.4.6
         version: 29.4.6(@babel/core@7.28.5)(@jest/transform@30.2.0)(@jest/types@30.2.0)(babel-jest@30.2.0(@babel/core@7.28.5))(jest-util@30.2.0)(jest@30.2.0(@types/node@25.0.3)(ts-node@10.9.2(@types/node@25.0.3)(typescript@5.9.3)))(typescript@5.9.3)
       ts-node:
-        specifier: catalog:dev
+        specifier: ^10.9.2
         version: 10.9.2(@types/node@25.0.3)(typescript@5.9.3)
       tsdown:
-        specifier: catalog:dev
+        specifier: 0.18.3
         version: 0.18.3(synckit@0.11.11)(typescript@5.9.3)
       typeorm:
-        specifier: catalog:dev
+        specifier: 0.3.28
         version: 0.3.28(pg@8.16.3)(redis@5.10.0)(sqlite3@5.1.7)(ts-node@10.9.2(@types/node@25.0.3)(typescript@5.9.3))
       typescript:
-        specifier: catalog:dev
+        specifier: ^5.9.3
         version: 5.9.3
 
   packages/nestjs-zod:
     dependencies:
       deepmerge:
-        specifier: catalog:prod
+        specifier: ^4.3.1
         version: 4.3.1
     devDependencies:
       '@golevelup/ts-jest':
-        specifier: catalog:dev
+        specifier: ^1.1.1
         version: 1.1.1
       '@nestjs/common':
-        specifier: catalog:dev
+        specifier: 11.1.10
         version: 11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core':
-        specifier: catalog:dev
+        specifier: 11.1.10
         version: 11.1.10(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/microservices@11.1.10)(@nestjs/platform-express@11.1.9)(@nestjs/websockets@11.1.10)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/swagger':
-        specifier: catalog:dev
+        specifier: ^11.2.3
         version: 11.2.3(@fastify/static@8.3.0)(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)
       '@nestjs/testing':
-        specifier: catalog:dev
+        specifier: 11.1.10
         version: 11.1.10(@nestjs/common@11.1.10(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.10)(@nestjs/microservices@11.1.10)(@nestjs/platform-express@11.1.9)
       '@types/express':
-        specifier: catalog:dev
+        specifier: 5.0.6
         version: 5.0.6
       '@types/jest':
-        specifier: catalog:dev
+        specifier: ^30.0.0
         version: 30.0.0
       '@types/lodash':
-        specifier: catalog:dev
+        specifier: ^4.17.21
         version: 4.17.21
       '@types/merge-deep':
-        specifier: catalog:dev
+        specifier: 3.0.3
         version: 3.0.3
       '@types/node':
-        specifier: catalog:dev
+        specifier: 25.0.3
         version: 25.0.3
       '@types/supertest':
-        specifier: catalog:dev
+        specifier: ^6.0.3
         version: 6.0.3
       class-transformer:
-        specifier: catalog:dev
+        specifier: ^0.5.1
         version: 0.5.1
       class-validator:
-        specifier: catalog:dev
+        specifier: 0.14.3
         version: 0.14.3
       esbuild:
-        specifier: catalog:dev
+        specifier: 0.27.2
         version: 0.27.2
       eslint:
-        specifier: catalog:dev
+        specifier: 9.39.2
         version: 9.39.2(jiti@2.6.1)
       eslint-kit:
-        specifier: catalog:dev
+        specifier: ^11.39.0
         version: 11.39.0(@types/eslint@9.6.1)(@typescript-eslint/utils@8.50.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(effector@23.4.4)(eslint-config-prettier@10.1.8(eslint@9.39.2(jiti@2.6.1)))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.32.0(@typescript-eslint/parser@7.18.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1))(prettier@3.7.4)(svelte@3.59.2)(typescript@5.9.3)
       express:
-        specifier: catalog:dev
+        specifier: 5.2.1
         version: 5.2.1
       jest:
-        specifier: catalog:dev
+        specifier: ^30.2.0
         version: 30.2.0(@types/node@25.0.3)
       lodash:
-        specifier: catalog:dev
+        specifier: ^4.17.21
         version: 4.17.21
       reflect-metadata:
-        specifier: catalog:dev
+        specifier: ^0.2.2
         version: 0.2.2
       release-it:
-        specifier: catalog:dev
+        specifier: 19.2.1
         version: 19.2.1(@types/node@25.0.3)
       rxjs:
-        specifier: catalog:dev
+        specifier: ^7.8.2
         version: 7.8.2
       supertest:
-        specifier: catalog:dev
+        specifier: 7.1.4
         version: 7.1.4
       ts-jest:
-        specifier: catalog:dev
+        specifier: 29.4.6
         version: 29.4.6(@babel/core@7.28.5)(@jest/transform@30.2.0)(@jest/types@30.2.0)(babel-jest@30.2.0(@babel/core@7.28.5))(esbuild@0.27.2)(jest-util@30.2.0)(jest@30.2.0(@types/node@25.0.3))(typescript@5.9.3)
       tsdown:
-        specifier: catalog:dev
+        specifier: 0.18.3
         version: 0.18.3(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: ^5.9.3
         version: 5.9.3
       zod:
-        specifier: catalog:dev
+        specifier: 4.2.1
         version: 4.2.1
 
   packages/oxide:
     devDependencies:
       '@types/node':
-        specifier: catalog:dev
+        specifier: 25.0.3
         version: 25.0.3
       prettier:
-        specifier: catalog:dev
+        specifier: 3.7.4
         version: 3.7.4
       release-it:
-        specifier: catalog:dev
+        specifier: 19.2.1
         version: 19.2.1(@types/node@25.0.3)
       tsdown:
-        specifier: catalog:dev
+        specifier: 0.18.3
         version: 0.18.3(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: ^5.9.3
         version: 5.9.3
 
   packages/passport:
     dependencies:
       express:
-        specifier: catalog:prod
+        specifier: 5.2.1
         version: 5.2.1
       node-fetch:
-        specifier: catalog:prod
+        specifier: ^3.3.2
         version: 3.3.2
       openid-connect:
-        specifier: catalog:prod
+        specifier: ^1.2.4
         version: 1.2.4
       passport:
-        specifier: catalog:prod
+        specifier: ^0.7.0
         version: 0.7.0
       url:
-        specifier: catalog:prod
+        specifier: 0.11.4
         version: 0.11.4
     devDependencies:
       '@types/express':
-        specifier: catalog:dev
+        specifier: 5.0.6
         version: 5.0.6
       '@types/node':
-        specifier: catalog:dev
+        specifier: 25.0.3
         version: 25.0.3
       '@types/passport':
-        specifier: catalog:dev
+        specifier: ^1.0.17
         version: 1.0.17
       prettier:
-        specifier: catalog:dev
+        specifier: 3.7.4
         version: 3.7.4
       release-it:
-        specifier: catalog:dev
+        specifier: 19.2.1
         version: 19.2.1(@types/node@25.0.3)
       ts-node:
-        specifier: catalog:dev
+        specifier: ^10.9.2
         version: 10.9.2(@types/node@25.0.3)(typescript@5.9.3)
       tsdown:
-        specifier: catalog:dev
+        specifier: 0.18.3
         version: 0.18.3(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: ^5.9.3
         version: 5.9.3
 
   packages/zod-to-proto:
     dependencies:
       inflection:
-        specifier: catalog:prod
+        specifier: 3.0.2
         version: 3.0.2
       zod:
-        specifier: catalog:prod
+        specifier: 4.2.1
         version: 4.2.1
     devDependencies:
       '@types/express':
-        specifier: catalog:dev
+        specifier: 5.0.6
         version: 5.0.6
       '@types/node':
-        specifier: catalog:dev
+        specifier: 25.0.3
         version: 25.0.3
       '@types/passport':
-        specifier: catalog:dev
+        specifier: ^1.0.17
         version: 1.0.17
       prettier:
-        specifier: catalog:dev
+        specifier: 3.7.4
         version: 3.7.4
       release-it:
-        specifier: catalog:dev
+        specifier: 19.2.1
         version: 19.2.1(@types/node@25.0.3)
       ts-node:
-        specifier: catalog:dev
+        specifier: ^10.9.2
         version: 10.9.2(@types/node@25.0.3)(typescript@5.9.3)
       tsdown:
-        specifier: catalog:dev
+        specifier: 0.18.3
         version: 0.18.3(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: ^5.9.3
         version: 5.9.3
 
 packages:
@@ -3515,6 +3326,11 @@ packages:
     resolution: {integrity: sha512-rc1hOQtjIWGxcxpb9aHAfLpIctjEnsDehj0DAiVfBlmT84uvR0uUtN2hEi/ecvWVjXUGf5qPF4qEgiLOx1YIMQ==}
     engines: {node: '>=6'}
     hasBin: true
+
+  '@grpc/reflection@1.0.4':
+    resolution: {integrity: sha512-znA8v4AviOD3OPOxy11pxrtP8k8DanpefeTymS8iGW1fVr1U2cHuzfhYqDPHnVNDf4qvF9E25KtSihPy2DBWfQ==}
+    peerDependencies:
+      '@grpc/grpc-js': ^1.8.21
 
   '@hapi/hoek@9.3.0':
     resolution: {integrity: sha512-/c6rf4UJlmHlC9b5BaNvzAcFv7HZ2QHaV0D4/HNlBdvFnvQq8RI4kYdhyPCl7Xj+oWvTWQ8ujhqS53LIgAe6KQ==}
@@ -7660,6 +7476,9 @@ packages:
   gray-matter@4.0.3:
     resolution: {integrity: sha512-5v6yZd4JK3eMI3FqqCouswVqwugaA9r4dNZB1wwcmrD02QkV5H0y7XBQW8QwQqEaZY1pM9aqORSORhJRdNK44Q==}
     engines: {node: '>=6.0'}
+
+  grpc-health-check@2.1.0:
+    resolution: {integrity: sha512-HH3WjwNtusMTEQAtRelFgsFyNcOdihvpjusNDIrGYfWG8tPNSHqELrSyriIjm70k65YSxetsKG1y4H1L5gi1wQ==}
 
   gzip-size@6.0.0:
     resolution: {integrity: sha512-ax7ZYomf6jqPTQ4+XCpUGyXKHk5WweS+e05MBO4/y3WJ5RkmPXNKvX+bx1behVILVwr6JSQvZAku021CHPXG3Q==}
@@ -15512,6 +15331,12 @@ snapshots:
       protobufjs: 7.5.4
       yargs: 17.7.2
 
+  '@grpc/reflection@1.0.4(@grpc/grpc-js@1.14.3)':
+    dependencies:
+      '@grpc/grpc-js': 1.14.3
+      '@grpc/proto-loader': 0.7.15
+      protobufjs: 7.5.4
+
   '@hapi/hoek@9.3.0': {}
 
   '@hapi/topo@5.1.0':
@@ -20618,6 +20443,10 @@ snapshots:
       section-matter: 1.0.0
       strip-bom-string: 1.0.0
 
+  grpc-health-check@2.1.0:
+    dependencies:
+      '@grpc/proto-loader': 0.7.15
+
   gzip-size@6.0.0:
     dependencies:
       duplexer: 0.1.2
@@ -24271,7 +24100,7 @@ snapshots:
 
   refa@0.12.1:
     dependencies:
-      '@eslint-community/regexpp': 4.12.1
+      '@eslint-community/regexpp': 4.12.2
 
   reflect-metadata@0.2.2: {}
 
@@ -24294,7 +24123,7 @@ snapshots:
 
   regexp-ast-analysis@0.7.1:
     dependencies:
-      '@eslint-community/regexpp': 4.12.1
+      '@eslint-community/regexpp': 4.12.2
       refa: 0.12.1
 
   regexp-tree@0.1.27: {}
@@ -24708,7 +24537,7 @@ snapshots:
 
   scslre@0.3.0:
     dependencies:
-      '@eslint-community/regexpp': 4.12.1
+      '@eslint-community/regexpp': 4.12.2
       refa: 0.12.1
       regexp-ast-analysis: 0.7.1
 

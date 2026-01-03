@@ -1,0 +1,1 @@
+export const GRPC_CLIENT_PREFIX = 'GRPC_CLIENT'
