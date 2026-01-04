@@ -8,7 +8,7 @@ export abstract class AbstractGrpcClient {
 		private readonly client: ClientGrpc,
 	) {}
 
-	public async call<T extends Record<string, any>, K extends keyof T>(serviceName: string, methodName: string, payload: Parameters<T[K]>[0] = {}): Promise<UnwrapObservable<ReturnType<T[K]>>> {
+	public async call<T extends Record<string, any>>(serviceName: string, methodName: string, payload: Parameters<T[keyof T]>[0] = {}): Promise<UnwrapObservable<ReturnType<T[keyof T]>>> {
 		try {
       const service = this.client.getService<T>(serviceName);
 
