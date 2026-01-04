@@ -1,0 +1,15 @@
+syntax = "proto3";
+package default;
+
+service DefaultService {
+    rpc GetDefault(GetDefaultRequest) returns (GetDefaultResponse);
+}
+
+message GetDefaultRequest {
+    int32 id = 1;
+}
+
+message GetDefaultResponse {
+    int32 id = 1;
+    string message = 2;
+}

@@ -40,6 +40,7 @@ export class GrpcModule {
           }
         }),
       ],
+      exports: [...options.clients.map((client) => `${GRPC_CLIENT_PREFIX}_${client.clientName}`)],
     }
   }
 }
