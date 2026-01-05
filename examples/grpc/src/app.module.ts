@@ -5,9 +5,14 @@ import { ScheduleModule } from "@nestjs/schedule";
 import { GrpcModule } from "@globalart/nestjs-grpc";
 import { join } from "path";
 import { ClientMainGrpc } from "./client.grpc";
+import { ClsModule } from "nestjs-cls";
 
 @Module({
   imports: [
+    ClsModule.forRoot({
+      global: true,
+      middleware: { mount: true },
+    }),
     GrpcModule.forRoot({
       clients: [
         {

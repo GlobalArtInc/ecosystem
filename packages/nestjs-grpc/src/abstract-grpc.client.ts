@@ -2,14 +2,14 @@ import { ClientGrpc } from '@nestjs/microservices';
 import { firstValueFrom, Observable } from 'rxjs';
 import { Metadata } from '@grpc/grpc-js';
 import { randomUUID } from 'crypto';
-import { ClsService } from 'nestjs-cls';
+import { GrpcService } from './grpc.service';
 
 type UnwrapObservable<U> = U extends Observable<infer R> ? R : U;
 
 export abstract class AbstractGrpcClient {
 	protected constructor(
 		private readonly client: ClientGrpc,
-		private readonly cls?: ClsService,
+		private readonly grpcService: GrpcService,
 	) {}
 
 	public service<T extends object>(serviceName: string) {
@@ -23,27 +23,17 @@ export abstract class AbstractGrpcClient {
 		};
 	}
 
-	public addMetadata(key: string, value: string) {
-		if (this.cls) {
-			const metadata = this.cls.get('GRPC_METADATA') || {};
-			metadata[key] = value;
-			this.cls.set('GRPC_METADATA', metadata);
-		}
-	}
-
 	private getMetadata(): Metadata {
 		const metadata = new Metadata();
 		metadata.set('correlationId', randomUUID());
 
-		if (this.cls) {
-			const storedMetadata = this.cls.get('GRPC_METADATA');
-			if (storedMetadata) {
-				Object.keys(storedMetadata).forEach((key) => {
-					metadata.set(key, storedMetadata[key]);
-				});
-			}
+		const storedMetadata = this.grpcService.getMetadata();
+		if (storedMetadata) {
+			Object.keys(storedMetadata).forEach((key) => {
+				metadata.set(key, storedMetadata[key]);
+			});
 		}
-
+		
 		return metadata;
 	}
 
