@@ -15,6 +15,9 @@ export class ModuleMetadataDeclarator {
    * @returns The updated content string with the metadata entry inserted.
    */
   public declare(content: string, options: DeclarationOptions): string {
+    if (!options.symbol) {
+      return content;
+    }
     const manager = new MetadataManager(content);
     const inserted = manager.insert(
       options.metadata,

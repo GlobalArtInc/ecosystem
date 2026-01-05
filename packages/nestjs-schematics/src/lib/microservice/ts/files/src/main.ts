@@ -4,7 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
 class Bootstrap {
-  private app: INestApplication;
+  private app!: INestApplication;
 
   async init() {
     this.app = await NestFactory.create<INestApplication>(AppModule);

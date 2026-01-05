@@ -34,11 +34,15 @@ export class ModuleFinder {
     if (!directory) {
       return null;
     }
-    const moduleFilename: PathFragment = directory.subfiles.find((filename) =>
+    const moduleFilename: PathFragment | undefined = directory.subfiles.find((filename) =>
       /\.module\.(t|j)s$/.test(filename),
     );
-    return moduleFilename !== undefined
-      ? join(directory.path, moduleFilename.valueOf())
-      : this.findIn(directory.parent);
+    if (moduleFilename !== undefined) {
+      return join(directory.path, moduleFilename.valueOf());
+    }
+    if (directory.parent) {
+      return this.findIn(directory.parent);
+    }
+    return null;
   }
 }
