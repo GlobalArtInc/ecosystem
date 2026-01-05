@@ -1,11 +1,15 @@
 import { ClientGrpc } from '@nestjs/microservices';
 import { firstValueFrom, Observable } from 'rxjs';
+import { Metadata } from '@grpc/grpc-js';
+import { randomUUID } from 'crypto';
+import { ClsService } from 'nestjs-cls';
 
 type UnwrapObservable<U> = U extends Observable<infer R> ? R : U;
 
 export abstract class AbstractGrpcClient {
 	protected constructor(
 		private readonly client: ClientGrpc,
+		private readonly cls?: ClsService,
 	) {}
 
 	public service<T extends object>(serviceName: string) {
@@ -19,6 +23,30 @@ export abstract class AbstractGrpcClient {
 		};
 	}
 
+	public addMetadata(key: string, value: string) {
+		if (this.cls) {
+			const metadata = this.cls.get('GRPC_METADATA') || {};
+			metadata[key] = value;
+			this.cls.set('GRPC_METADATA', metadata);
+		}
+	}
+
+	private getMetadata(): Metadata {
+		const metadata = new Metadata();
+		metadata.set('correlationId', randomUUID());
+
+		if (this.cls) {
+			const storedMetadata = this.cls.get('GRPC_METADATA');
+			if (storedMetadata) {
+				Object.keys(storedMetadata).forEach((key) => {
+					metadata.set(key, storedMetadata[key]);
+				});
+			}
+		}
+
+		return metadata;
+	}
+
 	public async call<T extends object, K extends keyof T>(
 		serviceName: string,
 		methodName: K,
@@ -29,7 +57,7 @@ export abstract class AbstractGrpcClient {
 
 			const method = service[methodName] as unknown as (...args: any[]) => Observable<any>;
 
-			return await firstValueFrom(method(payload));
+			return firstValueFrom(method(payload, this.getMetadata()));
 		} catch (error) {
 			throw error;
 		}
