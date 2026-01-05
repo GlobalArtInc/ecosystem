@@ -1,5 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ClsService } from 'nestjs-cls';
+
+export const GRPC_SERVICE_DI_TOKEN = Symbol('GRPC_SERVICE');
+export const InjectGrpcService = () => Inject(GRPC_SERVICE_DI_TOKEN);
 
 @Injectable()
 export class GrpcService {

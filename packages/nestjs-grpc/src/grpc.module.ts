@@ -1,7 +1,7 @@
 import { DynamicModule, Module } from "@nestjs/common";
 import { GrpcClientFactory } from "./factory/grpc-client.factory";
 import { GRPC_CLIENT_PREFIX } from "./constants/grpc.constants";
-import { GrpcService } from "./grpc.service";
+import { GRPC_SERVICE_DI_TOKEN, GrpcService } from "./grpc.service";
 import { ClsModule, ClsInterceptor } from "nestjs-cls";
 import { APP_INTERCEPTOR } from "@nestjs/core";
 
@@ -24,8 +24,11 @@ export class GrpcModule {
       global: true,
       imports: [ClsModule],
       providers: [
-        GrpcService,
         GrpcClientFactory,
+        {
+          provide: GRPC_SERVICE_DI_TOKEN,
+          useClass: GrpcService,
+        },
         {
           provide: APP_INTERCEPTOR,
           useClass: ClsInterceptor,
@@ -50,7 +53,7 @@ export class GrpcModule {
         }),
       ],
       exports: [
-        GrpcService,
+        GRPC_SERVICE_DI_TOKEN,
         ...options.clients.map((client) => `${GRPC_CLIENT_PREFIX}_${client.clientName}`)
       ],
     }

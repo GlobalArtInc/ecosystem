@@ -1,20 +1,28 @@
 import { Controller } from "@nestjs/common";
 import { GrpcMethod } from "@nestjs/microservices";
 import { ClientMainGrpc } from "./client.grpc";
-import { GrpcService, InjectGrpcClient } from "@globalart/nestjs-grpc";
+import { GrpcService, InjectGrpcClient, InjectGrpcService } from "@globalart/nestjs-grpc";
 
 @Controller()
 export class AppController {
   constructor(
-    @InjectGrpcClient('default') private readonly client: any,
+    private readonly client: ClientMainGrpc,
+    @InjectGrpcService()
     private readonly grpcService: GrpcService,
   ) {}
 
   @GrpcMethod('DefaultService', 'GetDefault')
   async getDefault() {
     this.grpcService.addMetadata('test', 'test');
-    const metadata = this.grpcService.getMetadata();
-    console.log(metadata);
+    await this.client.service<any>('DefaultService').call('GetDefault2');
+    return {
+      id: 1,
+      message: "Hello World",
+    };
+  }
+
+  @GrpcMethod('DefaultService', 'GetDefault2')
+  async getDefaults() {
     return {
       id: 1,
       message: "Hello World",

@@ -2,15 +2,17 @@ import { ClientGrpc } from '@nestjs/microservices';
 import { firstValueFrom, Observable } from 'rxjs';
 import { Metadata } from '@grpc/grpc-js';
 import { randomUUID } from 'crypto';
-import { GrpcService } from './grpc.service';
+import { GrpcService, InjectGrpcService } from './grpc.service';
 
 type UnwrapObservable<U> = U extends Observable<infer R> ? R : U;
 
 export abstract class AbstractGrpcClient {
 	protected constructor(
 		private readonly client: ClientGrpc,
-		private readonly grpcService: GrpcService,
 	) {}
+
+	@InjectGrpcService()
+	protected readonly grpcService!: GrpcService;
 
 	public service<T extends object>(serviceName: string) {
 		return {
@@ -33,7 +35,7 @@ export abstract class AbstractGrpcClient {
 				metadata.set(key, storedMetadata[key]);
 			});
 		}
-		
+
 		return metadata;
 	}
 

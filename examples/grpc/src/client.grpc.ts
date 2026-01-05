@@ -1,4 +1,4 @@
-import { AbstractGrpcClient, GrpcService } from "@globalart/nestjs-grpc";
+import { AbstractGrpcClient } from "@globalart/nestjs-grpc";
 import { Injectable } from "@nestjs/common";
 import { InjectGrpcClient } from "@globalart/nestjs-grpc";
 import { ClientGrpc } from "@nestjs/microservices";
@@ -7,8 +7,7 @@ import { ClientGrpc } from "@nestjs/microservices";
 export class ClientMainGrpc extends AbstractGrpcClient {
   constructor(
     @InjectGrpcClient('default') client: ClientGrpc,
-    grpcService: GrpcService,
   ) {
-    super(client, grpcService);
+    super(client);
   }
 }
