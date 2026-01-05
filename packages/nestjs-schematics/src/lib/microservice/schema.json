@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "$id": "SchematicsNestMicroservice",
+  "title": "Nest Microservice Options Schema",
+  "type": "object",
+  "properties": {
+    "name": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "number" }
+      ],
+      "description": "The name of the application.",
+      "$default": {
+        "$source": "argv",
+        "index": 0
+      },
+      "x-prompt": "What name would you like to use for the new project?"
+    },
+    "projectScope": {
+      "type": "string",
+      "description": "The scope of the project.",
+      "default": "",
+      "x-prompt": "What scope would you like to use for the new project?"
+    },
+    "author": {
+      "type": "string",
+      "description": "Nest microservice author.",
+      "default": ""
+    },
+    "description": {
+      "type": "string",
+      "description": "Nest microservice description.",
+      "default": ""
+    },
+    "directory": {
+      "type": "string",
+      "description": "Nest microservice destination directory."
+    },
+    "strict": {
+      "type": "boolean",
+      "description": "With TypeScript strict mode for microservice.",
+      "default": false
+    },
+    "version": {
+      "type": "string",
+      "description": "Nest microservice version.",
+      "default": "0.0.1"
+    },
+    "language": {
+      "type": "string",
+      "description": "Nest microservice language."
+    },
+    "packageManager": {
+      "type": "string",
+      "description": "Nest microservice package manager."
+    },
+    "dependencies": {
+      "type": "string",
+      "description": "Nest microservice dependencies."
+    },
+    "devDependencies": {
+      "type": "string",
+      "description": "Nest microservice development dependencies."
+    },
+    "spec": {
+      "type": "boolean",
+      "default": true,
+      "description": "Specifies if a spec file is generated."
+    },
+    "specFileSuffix": {
+      "type": "string",
+      "default": "spec",
+      "description": "Specifies the file suffix of spec files."
+    }
+  },
+  "required": ["name"]
+}
