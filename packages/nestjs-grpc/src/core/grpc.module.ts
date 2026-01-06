@@ -36,6 +36,9 @@ export class GrpcModule {
           },
           interceptor: {
             mount: true,
+            setup: (cls: ClsService, context: ExecutionContext) => {
+              setupGrpcFollower(cls, context);
+            },
           },
         }),
       ],
