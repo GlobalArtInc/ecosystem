@@ -30,7 +30,7 @@ export class GrpcModule {
       global: true,
       imports: [
         ClsModule.forRoot({
-          global: true,
+          global: false,
           middleware: {
             mount: true,
             debug: false,
