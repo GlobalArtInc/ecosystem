@@ -27,39 +27,7 @@ export class GrpcModule {
     return {
       module: GrpcModule,
       global: true,
-      imports: [
-        ClsModule.forRoot({
-          global: true,
-          interceptor: {
-            mount: true,
-            generateId: true,
-            idGenerator: () => randomUUID(),
-            setup: (cls: ClsService, ctx: ExecutionContext) => {
-              const type = ctx.getType();
-              const GRPC_METADATA =
-                cls.get<Record<string, MetadataValue>>(GRPC_METADATA_TOKEN) ||
-                {};
-              GRPC_METADATA["x-correlation-id"] =
-                GRPC_METADATA["x-correlation-id"] || cls.getId();
-
-              if (type === "rpc") {
-                const metadataContext = ctx
-                  .switchToRpc()
-                  .getContext<Metadata>();
-
-                Object.entries(metadataContext.getMap()).forEach(
-                  ([key, value]) => {
-                    GRPC_METADATA[key] = value;
-                  }
-                );
-                cls.set(GRPC_METADATA_TOKEN, GRPC_METADATA);
-              } else if (type === "http") {
-                cls.set(GRPC_METADATA_TOKEN, GRPC_METADATA);
-              }
-            },
-          },
-        }),
-      ],
+      imports: [ClsModule.forFeature()],
       providers: [
         GrpcClientFactory,
         {

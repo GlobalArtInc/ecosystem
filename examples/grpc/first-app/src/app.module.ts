@@ -1,6 +1,6 @@
 import { ExecutionContext, Module } from "@nestjs/common";
 import { AppController } from "./app.controller";
-import { GrpcModule } from "@globalart/nestjs-grpc";
+import { GrpcModule, setupGrpcFollower } from "@globalart/nestjs-grpc";
 import { join } from "path";
 import { ClientMainGrpc } from "./client.grpc";
 import { ClsModule, ClsService } from "nestjs-cls";
@@ -22,7 +22,7 @@ import { ClsModule, ClsService } from "nestjs-cls";
       interceptor: {
         mount: true,
         setup: (cls: ClsService, context: ExecutionContext) => {
-          // console.log('interceptor setup');
+          setupGrpcFollower(cls, context);
         },
       },
     }),

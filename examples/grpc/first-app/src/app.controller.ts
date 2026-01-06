@@ -24,6 +24,7 @@ export class AppController {
   @GrpcMethod("DefaultService", "GetDefault2")
   async getDefaults2(data: any, metadata: Metadata) {
     await this.client.service<any>("DefaultService").call("GetDefault3");
+    console.log(this.grpcService.getMetadata());
     return {
       id: 1,
       message: "Hello World",
@@ -32,6 +33,7 @@ export class AppController {
 
   @GrpcMethod("DefaultService", "GetDefault3")
   async getDefaults3(data: any, metadata: Metadata) {
+    console.log(this.grpcService.getMetadata());
     return {
       id: 1,
       message: "Hello World",
