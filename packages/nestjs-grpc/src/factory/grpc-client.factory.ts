@@ -17,7 +17,7 @@ export class GrpcClientFactory {
 		return ClientProxyFactory.create({
 			transport: Transport.GRPC,
 			options
-		}) as ClientGrpc
+		})
 	}
 
 	public register(token: string, client: ClientGrpc) {
@@ -27,7 +27,9 @@ export class GrpcClientFactory {
 	public getClient<T extends ClientGrpc = ClientGrpc>(token: string): T {
 		const client = this.clients.get(token)
 
-		if (!client) throw new Error(`Grpc client "${token}" not found`)
+		if (!client) {
+			throw new Error(`Grpc client "${token}" not found`);
+		}
 
 		return client as T
 	}

@@ -7,9 +7,21 @@
   },
   "license": "MIT",
   "type": "module",
-  "main": "dist/index.mjs",
+  "main": "dist/index.cjs",
   "module": "dist/index.mjs",
   "types": "dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
   "files": [
     "dist",
     "README.md"
@@ -40,10 +52,12 @@
     "@nestjs/common": "11.1.11",
     "@nestjs/core": "11.1.11",
     "@nestjs/microservices": "11.1.11",
+    "@nestjs/cache-manager": "3.1.0",
     "@nestjs/platform-socket.io": "11.1.11",
     "@nestjs/terminus": "11.0.0",
     "@nestjs/throttler": "6.5.0",
     "grpc-health-check": "^2.1.0",
+    "nestjs-cls": "6.1.0",
     "rxjs": "^7.8.1"
   },
   "devDependencies": {
