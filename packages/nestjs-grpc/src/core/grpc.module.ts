@@ -42,6 +42,13 @@ export class GrpcModule {
               setupGrpcFollower(cls, context);
             },
           },
+          guard: {
+            mount: true,
+            debug: false,
+            setup: (cls: ClsService, context: ExecutionContext) => {
+              setupGrpcFollower(cls, context);
+            },
+          },
         }),
       ],
       providers: [
