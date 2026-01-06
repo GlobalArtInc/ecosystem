@@ -4,6 +4,7 @@ package default;
 service DefaultService {
     rpc GetDefault(GetDefaultRequest) returns (GetDefaultResponse);
     rpc GetDefault2(GetDefaultRequest) returns (GetDefaultResponse);
+    rpc GetDefault3(GetDefaultRequest) returns (GetDefaultResponse);
 }
 
 message GetDefaultRequest {

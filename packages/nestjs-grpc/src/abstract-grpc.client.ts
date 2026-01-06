@@ -27,7 +27,11 @@ export abstract class AbstractGrpcClient {
 
 	private getMetadata(): Metadata {
 		const metadata = new Metadata();
-		metadata.set('correlationId', randomUUID());
+		if (this.grpcService.getMetadata().correlationId) {
+			metadata.set('correlationId', this.grpcService.getMetadata().correlationId);
+		} else {
+			metadata.set('correlationId', randomUUID());
+		}
 
 		const storedMetadata = this.grpcService.getMetadata();
 		if (storedMetadata) {
@@ -35,7 +39,7 @@ export abstract class AbstractGrpcClient {
 				metadata.set(key, storedMetadata[key]);
 			});
 		}
-
+		
 		return metadata;
 	}
 

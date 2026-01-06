@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@globalart/zod-to-proto": "workspace:*",
-    "zod": "^4.3.4"
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@types/express": "^5.0.5",
