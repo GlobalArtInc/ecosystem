@@ -9,6 +9,7 @@ import { GrpcService } from "./grpc.service";
 import { ClsModule, ClsService } from "nestjs-cls";
 import { randomUUID } from "crypto";
 import { Metadata, MetadataValue } from "@grpc/grpc-js";
+import { setupGrpcFollower } from "./setup-grpc-controller";
 
 interface GrpcOptionsClient {
   clientName: string;
@@ -27,7 +28,20 @@ export class GrpcModule {
     return {
       module: GrpcModule,
       global: true,
-      imports: [ClsModule.forFeature()],
+      imports: [
+        ClsModule.forRoot({
+          global: false,
+          middleware: {
+            mount: true,
+          },
+          interceptor: {
+            mount: true,
+            setup: (cls: ClsService, context: ExecutionContext) => {
+              setupGrpcFollower(cls, context);
+            },
+          },
+        }),
+      ],
       providers: [
         GrpcClientFactory,
         {
