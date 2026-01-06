@@ -35,7 +35,7 @@ export class GrModule {
     ClsModule.forRoot({
       global: true,
       interceptor: {
-        mount: true,
+        mount: true, 
         debug: false,
         setup: (cls: ClsService, context: ExecutionContext) => {
           setupGrpcFollower(cls, context);

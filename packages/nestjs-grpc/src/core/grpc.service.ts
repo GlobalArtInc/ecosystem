@@ -10,14 +10,25 @@ export const InjectGrpcService = () => Inject(GRPC_SERVICE_DI_TOKEN);
 export class GrpcService {
   constructor(private readonly cls: ClsService) {}
 
-  public async addMetadata(key: string, value: string): Promise<void> {
+  public async addMetadata(key: string, value: MetadataValue): Promise<void> {
     const metadata =
-      this.cls.get<Record<string, string>>("GRPC_METADATA") || {};
+      this.cls.get<Record<string, MetadataValue>>("GRPC_METADATA") || {};
     metadata[key] = value;
     this.cls.set("GRPC_METADATA", metadata);
   }
 
-  public getMetadata(): Record<string, MetadataValue> {
-    return this.cls.get<Record<string, MetadataValue>>("GRPC_METADATA") || {};
+  public getMetadata(): Map<string, MetadataValue> {
+    const grpcMetadata =
+      this.cls.get<Map<string, MetadataValue>>("GRPC_METADATA");
+    if (grpcMetadata) {
+      return new Map(
+        Object.entries(grpcMetadata).map(([key, value]) => [
+          key,
+          value,
+        ])
+      );
+    } else {
+      return new Map<string, MetadataValue>();
+    }
   }
 }
