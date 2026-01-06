@@ -33,9 +33,11 @@ export class GrpcModule {
           global: true,
           middleware: {
             mount: true,
+            debug: false,
           },
           interceptor: {
             mount: true,
+            debug: false,
             setup: (cls: ClsService, context: ExecutionContext) => {
               setupGrpcFollower(cls, context);
             },

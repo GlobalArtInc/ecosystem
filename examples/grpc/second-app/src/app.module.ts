@@ -36,6 +36,7 @@ export class GrModule {
       global: true,
       interceptor: {
         mount: true,
+        debug: false,
         setup: (cls: ClsService, context: ExecutionContext) => {
           setupGrpcFollower(cls, context);
         },

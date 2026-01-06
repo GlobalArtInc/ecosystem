@@ -21,6 +21,7 @@ import { ClsModule, ClsService } from "nestjs-cls";
       global: true,
       interceptor: {
         mount: true,
+        debug: false,
         setup: (cls: ClsService, context: ExecutionContext) => {
           setupGrpcFollower(cls, context);
         },
