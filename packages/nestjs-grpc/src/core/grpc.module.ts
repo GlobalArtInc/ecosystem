@@ -29,6 +29,7 @@ export class GrpcModule {
       global: true,
       imports: [
         ClsModule.forRoot({
+          global: true,
           interceptor: {
             mount: true,
             generateId: true,
