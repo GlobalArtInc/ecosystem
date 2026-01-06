@@ -1,1 +1,3 @@
-export const GRPC_CLIENT_PREFIX = 'GRPC_CLIENT'
+export const GRPC_CLIENT_PREFIX = "GRPC_CLIENT";
+export const GRPC_METADATA_TOKEN = "GRPC_METADATA";
+export const GRPC_SERVICE_DI_TOKEN = Symbol("GRPC_SERVICE");

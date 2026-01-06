@@ -1,7 +1,11 @@
 import { DynamicModule, ExecutionContext, Module } from "@nestjs/common";
 import { GrpcClientFactory } from "../factory/grpc-client.factory";
-import { GRPC_CLIENT_PREFIX } from "../constants/grpc.constants";
-import { GRPC_SERVICE_DI_TOKEN, GrpcService } from "./grpc.service";
+import {
+  GRPC_CLIENT_PREFIX,
+  GRPC_METADATA_TOKEN,
+  GRPC_SERVICE_DI_TOKEN,
+} from "../constants/grpc.constants";
+import { GrpcService } from "./grpc.service";
 import { ClsModule, ClsService } from "nestjs-cls";
 import { randomUUID } from "crypto";
 import { Metadata, MetadataValue } from "@grpc/grpc-js";
@@ -32,7 +36,8 @@ export class GrpcModule {
             setup: (cls: ClsService, ctx: ExecutionContext) => {
               const type = ctx.getType();
               const GRPC_METADATA =
-                cls.get<Record<string, MetadataValue>>("GRPC_METADATA") || {};
+                cls.get<Record<string, MetadataValue>>(GRPC_METADATA_TOKEN) ||
+                {};
               GRPC_METADATA["x-correlation-id"] =
                 GRPC_METADATA["x-correlation-id"] || cls.getId();
 
@@ -46,9 +51,9 @@ export class GrpcModule {
                     GRPC_METADATA[key] = value;
                   }
                 );
-                cls.set("GRPC_METADATA", GRPC_METADATA);
+                cls.set(GRPC_METADATA_TOKEN, GRPC_METADATA);
               } else if (type === "http") {
-                cls.set("GRPC_METADATA", GRPC_METADATA);
+                cls.set(GRPC_METADATA_TOKEN, GRPC_METADATA);
               }
             },
           },

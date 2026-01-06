@@ -5,9 +5,7 @@ import { ClientGrpc } from "@nestjs/microservices";
 
 @Injectable()
 export class ClientMainGrpc extends AbstractGrpcClient {
-  constructor(
-    @InjectGrpcClient('default') client: ClientGrpc,
-  ) {
+  constructor(@InjectGrpcClient("default") client: ClientGrpc) {
     super(client);
   }
 }
