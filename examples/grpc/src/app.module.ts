@@ -9,10 +9,15 @@ import { ClsModule, ClsService } from "nestjs-cls";
 
 @Module({
   imports: [
-    // ClsModule.forRoot({
-    //   global: true,
-    //   middleware: { mount: true },
-    // }),
+    ClsModule.forRoot({
+      global: true,
+      interceptor: {
+        mount: true,
+        setup: (cls: ClsService, context: ExecutionContext) => {
+          console.log(cls.set('user', '1'));
+        }
+      }
+    }),
     GrpcModule.forRoot({
       clients: [
         {

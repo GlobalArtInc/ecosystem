@@ -8,14 +8,13 @@ export class ContextInterceptor implements NestInterceptor {
   constructor(private readonly contextService: ContextService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    return new Observable((subscriber) => {
-      this.contextService.run(() => {
-        if (context.getType() === 'rpc') {
+    if (context.getType() === 'rpc') {
+      return new Observable((subscriber) => {
+        this.contextService.run(() => {
           const grpcContext = context.switchToRpc().getContext();
           
           if (grpcContext instanceof Metadata) {
             const metadataMap = grpcContext.getMap();
-            
             const metadataDict: Record<string, any> = {};
             
             Object.keys(metadataMap).forEach((key) => {
@@ -24,10 +23,12 @@ export class ContextInterceptor implements NestInterceptor {
 
             this.contextService.set('GRPC_METADATA', metadataDict);
           }
-        }
 
-        next.handle().subscribe(subscriber);
+          next.handle().subscribe(subscriber);
+        });
       });
-    });
+    }
+
+    return next.handle();
   }
 }
