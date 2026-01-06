@@ -1,10 +1,9 @@
 import { DynamicModule, ExecutionContext, Module } from "@nestjs/common";
 import { AppController } from "./app.controller";
-import { AbstractGrpcClient, GrpcModule, setupGrpcFollower } from "@globalart/nestjs-grpc";
+import { GrpcModule, setupGrpcFollower } from "@globalart/nestjs-grpc";
 import { join } from "path";
 import { ClientMainGrpc } from "./client.grpc";
 import { ClsModule, ClsService } from "nestjs-cls";
-import { ClientGrpc } from "@nestjs/microservices";
 
 @Module({})
 export class GrModule {
