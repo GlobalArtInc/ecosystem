@@ -21,9 +21,7 @@ import { createHash } from "crypto";
 
 // SwaggerDocumentation is a decorator function to generate Swagger documentation for endpoints based on the provided options.
 export const SwaggerDocumentation = (data: SwaggerDocumentationOptions) => {
-  const operationId =
-    data.operationId ||
-    createHash("md5").update(`${data.endpointSummary}`).digest("hex");
+  const operationId = data.operationId;
 
   const decorators = [
     ApiOperation({
