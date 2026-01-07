@@ -18,16 +18,17 @@ interface GrpcOptionsClient {
   url: string;
 }
 
-interface GrpcOptions {
-  clients: GrpcOptionsClient[];
+class GrpcModuleOptions {
+  clients?: GrpcOptionsClient[] = [];
+  global?: boolean = true;
 }
 
 @Module({})
 export class GrpcModule {
-  static forRoot(options: GrpcOptions): DynamicModule {
+  static forRoot(options: GrpcModuleOptions): DynamicModule {
     return {
       module: GrpcModule,
-      global: true,
+      global: options.global,
       imports: [
         ClsModule.forRoot({
           global: false,
@@ -57,7 +58,7 @@ export class GrpcModule {
           provide: GRPC_SERVICE_DI_TOKEN,
           useClass: GrpcService,
         },
-        ...options.clients.map((client) => {
+        ...(options.clients ?? []).map((client) => {
           const token = `${GRPC_CLIENT_PREFIX}_${client.clientName}`;
 
           return {
@@ -79,7 +80,7 @@ export class GrpcModule {
       exports: [
         GRPC_SERVICE_DI_TOKEN,
         ClsModule,
-        ...options.clients.map(
+        ...(options.clients ?? []).map(
           (client) => `${GRPC_CLIENT_PREFIX}_${client.clientName}`
         ),
       ],
