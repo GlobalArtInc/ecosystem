@@ -1,0 +1,586 @@
+---
+sidebar_position: 7
+---
+
+# @globalart/zod-to-proto
+
+A library for converting Zod schemas to Protobuf definitions. Automatically generates `.proto` files from Zod validation schemas, including support for gRPC services.
+
+## Installation
+
+```bash npm2yarn
+npm install @globalart/zod-to-proto zod
+```
+
+## Overview
+
+The `@globalart/zod-to-proto` package provides a convenient way to generate Protobuf definitions from Zod schemas, enabling:
+
+- **Type-safe schemas** - Use Zod for validation and automatically generate Protobuf definitions
+- **gRPC support** - Generate complete gRPC service definitions from Zod schemas
+- **Multiple services** - Define multiple services in a single protobuf file
+- **TypeScript integration** - Full TypeScript support with proper types
+
+## Key Features
+
+- **Schema conversion** - Convert Zod schemas to Protobuf messages
+- **gRPC services** - Generate gRPC service definitions from Zod function schemas
+- **Multiple formats** - Support for arrays, maps, records, enums, and nested objects
+- **Type safety** - Full TypeScript support
+- **Flexible configuration** - Customize package names, message names, and type prefixes
+
+## Quick Start
+
+### Basic Usage
+
+```typescript
+import { zodToProtobufService } from "@globalart/zod-to-proto";
+import { z } from "zod";
+
+const userSchema = z.object({
+  name: z.string(),
+  age: z.number(),
+  email: z.string().email(),
+});
+
+const protoDefinition = zodToProtobufService({
+  packageName: "user.service",
+  services: {
+    UserService: z.object({
+      getUser: z.function({
+        input: [z.object({ id: z.number().int() })],
+        output: userSchema,
+      }),
+    }),
+  },
+});
+
+console.log(protoDefinition);
+```
+
+Output:
+
+```protobuf
+syntax = "proto3";
+package user.service;
+
+message GetUserRequest {
+  int32 id = 1;
+}
+
+message GetUserResponse {
+  string name = 1;
+  int32 age = 2;
+  string email = 3;
+}
+
+service UserService {
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+}
+```
+
+### Generating gRPC Services
+
+There are two ways to define gRPC services:
+
+#### Option 1: Using Zod Schemas with Functions (Recommended)
+
+```typescript
+import { zodToProtobufService } from "@globalart/zod-to-proto";
+import { z } from "zod";
+
+const getUserByIdRequestSchema = z.object({
+  id: z.number().int(),
+});
+
+const userSchema = z.object({
+  id: z.number().int(),
+  name: z.string(),
+  email: z.string(),
+});
+
+const userServiceSchema = z.object({
+  getUserById: z.function({
+    input: [getUserByIdRequestSchema],
+    output: userSchema,
+  }),
+  createUser: z.function({
+    input: [userSchema],
+    output: z.object({
+      id: z.number().int(),
+      success: z.boolean(),
+    }),
+  }),
+});
+
+const protoDefinition = zodToProtobufService({
+  packageName: "user.service",
+  services: {
+    UserService: userServiceSchema,
+  },
+});
+```
+
+#### Option 2: Using Service Definitions Array
+
+```typescript
+import { zodToProtobufService } from "@globalart/zod-to-proto";
+import { z } from "zod";
+
+const protoDefinition = zodToProtobufService({
+  packageName: "user.service",
+  services: [
+    {
+      name: "UserService",
+      methods: [
+        {
+          name: "getUser",
+          request: z.object({
+            id: z.string(),
+          }),
+          response: z.object({
+            name: z.string(),
+            age: z.number(),
+            email: z.string(),
+          }),
+        },
+        {
+          name: "createUser",
+          request: z.object({
+            name: z.string(),
+            age: z.number(),
+            email: z.string(),
+          }),
+          response: z.object({
+            id: z.string(),
+            success: z.boolean(),
+          }),
+        },
+      ],
+    },
+  ],
+});
+```
+
+Both approaches produce the same output:
+
+```protobuf
+syntax = "proto3";
+package user.service;
+
+message GetUserByIdRequest {
+  int32 id = 1;
+}
+
+message GetUserByIdResponse {
+  int32 id = 1;
+  string name = 2;
+  string email = 3;
+}
+
+message CreateUserRequest {
+  int32 id = 1;
+  string name = 2;
+  string email = 3;
+}
+
+message CreateUserResponse {
+  int32 id = 1;
+  bool success = 2;
+}
+
+service UserService {
+  rpc GetUserById(GetUserByIdRequest) returns (GetUserByIdResponse);
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+}
+```
+
+## Configuration
+
+### ZodToProtobufOptions
+
+| Option               | Type            | Required | Description                                                      |
+| -------------------- | --------------- | -------- | ---------------------------------------------------------------- |
+| `packageName`        | `string`        | No       | Protobuf package name (default: "default")                       |
+| `typePrefix`         | `string`        | No       | Prefix for type names                                            |
+| `services`           | `ServicesInput` | No       | gRPC service definitions                                         |
+| `warningDeclaration` | `boolean`       | No       | Add warning comment at the beginning of the file (default: true) |
+| `skipRootMessage`    | `boolean`       | No       | Skip root message generation                                     |
+
+### Service Definition
+
+You can define services in two ways:
+
+**Option 1: Using Zod Schemas (Recommended)**
+
+```typescript
+const serviceSchema = z.object({
+  methodName: z.function({
+    input: [requestSchema],
+    output: responseSchema,
+  }),
+});
+
+const proto = zodToProtobufService({
+  services: {
+    ServiceName: serviceSchema,
+  },
+});
+```
+
+**Option 2: Using Service Definitions Array**
+
+```typescript
+interface ServiceDefinition {
+  name: string;
+  methods: ServiceMethod[];
+}
+
+interface ServiceMethod {
+  name: string;
+  request: ZodTypeAny;
+  response: ZodTypeAny;
+  streaming?: "client" | "server" | "bidirectional";
+}
+```
+
+## Usage
+
+### With Custom Type Prefix
+
+```typescript
+const protoDefinition = zodToProtobufService({
+  packageName: "api.v1",
+  typePrefix: "ApiV1",
+  services: {
+    UserService: userServiceSchema,
+  },
+});
+```
+
+### With Streaming Methods
+
+Streaming methods are defined through metadata in the Zod schema:
+
+```typescript
+const chatServiceSchema = z.object({
+  sendMessage: z.function({
+    input: [z.object({ message: z.string() })],
+    output: z.object({ success: z.boolean() }),
+  }),
+  streamMessages: z
+    .function({
+      input: [z.object({ roomId: z.string() })],
+      output: z.object({ message: z.string() }),
+    })
+    .meta({ streaming: "server" }),
+  chat: z
+    .function({
+      input: [z.object({ message: z.string() })],
+      output: z.object({ message: z.string() }),
+    })
+    .meta({ streaming: "bidirectional" }),
+});
+
+const protoDefinition = zodToProtobufService({
+  packageName: "chat.service",
+  services: {
+    ChatService: chatServiceSchema,
+  },
+});
+```
+
+Or through service definitions array:
+
+```typescript
+const protoDefinition = zodToProtobufService({
+  packageName: "chat.service",
+  services: [
+    {
+      name: "ChatService",
+      methods: [
+        {
+          name: "sendMessage",
+          request: z.object({ message: z.string() }),
+          response: z.object({ success: z.boolean() }),
+        },
+        {
+          name: "streamMessages",
+          request: z.object({ roomId: z.string() }),
+          response: z.object({ message: z.string() }),
+          streaming: "server",
+        },
+        {
+          name: "chat",
+          request: z.object({ message: z.string() }),
+          response: z.object({ message: z.string() }),
+          streaming: "bidirectional",
+        },
+      ],
+    },
+  ],
+});
+```
+
+Output:
+
+```protobuf
+service ChatService {
+  rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
+  rpc StreamMessages(StreamMessagesRequest) returns (stream StreamMessagesResponse);
+  rpc Chat(stream ChatRequest) returns (stream ChatResponse);
+}
+```
+
+### Without Warning Declaration
+
+```typescript
+const protoDefinition = zodToProtobufService({
+  packageName: "example",
+  warningDeclaration: false,
+  services: {
+    ExampleService: exampleServiceSchema,
+  },
+});
+```
+
+## API Reference
+
+### zodToProtobufService
+
+Converts Zod schemas to a Protobuf definition.
+
+**Parameters:**
+
+- `options` (optional): `ZodToProtobufOptions` - Configuration options
+
+**Returns:** `string` - Protobuf definition as a string
+
+**Example:**
+
+```typescript
+const protoDefinition = zodToProtobufService({
+  packageName: "user.service",
+  services: {
+    UserService: userServiceSchema,
+  },
+});
+```
+
+## Supported Zod Types
+
+### Basic Types
+
+- `z.string()` → `string`
+- `z.number()` → `int32` (or `double` for numbers with `float32`/`float64` format)
+- `z.boolean()` → `bool`
+- `z.bigint()` → `int64`
+- `z.date()` → `string`
+- Custom types for `bytes` (via Buffer/Uint8Array check)
+
+### Collections
+
+- `z.array()` → `repeated`
+- `z.set()` → `repeated`
+- `z.map()` → `map<keyType, valueType>` (key must be int32, int64, string, or bool)
+- `z.record()` → `map<keyType, valueType>` (same as z.map())
+- `z.tuple()` → nested message
+
+### Complex Types
+
+- `z.object()` → nested message
+- `z.enum()` → `enum`
+- `z.optional()` → `optional`
+- `z.nullable()` → `optional`
+
+### Examples
+
+```typescript
+import { zodToProtobufService } from "@globalart/zod-to-proto";
+import { z } from "zod";
+
+const schema = z.object({
+  id: z.string(),
+  tags: z.array(z.string()),
+  metadata: z.map(z.string(), z.number()),
+  settings: z.record(z.string(), z.string()),
+  status: z.enum(["active", "inactive", "pending"]),
+  profile: z.object({
+    firstName: z.string(),
+    lastName: z.string(),
+    age: z.number().optional(),
+  }),
+  coordinates: z.tuple([z.number(), z.number()]),
+});
+
+const protoDefinition = zodToProtobufService({
+  packageName: "example",
+  services: {
+    ExampleService: z.object({
+      getData: z.function({
+        input: [z.object({ id: z.string() })],
+        output: schema,
+      }),
+    }),
+  },
+});
+```
+
+## Advanced Usage
+
+### Working with Maps and Records
+
+Protobuf maps have strict key type requirements. Only integral types, strings, and booleans are allowed as keys. Both `z.map()` and `z.record()` are converted to protobuf `map<>` type:
+
+```typescript
+const schema = z.object({
+  usersByStringId: z.map(z.string(), userSchema),
+  usersByIntId: z.map(z.number().int(), userSchema),
+  flagsMap: z.map(z.boolean(), z.string()),
+  metadataRecord: z.record(z.string(), z.string()),
+  settingsRecord: z.record(z.string(), z.number()),
+});
+```
+
+### Type-Safe Service Definitions
+
+When using Zod schemas for services, you get full TypeScript type safety:
+
+```typescript
+const userServiceSchema = z.object({
+  getUser: z.function({
+    input: [z.object({ id: z.number().int() })],
+    output: userSchema,
+  }),
+});
+
+type UserService = z.infer<typeof userServiceSchema>;
+
+class UserServiceImpl implements UserService {
+  async getUser({ id }: { id: number }) {
+    return { id, name: "John", email: "john@example.com" };
+  }
+}
+```
+
+### Avoiding Circular Dependencies
+
+**Important:** Avoid circular dependencies between schema files. Circular imports will cause types to become `undefined` during schema construction.
+
+❌ **Bad Example:**
+
+```typescript
+// user.schema.ts
+import { getUserByIdResponseSchema } from "./get-user-by-id.schema";
+
+export const userSchema = z.object({ ... });
+
+export const userServiceSchema = z.object({
+  getUserById: z.function({
+    input: [...],
+    output: getUserByIdResponseSchema,
+  }),
+});
+
+// get-user-by-id.schema.ts
+import { userSchema } from "./user.schema";
+
+export const getUserByIdResponseSchema = userSchema;
+```
+
+✅ **Good Example:**
+
+```typescript
+// user.schema.ts
+import { getUserByIdRequestSchema } from "./get-user-by-id.schema";
+
+export const userSchema = z.object({ ... });
+
+export const userServiceSchema = z.object({
+  getUserById: z.function({
+    input: [getUserByIdRequestSchema],
+    output: userSchema,
+  }),
+});
+
+// get-user-by-id.schema.ts
+export const getUserByIdRequestSchema = z.object({ id: z.number().int() });
+```
+
+### Multiple Services
+
+You can define multiple services in a single protobuf file:
+
+```typescript
+const protoDefinition = zodToProtobufService({
+  packageName: "api.v1",
+  services: {
+    UserService: userServiceSchema,
+    AuthService: authServiceSchema,
+    ProductService: productServiceSchema,
+  },
+});
+```
+
+### Nested Objects and Enums
+
+Nested objects are automatically converted to separate messages with names based on the parent context:
+
+```typescript
+const schema = z.object({
+  user: z.object({
+    profile: z.object({
+      name: z.string(),
+      status: z.enum(["active", "inactive"]),
+    }),
+  }),
+});
+
+const protoDefinition = zodToProtobufService({
+  packageName: "example",
+  services: {
+    ExampleService: z.object({
+      getData: z.function({
+        input: [z.object({})],
+        output: schema,
+      }),
+    }),
+  },
+});
+```
+
+Output:
+
+```protobuf
+message User {
+  UserProfile profile = 1;
+}
+
+message UserProfile {
+  string name = 1;
+  UserProfileStatus status = 2;
+}
+
+enum UserProfileStatus {
+  active = 0;
+  inactive = 1;
+}
+```
+
+## Limitations
+
+- Only the types listed above are supported
+- Unsupported types will throw an exception
+- Nested objects are automatically converted to separate messages
+- Enum values are converted to numbers starting from 0
+- Map keys must be integral types (int32, int64, etc.), strings, or booleans - **not** doubles or floats
+- Avoid circular dependencies between schema files
+
+## Best Practices
+
+- **Use Zod schemas for services** - Provides better type safety and maintainability
+- **Avoid circular dependencies** - Structure schemas to prevent circular imports
+- **Use type prefixes** - Helps organize types in large projects
+- **Validate map keys** - Ensure map keys are valid Protobuf key types
+- **Organize schemas** - Keep related schemas together and avoid circular references
+- **Use metadata for streaming** - Define streaming methods via `.meta({ streaming: "..." })` for type safety
