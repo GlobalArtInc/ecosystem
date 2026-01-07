@@ -9,7 +9,7 @@ export const InjectGrpcService = () => Inject(GRPC_SERVICE_DI_TOKEN);
 export class GrpcService {
   constructor(private readonly cls: ClsService) {}
 
-  public async addMetadata(key: string, value: MetadataValue): Promise<void> {
+  public addMetadata(key: string, value: MetadataValue): void {
     const metadata =
       this.cls.get<Record<string, MetadataValue>>("GRPC_METADATA") || {};
     metadata[key] = value;

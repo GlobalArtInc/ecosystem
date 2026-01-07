@@ -200,7 +200,7 @@ export class MyService {
   ) {}
 
   async getOrder(id: string) {
-    await this.grpcService.addMetadata("x-custom-header", "some-value");
+    this.grpcService.addMetadata("x-custom-header", "some-value");
     return this.orderService.getOrderById(id);
   }
 }
@@ -220,7 +220,7 @@ export class MyService {
   ) {}
 
   async getOrder(id: string) {
-    const metadata = await this.grpcService.getMetadata();
+    const metadata = this.grpcService.getMetadata();
     return metadata.get("x-custom-header");
   }
 }
