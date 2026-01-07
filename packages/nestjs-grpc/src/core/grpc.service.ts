@@ -1,5 +1,4 @@
 import { MetadataValue } from "@grpc/grpc-js";
-import { Cache } from "@nestjs/cache-manager";
 import { Inject, Injectable } from "@nestjs/common";
 import { ClsService } from "nestjs-cls";
 import { GRPC_SERVICE_DI_TOKEN } from "../constants";
@@ -22,10 +21,7 @@ export class GrpcService {
       this.cls.get<Map<string, MetadataValue>>("GRPC_METADATA");
     if (grpcMetadata) {
       return new Map(
-        Object.entries(grpcMetadata).map(([key, value]) => [
-          key,
-          value,
-        ])
+        Object.entries(grpcMetadata).map(([key, value]) => [key, value])
       );
     } else {
       return new Map<string, MetadataValue>();

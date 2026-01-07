@@ -130,56 +130,22 @@ bootstrap();
 
 ### GrpcModuleOptions
 
-| Option    | Type                  | Required | Description                      |
-| --------- | --------------------- | -------- | -------------------------------- |
+| Option    | Type                  | Required | Description                         |
+| --------- | --------------------- | -------- | ----------------------------------- |
 | `clients` | `GrpcOptionsClient[]` | Yes      | Array of gRPC client configurations |
 
 ### GrpcOptionsClient
 
-| Option       | Type     | Required | Description              |
-| ------------ | -------- | -------- | ------------------------ |
-| `clientName` | `string` | Yes      | Unique client name       |
-| `packageName` | `string` | Yes      | Proto package name       |
-| `protoPath`  | `string` | Yes      | Path to proto file       |
-| `url`        | `string` | Yes      | gRPC server URL          |
+| Option        | Type     | Required | Description        |
+| ------------- | -------- | -------- | ------------------ |
+| `clientName`  | `string` | Yes      | Unique client name |
+| `packageName` | `string` | Yes      | Proto package name |
+| `protoPath`   | `string` | Yes      | Path to proto file |
+| `url`         | `string` | Yes      | gRPC server URL    |
 
 ## Usage
 
-### Direct ClientGrpc Usage
-
-You can use the client directly without the abstract class:
-
-```typescript
-import { Injectable, Inject } from "@nestjs/common";
-import { InjectGrpcClient } from "@globalart/nestjs-grpc";
-import { ClientGrpc } from "@nestjs/microservices";
-import { firstValueFrom } from "rxjs";
-import { Observable } from "rxjs";
-
-interface UserService {
-  getUser(data: { id: string }): Observable<{ id: string; name: string }>;
-}
-
-@Injectable()
-export class UserService {
-  private userService: UserService;
-
-  constructor(
-    @InjectGrpcClient("userService")
-    private readonly client: ClientGrpc
-  ) {}
-
-  onModuleInit() {
-    this.userService = this.client.getService<UserService>("UserService");
-  }
-
-  async getUserById(id: string) {
-    return firstValueFrom(this.userService.getUser({ id }));
-  }
-}
-```
-
-### Using AbstractGrpcClient
+### Create a client
 
 The abstract class simplifies working with gRPC calls:
 
@@ -204,20 +170,65 @@ export class OrderService extends AbstractGrpcClient {
   }
 
   async getOrderById(id: string) {
-    return this.call<OrderService, "getOrder">("OrderService", "getOrder", {
+    return this.service<OrderService>("OrderService").call("getOrder", {
       id,
     });
   }
 
   async createOrder(items: string[]) {
-    return this.call<OrderService, "createOrder">(
-      "OrderService",
-      "createOrder",
-      { items }
-    );
+    return this.service<OrderService>("OrderService").call("createOrder", {
+      items,
+    });
   }
 }
 ```
+
+### Usage with metadata
+
+#### Sending metadata
+
+```typescript
+import { Injectable } from "@nestjs/common";
+import { InjectGrpcService, GrpcService } from "@globalart/nestjs-grpc";
+
+@Injectable()
+export class MyService {
+  constructor(
+    @InjectGrpcService()
+    private readonly grpcService: GrpcService,
+    private readonly orderService: OrderService
+  ) {}
+
+  async getOrder(id: string) {
+    await this.grpcService.addMetadata("x-custom-header", "some-value");
+    return this.orderService.getOrderById(id);
+  }
+}
+```
+
+#### Receiving metadata
+
+```typescript
+import { Injectable } from "@nestjs/common";
+import { InjectGrpcService, GrpcService } from "@globalart/nestjs-grpc";
+
+@Injectable()
+export class MyService {
+  constructor(
+    @InjectGrpcService()
+    private readonly grpcService: GrpcService
+  ) {}
+
+  async getOrder(id: string) {
+    const metadata = await this.grpcService.getMetadata();
+    return metadata.get("x-custom-header");
+  }
+}
+```
+
+:::warning
+Warning: all clients must be used through an abstract client class in order to pass metadata via the microservices context
+:::
 
 ## API Reference
 
@@ -347,11 +358,9 @@ export class UserService extends AbstractGrpcClient {
 
   async getUserById(id: string) {
     try {
-      return await this.call<UserService, "getUser">(
-        "UserService",
-        "getUser",
-        { id }
-      );
+      return await this.call<UserService, "getUser">("UserService", "getUser", {
+        id,
+      });
     } catch (error) {
       if (error instanceof RpcException) {
         throw new Error(`gRPC error: ${error.message}`);

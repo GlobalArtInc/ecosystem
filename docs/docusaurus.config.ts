@@ -1,20 +1,19 @@
-import type * as Preset from '@docusaurus/preset-classic';
-import type { Config } from '@docusaurus/types';
-import { themes as prismThemes } from 'prism-react-renderer';
+import type * as Preset from "@docusaurus/preset-classic";
+import type { Config } from "@docusaurus/types";
+import { themes as prismThemes } from "prism-react-renderer";
 
 const config: Config = {
-  title: 'GlobalArt Ecosystem',
-  tagline: 'Comprehensive bundles for development',
-  favicon: 'img/favicon.svg',
-  
-  url: 'https://globalart.js.org',
-  baseUrl: '/',
+  title: "GlobalArt Ecosystem",
+  tagline: "Comprehensive bundles for development",
+  favicon: "img/favicon.svg",
 
-  organizationName: 'GlobalArtInc',
-  projectName: 'globalart-ecosystem',
+  url: "https://globalart.js.org",
+  baseUrl: "/",
 
-  onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
+  organizationName: "GlobalArtInc",
+  projectName: "globalart-ecosystem",
+
+  onBrokenLinks: "throw",
 
   // todo...
   // i18n: {
@@ -24,13 +23,13 @@ const config: Config = {
 
   presets: [
     [
-      'classic',
+      "classic",
       {
         docs: {
-          sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/GlobalArtInc/ecosystem/tree/main/docs',
-          path: 'content',
-          routeBasePath: '/',
+          sidebarPath: "./sidebars.ts",
+          editUrl: "https://github.com/GlobalArtInc/ecosystem/tree/main/docs",
+          path: "content",
+          routeBasePath: "/",
           showLastUpdateAuthor: false,
           showLastUpdateTime: false,
           // remarkPlugins: [
@@ -39,110 +38,117 @@ const config: Config = {
         },
         blog: false,
         theme: {
-          customCss: './src/css/custom.css',
+          customCss: "./src/css/custom.css",
         },
       } satisfies Preset.Options,
     ],
   ],
 
   themeConfig: {
-    image: 'img/social-card.jpg',
+    image: "img/social-card.jpg",
     metadata: [
-      {name: 'keywords', content: 'nestjs, typescript, swagger, pagination, microservices, ddd'},
-      {name: 'description', content: 'Professional NestJS ecosystem with utilities for Swagger documentation, pagination, microservices, and DDD patterns'},
+      {
+        name: "keywords",
+        content: "nestjs, typescript, swagger, pagination, microservices, ddd",
+      },
+      {
+        name: "description",
+        content:
+          "Professional NestJS ecosystem with utilities for Swagger documentation, pagination, microservices, and DDD patterns",
+      },
     ],
     colorMode: {
-      defaultMode: 'dark',
+      defaultMode: "dark",
       disableSwitch: false,
       respectPrefersColorScheme: true,
     },
     navbar: {
-      title: 'GlobalArt Ecosystem',
+      title: "GlobalArt Ecosystem",
       logo: {
-        alt: 'GlobalArt Ecosystem Logo',
-        src: 'img/logo.svg',
-        srcDark: 'img/logo-dark.svg',
+        alt: "GlobalArt Ecosystem Logo",
+        src: "img/logo.svg",
+        srcDark: "img/logo-dark.svg",
       },
       items: [
         {
-          type: 'docSidebar',
-          sidebarId: 'tutorialSidebar',
-          position: 'left',
-          label: 'Documentation',
+          type: "docSidebar",
+          sidebarId: "tutorialSidebar",
+          position: "left",
+          label: "Documentation",
         },
         {
-          type: 'dropdown',
-          label: 'Packages',
-          position: 'left',
+          type: "dropdown",
+          label: "Packages",
+          position: "left",
           items: [
             {
-              label: 'Swagger Documentation',
-              to: '/packages/nestjs-swagger',
+              label: "Swagger Documentation",
+              to: "/packages/nestjs-swagger",
             },
             {
-              label: 'TypeORM Pagination',
-              to: '/packages/nestjs-typeorm-pagination',
+              label: "TypeORM Pagination",
+              to: "/packages/nestjs-typeorm-pagination",
             },
             {
-              label: 'Microservices',
-              to: '/packages/nestjs-microservices',
+              label: "Microservices",
+              to: "/packages/nestjs-microservices",
             },
             {
-              label: 'Logger',
-              to: '/packages/nestjs-logger',
+              label: "Logger",
+              to: "/packages/nestjs-logger",
             },
             {
-              label: 'DDD Toolkit',
-              to: '/packages/ddd',
+              label: "DDD Toolkit",
+              to: "/packages/ddd",
             },
           ],
         },
         {
-          href: 'https://github.com/GlobalArtInc/ecosystem',
-          label: 'GitHub',
-          position: 'right',
+          href: "https://github.com/GlobalArtInc/ecosystem",
+          label: "GitHub",
+          position: "right",
         },
       ],
     },
     footer: {
-      style: 'dark',
+      style: "dark",
       links: [
         {
-          title: 'Documentation',
+          title: "Documentation",
           items: [
             {
-              label: 'Getting Started',
-              to: '/intro',
+              label: "Getting Started",
+              to: "/intro",
             },
             {
-              label: 'Packages',
-              to: '/packages',
+              label: "Packages",
+              to: "/packages",
             },
           ],
         },
         {
-          title: 'Community',
+          title: "Community",
           items: [
             {
-              label: 'Discord',
-              href: 'https://discord.com/invite/4Tc9hssSAv',
+              label: "Discord",
+              href: "https://discord.com/invite/4Tc9hssSAv",
             },
             {
-              label: 'GitHub Discussions',
-              href: 'https://github.com/GlobalArtInc/ecosystem/discussions',
+              label: "GitHub Discussions",
+              href: "https://github.com/GlobalArtInc/ecosystem/discussions",
             },
           ],
         },
         {
-          title: 'More',
+          title: "More",
           items: [
             {
-              label: 'GitHub',
-              href: 'https://github.com/GlobalArtInc/ecosystem',
+              label: "GitHub",
+              href: "https://github.com/GlobalArtInc/ecosystem",
             },
             {
-              label: 'NPM Organization',
-              href: 'https://www.npmjs.com/org/globalart',
+              label: "NPM Organization",
+              href: "https://www.npmjs.com/org/globalart",
             },
           ],
         },
@@ -152,14 +158,14 @@ const config: Config = {
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
-      additionalLanguages: ['bash', 'json', 'typescript'],
+      additionalLanguages: ["bash", "json", "typescript"],
     },
     algolia: {
-      appId: 'YOUR_APP_ID',
-      apiKey: 'YOUR_SEARCH_API_KEY',
-      indexName: 'globalart-ecosystem',
+      appId: "YOUR_APP_ID",
+      apiKey: "YOUR_SEARCH_API_KEY",
+      indexName: "globalart-ecosystem",
       contextualSearch: true,
-      searchPagePath: 'search',
+      searchPagePath: "search",
     },
   } satisfies Preset.ThemeConfig,
 };
