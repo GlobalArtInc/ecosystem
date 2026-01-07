@@ -88,11 +88,11 @@ export class UserService extends AbstractGrpcClient {
   }
 
   async getUserById(id: string) {
-    return this.call<UserService, "getUser">("UserService", "getUser", { id });
+    return this.service<UserService>("UserService").call("getUser", { id });
   }
 
   async createUser(name: string) {
-    return this.call<UserService, "createUser">("UserService", "createUser", {
+    return this.service<UserService>("UserService").call("createUser", {
       name,
     });
   }
@@ -248,8 +248,6 @@ Creates a global module with configured gRPC clients.
 
 Base class for simplifying work with gRPC clients. Requires only a `ClientGrpc` instance in the constructor.
 
-#### `call<T extends Record<string, any>, K extends keyof T>(serviceName: string, methodName: string, payload?: Parameters<T[K]>[0]): Promise<UnwrapObservable<ReturnType<T[K]>>>`
-
 Calls a gRPC method and returns the result.
 
 **Parameters:**
@@ -272,11 +270,9 @@ interface UserService {
   getUser(data: { id: string }): Observable<{ id: string; name: string }>;
 }
 
-const result = await this.call<UserService, "getUser">(
-  "UserService",
-  "getUser",
-  { id: "123" }
-);
+const result = await this.service<UserService>("UserService").call("getUser", {
+  id: "123",
+});
 ```
 
 ### InjectGrpcClient
@@ -358,7 +354,7 @@ export class UserService extends AbstractGrpcClient {
 
   async getUserById(id: string) {
     try {
-      return await this.call<UserService, "getUser">("UserService", "getUser", {
+      return await this.service<UserService>("UserService").call("getUser", {
         id,
       });
     } catch (error) {
