@@ -26,9 +26,14 @@ class GrpcModuleOptions {
 @Module({})
 export class GrpcModule {
   static forRoot(options: GrpcModuleOptions): DynamicModule {
+    const moduleOptions = {
+      ...new GrpcModuleOptions(),
+      ...options,
+    };
+
     return {
       module: GrpcModule,
-      global: options.global,
+      global: moduleOptions.global,
       imports: [
         ClsModule.forRoot({
           global: false,
@@ -58,7 +63,7 @@ export class GrpcModule {
           provide: GRPC_SERVICE_DI_TOKEN,
           useClass: GrpcService,
         },
-        ...(options.clients ?? []).map((client) => {
+        ...(moduleOptions.clients ?? []).map((client) => {
           const token = `${GRPC_CLIENT_PREFIX}_${client.clientName}`;
 
           return {
@@ -80,7 +85,7 @@ export class GrpcModule {
       exports: [
         GRPC_SERVICE_DI_TOKEN,
         ClsModule,
-        ...(options.clients ?? []).map(
+        ...(moduleOptions.clients ?? []).map(
           (client) => `${GRPC_CLIENT_PREFIX}_${client.clientName}`
         ),
       ],
