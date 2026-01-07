@@ -2,7 +2,7 @@
 sidebar_position: 5
 ---
 
-# Domain Driven Design
+# @globalart/ddd
 
 Comprehensive Domain-Driven Design toolkit providing essential building blocks for robust, maintainable domain models.
 
@@ -31,7 +31,7 @@ The `@globalart/ddd` package provides a complete set of building blocks for impl
 ### Aggregate Root
 
 ```typescript
-import { AggregateRoot } from '@globalart/ddd';
+import { AggregateRoot } from "@globalart/ddd";
 
 class UserCreatedEvent {
   constructor(
@@ -61,12 +61,12 @@ class User extends AggregateRoot<UserCreatedEvent> {
 ### Value Objects
 
 ```typescript
-import { ValueObject } from '@globalart/ddd';
+import { ValueObject } from "@globalart/ddd";
 
 class Email extends ValueObject<{ value: string }> {
   constructor(value: string) {
     if (!this.isValidEmail(value)) {
-      throw new Error('Invalid email format');
+      throw new Error("Invalid email format");
     }
     super({ value });
   }
@@ -81,14 +81,14 @@ class Email extends ValueObject<{ value: string }> {
 }
 
 // Usage
-const email = new Email('user@example.com');
+const email = new Email("user@example.com");
 const emailValue = email.value; // 'user@example.com'
 ```
 
 ### Commands and Queries
 
 ```typescript
-import { Command, Query } from '@globalart/ddd';
+import { Command, Query } from "@globalart/ddd";
 
 class CreateUserCommand extends Command {
   constructor(
@@ -114,7 +114,7 @@ class GetUserQuery extends Query {
 Base class for domain aggregates that manages domain events:
 
 ```typescript
-import { AggregateRoot } from '@globalart/ddd';
+import { AggregateRoot } from "@globalart/ddd";
 
 abstract class AggregateRoot<EventType> {
   protected addDomainEvent(event: EventType): void;
@@ -128,11 +128,11 @@ abstract class AggregateRoot<EventType> {
 Type-safe value objects with built-in equality:
 
 ```typescript
-import { ValueObject } from '@globalart/ddd';
+import { ValueObject } from "@globalart/ddd";
 
 abstract class ValueObject<T> {
   protected readonly props: T;
-  
+
   constructor(props: T);
   equals(vo?: ValueObject<T>): boolean;
 }
@@ -141,16 +141,16 @@ abstract class ValueObject<T> {
 ### Built-in Value Objects
 
 ```typescript
-import { Id, NanoId, StringVO, BooleanVO, DateVO } from '@globalart/ddd';
+import { Id, NanoId, StringVO, BooleanVO, DateVO } from "@globalart/ddd";
 
 // UUID-based identifier
 const userId = new Id();
 
-// NanoID-based identifier  
+// NanoID-based identifier
 const sessionId = new NanoId();
 
 // String value object
-const userName = new StringVO('john_doe');
+const userName = new StringVO("john_doe");
 
 // Boolean value object
 const isActive = new BooleanVO(true);
@@ -164,17 +164,15 @@ const createdAt = new DateVO(new Date());
 Implement business rules using the specification pattern:
 
 ```typescript
-import { CompositeSpecification, Result, Ok, Err } from '@globalart/ddd';
+import { CompositeSpecification, Result, Ok, Err } from "@globalart/ddd";
 
 class UserEmailSpecification extends CompositeSpecification<User> {
   isSatisfiedBy(user: User): boolean {
-    return user.email.includes('@') && user.email.includes('.');
+    return user.email.includes("@") && user.email.includes(".");
   }
 
   mutate(user: User): Result<User, string> {
-    return this.isSatisfiedBy(user) 
-      ? Ok(user) 
-      : Err('Invalid email format');
+    return this.isSatisfiedBy(user) ? Ok(user) : Err("Invalid email format");
   }
 }
 
@@ -192,16 +190,20 @@ const isValidUser = validUserSpec.isSatisfiedBy(user);
 Advanced filtering with type-safe operations:
 
 ```typescript
-import { StringFilter, NumberFilter, DateFilter } from '@globalart/ddd';
+import { StringFilter, NumberFilter, DateFilter } from "@globalart/ddd";
 
 // String filtering
-const nameFilter = new StringFilter('name', 'contains', 'john');
+const nameFilter = new StringFilter("name", "contains", "john");
 
-// Number filtering  
-const ageFilter = new NumberFilter('age', 'gte', 18);
+// Number filtering
+const ageFilter = new NumberFilter("age", "gte", 18);
 
 // Date filtering
-const createdFilter = new DateFilter('createdAt', 'after', new Date('2023-01-01'));
+const createdFilter = new DateFilter(
+  "createdAt",
+  "after",
+  new Date("2023-01-01")
+);
 
 // Combine filters
 const combinedFilter = nameFilter.and(ageFilter).and(createdFilter);
@@ -212,7 +214,7 @@ const combinedFilter = nameFilter.and(ageFilter).and(createdFilter);
 Abstract repository interface for data access:
 
 ```typescript
-import { Repository } from '@globalart/ddd';
+import { Repository } from "@globalart/ddd";
 
 interface UserRepository extends Repository<User> {
   findByEmail(email: Email): Promise<User | null>;
@@ -226,7 +228,7 @@ class TypeOrmUserRepository implements UserRepository {
   async findByEmail(email: Email): Promise<User | null> {
     // Implementation using TypeORM
   }
-  
+
   async save(user: User): Promise<void> {
     // Save user and publish domain events
   }
@@ -238,16 +240,16 @@ class TypeOrmUserRepository implements UserRepository {
 Built-in pagination with validation:
 
 ```typescript
-import { IPagination, ISort, paginationSchema } from '@globalart/ddd';
+import { IPagination, ISort, paginationSchema } from "@globalart/ddd";
 
 const pagination: IPagination = {
   limit: 10,
-  offset: 0
+  offset: 0,
 };
 
 const sorting: ISort = {
-  field: 'createdAt',
-  direction: 'DESC'
+  field: "createdAt",
+  direction: "DESC",
 };
 
 // Validation using Zod schema
@@ -290,7 +292,7 @@ class Order extends AggregateRoot<OrderCreatedEvent | OrderShippedEvent> {
 ```typescript
 class PremiumUserSpecification extends CompositeSpecification<User> {
   isSatisfiedBy(user: User): boolean {
-    return user.subscriptionType === 'premium' && user.isActive;
+    return user.subscriptionType === "premium" && user.isActive;
   }
 }
 
@@ -306,8 +308,9 @@ class RecentActivitySpecification extends CompositeSpecification<User> {
 }
 
 // Combine specifications
-const eligibleForOfferSpec = new PremiumUserSpecification()
-  .and(new RecentActivitySpecification(7));
+const eligibleForOfferSpec = new PremiumUserSpecification().and(
+  new RecentActivitySpecification(7)
+);
 ```
 
 ## Best Practices
@@ -322,8 +325,8 @@ const eligibleForOfferSpec = new PremiumUserSpecification()
 ## Integration with NestJS
 
 ```typescript
-import { Injectable } from '@nestjs/common';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Injectable } from "@nestjs/common";
+import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 
 @CommandHandler(CreateUserCommand)
 @Injectable()
@@ -333,9 +336,9 @@ export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {
   async execute(command: CreateUserCommand): Promise<void> {
     const email = new Email(command.email);
     const user = new User(new Id().value, email.value, command.name);
-    
+
     await this.userRepository.save(user);
-    
+
     // Domain events are handled automatically
   }
 }

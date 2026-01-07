@@ -2,7 +2,7 @@
 sidebar_position: 2
 ---
 
-# NestJS TypeORM Pagination
+# @globalart/nestjs-typeorm-pagination
 
 Advanced pagination, filtering, sorting, and search capabilities for TypeORM repositories in NestJS applications.
 
@@ -29,28 +29,33 @@ This package provides a comprehensive solution for implementing pagination, filt
 ## Quick Start
 
 ```typescript
-import { Controller, Get } from '@nestjs/common';
-import { Paginate, PaginateQuery, paginate, Paginated } from '@globalart/nestjs-typeorm-pagination';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './user.entity';
+import { Controller, Get } from "@nestjs/common";
+import {
+  Paginate,
+  PaginateQuery,
+  paginate,
+  Paginated,
+} from "@globalart/nestjs-typeorm-pagination";
+import { Repository } from "typeorm";
+import { InjectRepository } from "@nestjs/typeorm";
+import { User } from "./user.entity";
 
-@Controller('users')
+@Controller("users")
 export class UsersController {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>
   ) {}
 
   @Get()
   async getUsers(@Paginate() query: PaginateQuery): Promise<Paginated<User>> {
     return paginate(query, this.userRepository, {
-      sortableColumns: ['id', 'name', 'email', 'createdAt'],
-      searchableColumns: ['name', 'email'],
+      sortableColumns: ["id", "name", "email", "createdAt"],
+      searchableColumns: ["name", "email"],
       filterableColumns: {
         name: true,
         email: true,
-        createdAt: ['gte', 'lte'],
+        createdAt: ["gte", "lte"],
       },
     });
   }
@@ -63,36 +68,41 @@ export class UsersController {
 
 ```typescript
 interface PaginateConfig<T> {
-  sortableColumns: Column<T>[];                    // Columns that can be sorted
-  searchableColumns?: Column<T>[];                 // Columns to search in
-  filterableColumns?: {                            // Filterable columns and operators
+  sortableColumns: Column<T>[]; // Columns that can be sorted
+  searchableColumns?: Column<T>[]; // Columns to search in
+  filterableColumns?: {
+    // Filterable columns and operators
     [key in Column<T>]?: (FilterOperator | FilterSuffix)[] | true;
   };
-  relations?: FindOptionsRelations<T>;             // Relations to include
-  select?: Column<T>[];                            // Columns to select
-  maxLimit?: number;                               // Maximum items per page
-  defaultSortBy?: SortBy<T>;                       // Default sorting
-  defaultLimit?: number;                           // Default items per page
-  where?: FindOptionsWhere<T>;                     // Additional where conditions
+  relations?: FindOptionsRelations<T>; // Relations to include
+  select?: Column<T>[]; // Columns to select
+  maxLimit?: number; // Maximum items per page
+  defaultSortBy?: SortBy<T>; // Default sorting
+  defaultLimit?: number; // Default items per page
+  where?: FindOptionsWhere<T>; // Additional where conditions
 }
 ```
 
 ## Query Parameters
 
 ### Pagination
+
 - `page` - Page number (default: 1)
 - `limit` - Items per page (default: 20, max: 100)
 
 ### Sorting
+
 - `sortBy` - Sort configuration in format `column:direction`
   - Example: `?sortBy=name:ASC&sortBy=createdAt:DESC`
 
 ### Search
+
 - `search` - Search term
 - `searchBy` - Columns to search in
   - Example: `?search=john&searchBy=name&searchBy=email`
 
 ### Filtering
+
 - `filter.column` - Filter by specific column
   - Example: `?filter.name=john&filter.createdAt.gte=2023-01-01`
 
@@ -101,13 +111,13 @@ interface PaginateConfig<T> {
 ### Basic Pagination
 
 ```typescript
-@Controller('users')
+@Controller("users")
 export class UsersController {
   @Get()
   async getUsers(@Paginate() query: PaginateQuery): Promise<Paginated<User>> {
     return paginate(query, this.userRepository, {
-      sortableColumns: ['id', 'name', 'email', 'createdAt'],
-      defaultSortBy: [['createdAt', 'DESC']],
+      sortableColumns: ["id", "name", "email", "createdAt"],
+      defaultSortBy: [["createdAt", "DESC"]],
       defaultLimit: 20,
       maxLimit: 100,
     });
@@ -118,20 +128,20 @@ export class UsersController {
 ### With Search and Filtering
 
 ```typescript
-@Controller('users')
+@Controller("users")
 export class UsersController {
   @Get()
   async getUsers(@Paginate() query: PaginateQuery): Promise<Paginated<User>> {
     return paginate(query, this.userRepository, {
-      sortableColumns: ['id', 'name', 'email', 'createdAt'],
-      searchableColumns: ['name', 'email'],
+      sortableColumns: ["id", "name", "email", "createdAt"],
+      searchableColumns: ["name", "email"],
       filterableColumns: {
         name: true,
         email: true,
-        createdAt: ['gte', 'lte'],
-        status: ['eq', 'in'],
+        createdAt: ["gte", "lte"],
+        status: ["eq", "in"],
       },
-      defaultSortBy: [['createdAt', 'DESC']],
+      defaultSortBy: [["createdAt", "DESC"]],
       defaultLimit: 20,
     });
   }
@@ -141,19 +151,19 @@ export class UsersController {
 ### With Relations
 
 ```typescript
-@Controller('posts')
+@Controller("posts")
 export class PostsController {
   @Get()
   async getPosts(@Paginate() query: PaginateQuery): Promise<Paginated<Post>> {
     return paginate(query, this.postRepository, {
-      sortableColumns: ['id', 'title', 'createdAt'],
-      searchableColumns: ['title', 'content'],
-      relations: ['author', 'categories'],
+      sortableColumns: ["id", "title", "createdAt"],
+      searchableColumns: ["title", "content"],
+      relations: ["author", "categories"],
       filterableColumns: {
-        authorId: ['eq'],
-        categoryId: ['in'],
-        published: ['eq'],
-        createdAt: ['gte', 'lte'],
+        authorId: ["eq"],
+        categoryId: ["in"],
+        published: ["eq"],
+        createdAt: ["gte", "lte"],
       },
     });
   }
@@ -163,21 +173,23 @@ export class PostsController {
 ### Using Query Builder
 
 ```typescript
-@Controller('users')
+@Controller("users")
 export class UsersController {
-  @Get('active')
-  async getActiveUsers(@Paginate() query: PaginateQuery): Promise<Paginated<User>> {
+  @Get("active")
+  async getActiveUsers(
+    @Paginate() query: PaginateQuery
+  ): Promise<Paginated<User>> {
     const queryBuilder = this.userRepository
-      .createQueryBuilder('user')
-      .where('user.isActive = :isActive', { isActive: true });
+      .createQueryBuilder("user")
+      .where("user.isActive = :isActive", { isActive: true });
 
     return paginate(query, queryBuilder, {
-      sortableColumns: ['id', 'name', 'email', 'createdAt'],
-      searchableColumns: ['name', 'email'],
+      sortableColumns: ["id", "name", "email", "createdAt"],
+      searchableColumns: ["name", "email"],
       filterableColumns: {
         name: true,
         email: true,
-        createdAt: ['gte', 'lte'],
+        createdAt: ["gte", "lte"],
       },
     });
   }
@@ -188,38 +200,38 @@ export class UsersController {
 
 The package supports various filter operators:
 
-| Operator    | Description           | Example                    |
-|-------------|-----------------------|----------------------------|
-| `eq`        | Equal                 | `filter.status=active`     |
-| `ne`        | Not equal             | `filter.status.ne=inactive`|
-| `gt`        | Greater than          | `filter.age.gt=18`         |
-| `gte`       | Greater than or equal | `filter.age.gte=21`        |
-| `lt`        | Less than             | `filter.score.lt=100`      |
-| `lte`       | Less than or equal    | `filter.score.lte=90`      |
+| Operator    | Description           | Example                           |
+| ----------- | --------------------- | --------------------------------- |
+| `eq`        | Equal                 | `filter.status=active`            |
+| `ne`        | Not equal             | `filter.status.ne=inactive`       |
+| `gt`        | Greater than          | `filter.age.gt=18`                |
+| `gte`       | Greater than or equal | `filter.age.gte=21`               |
+| `lt`        | Less than             | `filter.score.lt=100`             |
+| `lte`       | Less than or equal    | `filter.score.lte=90`             |
 | `in`        | In array              | `filter.status.in=active,pending` |
-| `notIn`     | Not in array          | `filter.role.notIn=admin,super` |
-| `like`      | Like pattern          | `filter.name.like=%john%`  |
-| `notLike`   | Not like pattern      | `filter.email.notLike=%test%` |
-| `isNull`    | Is null               | `filter.deletedAt.isNull`  |
-| `isNotNull` | Is not null           | `filter.verifiedAt.isNotNull` |
+| `notIn`     | Not in array          | `filter.role.notIn=admin,super`   |
+| `like`      | Like pattern          | `filter.name.like=%john%`         |
+| `notLike`   | Not like pattern      | `filter.email.notLike=%test%`     |
+| `isNull`    | Is null               | `filter.deletedAt.isNull`         |
+| `isNotNull` | Is not null           | `filter.verifiedAt.isNotNull`     |
 
 ## Response Structure
 
 ```typescript
 interface Paginated<T> {
-  data: T[];                    // Array of items
+  data: T[]; // Array of items
   payload: {
     pagination: {
-      limit: number;            // Items per page
-      totalItems: number;       // Total number of items
-      page: number;             // Current page
-      total: number;            // Total number of pages
-      sortBy: SortBy<T>;        // Current sorting
-      searchBy: Column<T>[];    // Search columns
-      search: string;           // Search term
-      select: string[];         // Selected columns
+      limit: number; // Items per page
+      totalItems: number; // Total number of items
+      page: number; // Current page
+      total: number; // Total number of pages
+      sortBy: SortBy<T>; // Current sorting
+      searchBy: Column<T>[]; // Search columns
+      search: string; // Search term
+      select: string[]; // Selected columns
       filter?: Record<string, string | string[]>; // Applied filters
-      links: PaginationLink[];  // Pagination links
+      links: PaginationLink[]; // Pagination links
     };
   };
 }
@@ -230,26 +242,26 @@ interface Paginated<T> {
 The package includes Swagger decorators for automatic API documentation:
 
 ```typescript
-import { 
-  Paginate, 
+import {
+  Paginate,
   PaginateQuery,
   ApiPaginatedQuery,
-  ApiOkPaginatedResponse 
-} from '@globalart/nestjs-typeorm-pagination';
+  ApiOkPaginatedResponse,
+} from "@globalart/nestjs-typeorm-pagination";
 
-@Controller('users')
+@Controller("users")
 export class UsersController {
   @Get()
   @ApiPaginatedQuery()
   @ApiOkPaginatedResponse(User)
   async getUsers(@Paginate() query: PaginateQuery): Promise<Paginated<User>> {
     return paginate(query, this.userRepository, {
-      sortableColumns: ['id', 'name', 'email', 'createdAt'],
-      searchableColumns: ['name', 'email'],
+      sortableColumns: ["id", "name", "email", "createdAt"],
+      searchableColumns: ["name", "email"],
       filterableColumns: {
         name: true,
         email: true,
-        createdAt: ['gte', 'lte'],
+        createdAt: ["gte", "lte"],
       },
     });
   }

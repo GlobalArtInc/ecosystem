@@ -2,7 +2,7 @@
 sidebar_position: 3
 ---
 
-# NestJS Microservices
+# @globalart/nestjs-microservices
 
 Simplified decorators for multiple transport patterns in NestJS microservices with full type safety.
 
@@ -26,12 +26,12 @@ This package provides convenient decorators for different transport patterns in 
 ## Quick Start
 
 ```typescript
-import { Controller } from '@nestjs/common';
-import { TcpPattern } from '@globalart/nestjs-microservices';
+import { Controller } from "@nestjs/common";
+import { TcpPattern } from "@globalart/nestjs-microservices";
 
 @Controller()
 export class UserController {
-  @TcpPattern('user.created')
+  @TcpPattern("user.created")
   async handleUserCreated(data: UserCreatedEvent) {
     return this.userService.processUser(data);
   }
@@ -40,32 +40,32 @@ export class UserController {
 
 ## Available Decorators
 
-| Decorator         | Transport | Description                    |
-|-------------------|-----------|--------------------------------|
-| `TcpPattern`      | TCP       | TCP message pattern decorator  |
-| `RedisPattern`    | Redis     | Redis message pattern decorator|
-| `MqttPattern`     | MQTT      | MQTT message pattern decorator |
-| `GrpcPattern`     | gRPC      | gRPC message pattern decorator |
-| `NatsPattern`     | NATS      | NATS message pattern decorator |
+| Decorator         | Transport | Description                        |
+| ----------------- | --------- | ---------------------------------- |
+| `TcpPattern`      | TCP       | TCP message pattern decorator      |
+| `RedisPattern`    | Redis     | Redis message pattern decorator    |
+| `MqttPattern`     | MQTT      | MQTT message pattern decorator     |
+| `GrpcPattern`     | gRPC      | gRPC message pattern decorator     |
+| `NatsPattern`     | NATS      | NATS message pattern decorator     |
 | `RabbitMqPattern` | RabbitMQ  | RabbitMQ message pattern decorator |
-| `KafkaPattern`    | Kafka     | Kafka message pattern decorator |
+| `KafkaPattern`    | Kafka     | Kafka message pattern decorator    |
 
 ## Usage Examples
 
 ### TCP Transport
 
 ```typescript
-import { Controller } from '@nestjs/common';
-import { TcpPattern } from '@globalart/nestjs-microservices';
+import { Controller } from "@nestjs/common";
+import { TcpPattern } from "@globalart/nestjs-microservices";
 
 @Controller()
 export class UserController {
-  @TcpPattern('user.created')
+  @TcpPattern("user.created")
   async handleUserCreated(data: UserCreatedEvent) {
     return this.userService.processUser(data);
   }
 
-  @TcpPattern('user.updated')
+  @TcpPattern("user.updated")
   async handleUserUpdated(data: UserUpdatedEvent) {
     return this.userService.updateUser(data);
   }
@@ -75,12 +75,12 @@ export class UserController {
 ### Redis Transport
 
 ```typescript
-import { Controller } from '@nestjs/common';
-import { RedisPattern } from '@globalart/nestjs-microservices';
+import { Controller } from "@nestjs/common";
+import { RedisPattern } from "@globalart/nestjs-microservices";
 
 @Controller()
 export class NotificationController {
-  @RedisPattern('notification.send')
+  @RedisPattern("notification.send")
   async handleNotification(data: NotificationData) {
     return this.notificationService.send(data);
   }
@@ -90,12 +90,12 @@ export class NotificationController {
 ### MQTT Transport
 
 ```typescript
-import { Controller } from '@nestjs/common';
-import { MqttPattern } from '@globalart/nestjs-microservices';
+import { Controller } from "@nestjs/common";
+import { MqttPattern } from "@globalart/nestjs-microservices";
 
 @Controller()
 export class SensorController {
-  @MqttPattern('sensor.data')
+  @MqttPattern("sensor.data")
   async handleSensorData(data: SensorReading) {
     return this.sensorService.processReading(data);
   }
@@ -105,12 +105,12 @@ export class SensorController {
 ### gRPC Transport
 
 ```typescript
-import { Controller } from '@nestjs/common';
-import { GrpcPattern } from '@globalart/nestjs-microservices';
+import { Controller } from "@nestjs/common";
+import { GrpcPattern } from "@globalart/nestjs-microservices";
 
 @Controller()
 export class OrderController {
-  @GrpcPattern('order.process')
+  @GrpcPattern("order.process")
   async handleOrder(data: OrderRequest) {
     return this.orderService.processOrder(data);
   }
@@ -120,12 +120,12 @@ export class OrderController {
 ### NATS Transport
 
 ```typescript
-import { Controller } from '@nestjs/common';
-import { NatsPattern } from '@globalart/nestjs-microservices';
+import { Controller } from "@nestjs/common";
+import { NatsPattern } from "@globalart/nestjs-microservices";
 
 @Controller()
 export class PaymentController {
-  @NatsPattern('payment.completed')
+  @NatsPattern("payment.completed")
   async handlePayment(data: PaymentEvent) {
     return this.paymentService.confirmPayment(data);
   }
@@ -135,12 +135,12 @@ export class PaymentController {
 ### RabbitMQ Transport
 
 ```typescript
-import { Controller } from '@nestjs/common';
-import { RabbitMqPattern } from '@globalart/nestjs-microservices';
+import { Controller } from "@nestjs/common";
+import { RabbitMqPattern } from "@globalart/nestjs-microservices";
 
 @Controller()
 export class EmailController {
-  @RabbitMqPattern('email.send')
+  @RabbitMqPattern("email.send")
   async handleEmail(data: EmailRequest) {
     return this.emailService.sendEmail(data);
   }
@@ -150,12 +150,12 @@ export class EmailController {
 ### Kafka Transport
 
 ```typescript
-import { Controller } from '@nestjs/common';
-import { KafkaPattern } from '@globalart/nestjs-microservices';
+import { Controller } from "@nestjs/common";
+import { KafkaPattern } from "@globalart/nestjs-microservices";
 
 @Controller()
 export class AnalyticsController {
-  @KafkaPattern('analytics.event')
+  @KafkaPattern("analytics.event")
   async handleAnalytics(data: AnalyticsEvent) {
     return this.analyticsService.trackEvent(data);
   }
@@ -167,22 +167,26 @@ export class AnalyticsController {
 You can use multiple transport patterns in the same controller:
 
 ```typescript
-import { Controller } from '@nestjs/common';
-import { TcpPattern, RedisPattern, KafkaPattern } from '@globalart/nestjs-microservices';
+import { Controller } from "@nestjs/common";
+import {
+  TcpPattern,
+  RedisPattern,
+  KafkaPattern,
+} from "@globalart/nestjs-microservices";
 
 @Controller()
 export class EventController {
-  @TcpPattern('user.event')
+  @TcpPattern("user.event")
   async handleUserEvent(data: UserEvent) {
     return this.userService.handleEvent(data);
   }
 
-  @RedisPattern('cache.update')
+  @RedisPattern("cache.update")
   async handleCacheUpdate(data: CacheData) {
     return this.cacheService.update(data);
   }
 
-  @KafkaPattern('log.event')
+  @KafkaPattern("log.event")
   async handleLogEvent(data: LogEvent) {
     return this.logService.log(data);
   }
@@ -203,7 +207,7 @@ interface UserCreatedEvent {
 
 @Controller()
 export class UserController {
-  @TcpPattern('user.created')
+  @TcpPattern("user.created")
   async handleUserCreated(data: UserCreatedEvent): Promise<void> {
     // data is fully typed as UserCreatedEvent
     console.log(`Processing user: ${data.name} (${data.email})`);
