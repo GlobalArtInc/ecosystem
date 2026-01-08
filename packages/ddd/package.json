@@ -50,7 +50,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@globalart/oxide": "1.0.0",
+    "@globalart/oxide": "1.0.1",
     "date-fns": "4.1.0",
     "dequal": "2.0.3",
     "nanoid": "5.1.6",
