@@ -1,0 +1,582 @@
+---
+sidebar_position: 8
+---
+
+# @globalart/passport
+
+OpenID Connect strategy for GlobalArt SSO integration. Provides Passport.js strategy and standalone authentication utilities for seamless integration with GlobalArt Single Sign-On.
+
+## Installation
+
+```bash npm2yarn
+npm install @globalart/passport passport express express-session
+```
+
+## Overview
+
+The `@globalart/passport` package provides authentication capabilities for applications integrating with GlobalArt SSO using OpenID Connect protocol. It includes:
+
+- **Passport Strategy** - Ready-to-use Passport.js strategy for Express applications
+- **Standalone Auth Strategy** - Core authentication logic that can be used independently
+- **User Mapping** - Automatic mapping of OpenID Connect user claims to application user model
+- **Token Management** - Support for access tokens, refresh tokens, and token revocation
+
+## Key Features
+
+- **OpenID Connect Support** - Full OIDC protocol implementation
+- **Passport.js Integration** - Seamless integration with Passport.js middleware
+- **Automatic Discovery** - Automatic OpenID Connect configuration discovery
+- **Token Refresh** - Built-in support for token refresh
+- **Token Revocation** - Support for token revocation
+- **Type Safety** - Full TypeScript support with proper types
+
+## Quick Start
+
+### Using with Passport.js
+
+```typescript
+import express from "express";
+import passport from "passport";
+import session from "express-session";
+import { GlobalArtPassportStrategy } from "@globalart/passport";
+
+const app = express();
+
+app.use(
+  session({
+    secret: "your-secret-key",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.use(
+  new GlobalArtPassportStrategy(
+    {
+      clientId: process.env.CLIENT_ID!,
+      clientSecret: process.env.CLIENT_SECRET!,
+      redirectUri: process.env.REDIRECT_URI!,
+      scope: ["openid", "profile", "email"],
+    },
+    (req, accessToken, refreshToken, profile, done) => {
+      const user = {
+        id: profile.id,
+        email: profile.email,
+        name: profile.name,
+        accessToken,
+        refreshToken,
+      };
+      return done(null, user);
+    }
+  )
+);
+
+passport.serializeUser((user: any, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser((id: string, done) => {
+  done(null, { id });
+});
+
+app.get("/auth/globalart", passport.authenticate("globalart"));
+
+app.get(
+  "/auth/globalart/callback",
+  passport.authenticate("globalart", { failureRedirect: "/login" }),
+  (req, res) => {
+    res.redirect("/profile");
+  }
+);
+
+app.get("/profile", (req, res) => {
+  if (req.isAuthenticated()) {
+    res.json({ user: req.user });
+  } else {
+    res.redirect("/auth/globalart");
+  }
+});
+```
+
+### Using Standalone Auth Strategy
+
+```typescript
+import { GlobalArtAuthStrategy } from "@globalart/passport";
+
+const authStrategy = new GlobalArtAuthStrategy({
+  clientId: process.env.CLIENT_ID!,
+  clientSecret: process.env.CLIENT_SECRET!,
+  redirectUri: process.env.REDIRECT_URI!,
+  scope: ["openid", "profile", "email"],
+});
+
+await authStrategy.initialize();
+
+const authUrl = authStrategy.generateAuthorizationUrl({
+  state: "random-state-value",
+  nonce: "random-nonce-value",
+});
+
+console.log("Authorization URL:", authUrl);
+```
+
+## Configuration
+
+### OpenIDConnectStrategyOptions
+
+| Option         | Type       | Required | Description                                             |
+| -------------- | ---------- | -------- | ------------------------------------------------------- |
+| `clientId`     | `string`   | Yes      | OAuth2 client ID                                        |
+| `clientSecret` | `string`   | Yes      | OAuth2 client secret                                    |
+| `redirectUri`  | `string`   | Yes      | OAuth2 redirect URI                                     |
+| `responseType` | `string`   | No       | Response type (default: "code")                         |
+| `scope`        | `string[]` | No       | OAuth2 scopes (default: ["openid", "profile", "email"]) |
+| `responseMode` | `string`   | No       | Response mode                                           |
+| `discoveryUrl` | `string`   | No       | OpenID Connect discovery URL (default: GlobalArt SSO)   |
+
+### PassportGlobalArtOptions
+
+Extends `OpenIDConnectStrategyOptions` with:
+
+| Option              | Type      | Required | Description                            |
+| ------------------- | --------- | -------- | -------------------------------------- |
+| `passReqToCallback` | `boolean` | No       | Pass request object to verify callback |
+
+## API Reference
+
+### GlobalArtPassportStrategy
+
+Passport.js strategy for GlobalArt SSO authentication.
+
+**Constructor:**
+
+```typescript
+new GlobalArtPassportStrategy(
+  options: PassportGlobalArtOptions,
+  verify: (
+    req: Request,
+    accessToken: string,
+    refreshToken: string | undefined,
+    profile: GlobalArtUserInfo,
+    done: (error: Error | null, user?: GlobalArtUserInfo) => void
+  ) => void
+)
+```
+
+**Strategy Name:** `"globalart"`
+
+**Example:**
+
+```typescript
+passport.use(
+  new GlobalArtPassportStrategy(
+    {
+      clientId: "your-client-id",
+      clientSecret: "your-client-secret",
+      redirectUri: "http://localhost:3000/auth/globalart/callback",
+    },
+    (req, accessToken, refreshToken, profile, done) => {
+      return done(null, profile);
+    }
+  )
+);
+```
+
+### GlobalArtAuthStrategy
+
+Standalone authentication strategy for OpenID Connect flows.
+
+**Constructor:**
+
+```typescript
+new GlobalArtAuthStrategy(options: OpenIDConnectStrategyOptions)
+```
+
+**Methods:**
+
+#### `initialize(): Promise<void>`
+
+Initializes the strategy by loading OpenID Connect configuration from the discovery endpoint.
+
+```typescript
+await authStrategy.initialize();
+```
+
+#### `generateAuthorizationUrl(options?: AuthorizationUrlOptions): string`
+
+Generates the authorization URL for initiating the OAuth2 flow.
+
+**Parameters:**
+
+- `options` (optional): `AuthorizationUrlOptions`
+  - `state` - State parameter for CSRF protection
+  - `nonce` - Nonce for ID token validation
+  - `codeChallenge` - PKCE code challenge
+  - `codeChallengeMethod` - PKCE code challenge method (e.g., "S256")
+  - `prompt` - Prompt parameter (e.g., "login", "consent")
+  - `maxAge` - Maximum authentication age
+  - `loginHint` - Login hint for the user
+  - `acrValues` - Authentication Context Class Reference values
+
+**Returns:** `string` - Authorization URL
+
+**Example:**
+
+```typescript
+const authUrl = authStrategy.generateAuthorizationUrl({
+  state: "random-state",
+  nonce: "random-nonce",
+  codeChallenge: "code-challenge",
+  codeChallengeMethod: "S256",
+});
+```
+
+#### `exchangeCodeForToken(code: string, codeVerifier?: string): Promise<TokenResponse>`
+
+Exchanges authorization code for access token.
+
+**Parameters:**
+
+- `code` - Authorization code from callback
+- `codeVerifier` - PKCE code verifier (optional)
+
+**Returns:** `Promise<TokenResponse>` - Token response with access token, refresh token, etc.
+
+**Example:**
+
+```typescript
+const tokenResponse = await authStrategy.exchangeCodeForToken(
+  authorizationCode,
+  codeVerifier
+);
+
+console.log(tokenResponse.access_token);
+console.log(tokenResponse.refresh_token);
+```
+
+#### `refreshToken(refreshToken: string): Promise<TokenResponse>`
+
+Refreshes an access token using a refresh token.
+
+**Parameters:**
+
+- `refreshToken` - Refresh token
+
+**Returns:** `Promise<TokenResponse>` - New token response
+
+**Example:**
+
+```typescript
+const newTokenResponse = await authStrategy.refreshToken(refreshToken);
+```
+
+#### `getUserInfo(accessToken: string): Promise<GlobalArtUserInfo>`
+
+Retrieves user information using an access token.
+
+**Parameters:**
+
+- `accessToken` - Access token
+
+**Returns:** `Promise<GlobalArtUserInfo>` - User information
+
+**Example:**
+
+```typescript
+const userInfo = await authStrategy.getUserInfo(accessToken);
+console.log(userInfo.id, userInfo.email, userInfo.name);
+```
+
+#### `revokeToken(token: string, tokenTypeHint?: string): Promise<void>`
+
+Revokes an access or refresh token.
+
+**Parameters:**
+
+- `token` - Token to revoke
+- `tokenTypeHint` - Token type hint ("access_token" or "refresh_token")
+
+**Example:**
+
+```typescript
+await authStrategy.revokeToken(accessToken, "access_token");
+```
+
+#### `getConfiguration(): OpenIDConnectConfig | null`
+
+Returns the loaded OpenID Connect configuration.
+
+**Returns:** `OpenIDConnectConfig | null` - Configuration or null if not initialized
+
+### UserMapper
+
+Utility class for mapping OpenID Connect user claims.
+
+**Methods:**
+
+#### `toUserInfo(userInfo: AccessTokenUserInfo): GlobalArtUserInfo`
+
+Maps OpenID Connect user claims to GlobalArt user info format.
+
+**Example:**
+
+```typescript
+import { UserMapper } from "@globalart/passport";
+
+const globalArtUser = UserMapper.toUserInfo(oidcUserInfo);
+```
+
+## Types
+
+### GlobalArtUserInfo
+
+```typescript
+interface GlobalArtUserInfo {
+  id: number;
+  email: string;
+  name: string;
+  given_name?: string;
+  family_name?: string;
+  preferred_username?: string;
+  locale?: string;
+}
+```
+
+### TokenResponse
+
+```typescript
+interface TokenResponse {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  refresh_token?: string;
+  id_token?: string;
+  scope?: string;
+}
+```
+
+### OpenIDConnectConfig
+
+```typescript
+interface OpenIDConnectConfig {
+  issuer: string;
+  authorization_endpoint: string;
+  token_endpoint: string;
+  userinfo_endpoint: string;
+  jwks_uri: string;
+  revocation_endpoint: string;
+  response_types_supported: string[];
+  response_modes_supported: string[];
+  subject_types_supported: string[];
+  token_endpoint_auth_methods_supported: string[];
+  id_token_signing_alg_values_supported: string[];
+  scopes_supported: string[];
+  claims_supported: string[];
+  code_challenge_methods_supported: string[];
+  grant_types_supported: string[];
+}
+```
+
+## Usage Examples
+
+### Complete Express Application
+
+```typescript
+import express from "express";
+import passport from "passport";
+import session from "express-session";
+import { GlobalArtPassportStrategy } from "@globalart/passport";
+
+const app = express();
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET!,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.use(
+  new GlobalArtPassportStrategy(
+    {
+      clientId: process.env.CLIENT_ID!,
+      clientSecret: process.env.CLIENT_SECRET!,
+      redirectUri: `${process.env.APP_URL}/auth/globalart/callback`,
+      scope: ["openid", "profile", "email"],
+    },
+    async (req, accessToken, refreshToken, profile, done) => {
+      try {
+        const user = await findOrCreateUser({
+          id: profile.id,
+          email: profile.email,
+          name: profile.name,
+        });
+
+        user.accessToken = accessToken;
+        user.refreshToken = refreshToken;
+
+        return done(null, user);
+      } catch (error) {
+        return done(error);
+      }
+    }
+  )
+);
+
+passport.serializeUser((user: any, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id: string, done) => {
+  try {
+    const user = await findUserById(id);
+    done(null, user);
+  } catch (error) {
+    done(error);
+  }
+});
+
+app.get("/auth/globalart", passport.authenticate("globalart"));
+
+app.get(
+  "/auth/globalart/callback",
+  passport.authenticate("globalart", {
+    failureRedirect: "/login",
+    successRedirect: "/dashboard",
+  })
+);
+
+app.get("/logout", (req, res) => {
+  req.logout(() => {
+    res.redirect("/");
+  });
+});
+
+app.listen(3000);
+```
+
+### Using PKCE (Proof Key for Code Exchange)
+
+```typescript
+import crypto from "crypto";
+import { GlobalArtAuthStrategy } from "@globalart/passport";
+
+const authStrategy = new GlobalArtAuthStrategy({
+  clientId: process.env.CLIENT_ID!,
+  clientSecret: process.env.CLIENT_SECRET!,
+  redirectUri: process.env.REDIRECT_URI!,
+});
+
+await authStrategy.initialize();
+
+const codeVerifier = crypto.randomBytes(32).toString("base64url");
+const codeChallenge = crypto
+  .createHash("sha256")
+  .update(codeVerifier)
+  .digest("base64url");
+
+const authUrl = authStrategy.generateAuthorizationUrl({
+  state: crypto.randomBytes(16).toString("hex"),
+  nonce: crypto.randomBytes(16).toString("hex"),
+  codeChallenge,
+  codeChallengeMethod: "S256",
+});
+
+console.log("Visit:", authUrl);
+console.log("Save codeVerifier:", codeVerifier);
+
+const tokenResponse = await authStrategy.exchangeCodeForToken(
+  authorizationCode,
+  codeVerifier
+);
+```
+
+### Token Refresh Flow
+
+```typescript
+import { GlobalArtAuthStrategy } from "@globalart/passport";
+
+const authStrategy = new GlobalArtAuthStrategy({
+  clientId: process.env.CLIENT_ID!,
+  clientSecret: process.env.CLIENT_SECRET!,
+  redirectUri: process.env.REDIRECT_URI!,
+});
+
+await authStrategy.initialize();
+
+try {
+  const newTokenResponse = await authStrategy.refreshToken(refreshToken);
+  console.log("New access token:", newTokenResponse.access_token);
+} catch (error) {
+  console.error("Token refresh failed:", error);
+}
+```
+
+### Custom Discovery URL
+
+```typescript
+import { GlobalArtAuthStrategy } from "@globalart/passport";
+
+const authStrategy = new GlobalArtAuthStrategy({
+  clientId: process.env.CLIENT_ID!,
+  clientSecret: process.env.CLIENT_SECRET!,
+  redirectUri: process.env.REDIRECT_URI!,
+  discoveryUrl:
+    "https://custom-sso.example.com/.well-known/openid-configuration",
+});
+
+await authStrategy.initialize();
+```
+
+## Best Practices
+
+- **Use PKCE** - Always use PKCE for public clients to enhance security
+- **Store Tokens Securely** - Store access tokens and refresh tokens securely (encrypted)
+- **Handle Token Expiration** - Implement token refresh logic before tokens expire
+- **Validate State** - Always validate the state parameter to prevent CSRF attacks
+- **Error Handling** - Implement proper error handling for authentication failures
+- **Session Management** - Use secure session configuration in production
+- **HTTPS Only** - Always use HTTPS in production for secure token transmission
+
+## Security Considerations
+
+- **Client Secret** - Never expose client secret in client-side code
+- **State Parameter** - Always use and validate state parameter for CSRF protection
+- **Token Storage** - Store tokens securely and never expose them in URLs or logs
+- **HTTPS** - Use HTTPS for all authentication endpoints
+- **Token Expiration** - Respect token expiration times and refresh tokens when needed
+- **Token Revocation** - Implement token revocation on logout
+
+## Troubleshooting
+
+### Strategy Not Initialized
+
+If you get "Strategy not initialized" error, make sure to call `initialize()` before using other methods:
+
+```typescript
+await authStrategy.initialize();
+```
+
+### Token Exchange Fails
+
+Check that:
+
+- Authorization code is valid and not expired
+- Redirect URI matches exactly (including trailing slashes)
+- Client credentials are correct
+- Code verifier matches code challenge (if using PKCE)
+
+### User Info Retrieval Fails
+
+Ensure:
+
+- Access token is valid and not expired
+- Access token has required scopes (e.g., "openid", "profile", "email")
+- User info endpoint is accessible
