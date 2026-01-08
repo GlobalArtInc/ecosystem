@@ -15,12 +15,6 @@ const config: Config = {
 
   onBrokenLinks: "throw",
 
-  // todo...
-  // i18n: {
-  //   defaultLocale: 'en',
-  //   locales: ['en'],
-  // },
-
   presets: [
     [
       "classic",
@@ -91,7 +85,7 @@ const config: Config = {
           items: [
             {
               label: "Getting Started",
-              to: "/intro",
+              to: "/",
             },
           ],
         },
