@@ -77,33 +77,6 @@ const config: Config = {
           label: "Documentation",
         },
         {
-          type: "dropdown",
-          label: "Packages",
-          position: "left",
-          items: [
-            {
-              label: "Swagger Documentation",
-              to: "/packages/nestjs-swagger",
-            },
-            {
-              label: "TypeORM Pagination",
-              to: "/packages/nestjs-typeorm-pagination",
-            },
-            {
-              label: "Microservices",
-              to: "/packages/nestjs-microservices",
-            },
-            {
-              label: "Logger",
-              to: "/packages/nestjs-logger",
-            },
-            {
-              label: "DDD Toolkit",
-              to: "/packages/ddd",
-            },
-          ],
-        },
-        {
           href: "https://github.com/GlobalArtInc/ecosystem",
           label: "GitHub",
           position: "right",
@@ -119,10 +92,6 @@ const config: Config = {
             {
               label: "Getting Started",
               to: "/intro",
-            },
-            {
-              label: "Packages",
-              to: "/packages",
             },
           ],
         },
