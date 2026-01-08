@@ -6,7 +6,8 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "Packages",
-      collapsible: false,
+      collapsible: true,
+      collapsed: false,
       items: [
         "packages/nestjs-swagger",
         "packages/nestjs-typeorm-pagination",
