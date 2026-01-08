@@ -17,6 +17,7 @@ const sidebars: SidebarsConfig = {
         'packages/nestjs-grpc',
         'packages/zod-to-proto',
         'packages/passport',
+        'packages/oxide',
         'packages/ddd',
       ],
     },
