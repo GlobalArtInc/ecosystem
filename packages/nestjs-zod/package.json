@@ -43,7 +43,7 @@
     "@golevelup/ts-jest": "^1.2.0",
     "@nestjs/common": "11.1.11",
     "@nestjs/core": "11.1.11",
-    "@nestjs/swagger": "^11.2.3",
+    "@nestjs/swagger": "^11.2.4",
     "@nestjs/testing": "11.1.11",
     "@types/express": "5.0.6",
     "@types/jest": "^30.0.0",

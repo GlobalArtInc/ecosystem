@@ -50,7 +50,7 @@
     "@nestjs/common": "11.1.11",
     "@nestjs/core": "11.1.11",
     "@nestjs/microservices": "11.1.11",
-    "@nestjs/swagger": "^11.2.3",
+    "@nestjs/swagger": "^11.2.4",
     "@nestjs/testing": "11.1.11",
     "@nestjs/typeorm": "^11.0.0",
     "mysql": "^2.18.1"
