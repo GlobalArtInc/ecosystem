@@ -10,12 +10,14 @@ import { ClsModule, ClsService } from "nestjs-cls";
 import { randomUUID } from "crypto";
 import { Metadata, MetadataValue } from "@grpc/grpc-js";
 import { setupGrpcFollower } from "./setup-grpc-controller";
+import { GrpcLoader } from "./grpc.config";
 
 interface GrpcOptionsClient {
   clientName: string;
   packageName: string;
   protoPath: string;
   url: string;
+  loader?: GrpcLoader;
 }
 
 class GrpcModuleOptions {
@@ -73,6 +75,7 @@ export class GrpcModule {
                 package: client.packageName,
                 protoPath: client.protoPath,
                 url: client.url,
+                loader: client.loader,
               });
               factory.register(token, grpcClient);
 
