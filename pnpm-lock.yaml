@@ -1522,8 +1522,8 @@ importers:
   packages/nestjs-schematics:
     dependencies:
       '@angular-devkit/core':
-        specifier: 21.0.5
-        version: 21.0.5(chokidar@4.0.3)
+        specifier: 21.0.4
+        version: 21.0.4(chokidar@4.0.3)
       '@angular-devkit/schematics':
         specifier: 21.0.5
         version: 21.0.5(chokidar@4.0.3)
@@ -2017,6 +2017,15 @@ packages:
   '@angular-devkit/core@19.2.19':
     resolution: {integrity: sha512-JbLL+4IMLMBgjLZlnPG4lYDfz4zGrJ/s6Aoon321NJKuw1Kb1k5KpFu9dUY0BqLIe8xPQ2UJBpI+xXdK5MXMHQ==}
     engines: {node: ^18.19.1 || ^20.11.1 || >=22.0.0, npm: ^6.11.0 || ^7.5.6 || >=8.0.0, yarn: '>= 1.13.0'}
+    peerDependencies:
+      chokidar: ^4.0.0
+    peerDependenciesMeta:
+      chokidar:
+        optional: true
+
+  '@angular-devkit/core@21.0.4':
+    resolution: {integrity: sha512-Mbze8tMtBs7keSOx4UIR9utLQs1uSiGjfTaOkCu/dbBEiG6umopy1OlUCvHiHyeiYqh+wR0yiGtTS+Cexo5iLg==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0, npm: ^6.11.0 || ^7.5.6 || >=8.0.0, yarn: '>= 1.13.0'}
     peerDependencies:
       chokidar: ^4.0.0
     peerDependenciesMeta:
@@ -12706,6 +12715,17 @@ snapshots:
       picomatch: 4.0.2
       rxjs: 7.8.1
       source-map: 0.7.4
+    optionalDependencies:
+      chokidar: 4.0.3
+
+  '@angular-devkit/core@21.0.4(chokidar@4.0.3)':
+    dependencies:
+      ajv: 8.17.1
+      ajv-formats: 3.0.1(ajv@8.17.1)
+      jsonc-parser: 3.3.1
+      picomatch: 4.0.3
+      rxjs: 7.8.2
+      source-map: 0.7.6
     optionalDependencies:
       chokidar: 4.0.3
 
