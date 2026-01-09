@@ -1,0 +1,643 @@
+---
+sidebar_position: 7
+---
+
+# @globalart/nestjs-temporal
+
+A NestJS module for working with Temporal workflows and activities. Provides a convenient API for creating Temporal workers, registering activities, and using Temporal clients to start workflows.
+
+## Installation
+
+```bash npm2yarn
+npm install @globalart/nestjs-temporal @temporalio/client @temporalio/worker @temporalio/workflow @temporalio/activity
+```
+
+## Overview
+
+The `@globalart/nestjs-temporal` package simplifies working with Temporal in NestJS applications by providing:
+
+- **Easy worker registration** - Configure Temporal workers through decorators
+- **Activity discovery** - Automatic discovery and registration of activities
+- **Workflow client** - Simplified API for starting and managing workflows
+- **Type safety** - Full TypeScript support with proper types
+- **Global module** - Available throughout your application
+
+## Key Features
+
+- **Activity decorators** - Use `@Activities()` and `@Activity()` to register activities
+- **Workflow decorators** - Use `@Workflows()` and `@WorkflowMethod()` to register workflows
+- **Client injection** - Inject Temporal clients using `@InjectTemporalClient()`
+- **Multiple workers** - Configure multiple workers with different queues
+- **Type safety** - Full TypeScript support
+
+## Quick Start
+
+### Module Setup
+
+Import `TemporalModule` in your root module:
+
+```typescript
+import { Module } from "@nestjs/common";
+import { TemporalModule } from "@globalart/nestjs-temporal";
+
+@Module({
+  imports: [
+    TemporalModule.registerWorker({
+      taskQueue: "my-task-queue",
+      workflowsPath: require.resolve("./workflows"),
+      activities: {},
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+### Registering Activities
+
+Use the `@Activities()` and `@Activity()` decorators to register activities:
+
+```typescript
+import { Injectable } from "@nestjs/common";
+import { Activities, Activity } from "@globalart/nestjs-temporal";
+
+@Injectable()
+@Activities()
+export class OrderActivities {
+  @Activity()
+  async processOrder(orderId: string): Promise<void> {
+    console.log(`Processing order: ${orderId}`);
+  }
+
+  @Activity("send-notification")
+  async sendNotification(message: string): Promise<void> {
+    console.log(`Sending notification: ${message}`);
+  }
+}
+```
+
+### Using the Client
+
+Use the `@InjectTemporalClient()` decorator to inject the client:
+
+```typescript
+import { Injectable } from "@nestjs/common";
+import { InjectTemporalClient } from "@globalart/nestjs-temporal";
+import { WorkflowClient } from "@temporalio/client";
+
+@Injectable()
+export class OrderService {
+  constructor(
+    @InjectTemporalClient()
+    private readonly client: WorkflowClient
+  ) {}
+
+  async startOrderWorkflow(orderId: string) {
+    const handle = await this.client.start("processOrderWorkflow", {
+      args: [orderId],
+      taskQueue: "my-task-queue",
+      workflowId: `order-${orderId}`,
+    });
+    return handle;
+  }
+}
+```
+
+### Registering Workflows
+
+Use the `@Workflows()` and `@WorkflowMethod()` decorators to register workflows:
+
+```typescript
+import { Workflows, WorkflowMethod } from "@globalart/nestjs-temporal";
+import { proxyActivities } from "@temporalio/workflow";
+
+@Workflows()
+export class OrderWorkflows {
+  @WorkflowMethod()
+  async processOrderWorkflow(orderId: string): Promise<void> {
+    const activities = proxyActivities<typeof OrderActivities>({
+      startToCloseTimeout: "1 minute",
+    });
+
+    await activities.processOrder(orderId);
+    await activities.sendNotification(`Order ${orderId} processed`);
+  }
+}
+```
+
+## Configuration
+
+### TemporalModule.registerWorker
+
+Registers a Temporal worker that will discover and execute activities.
+
+| Option          | Type              | Required | Description                                    |
+| --------------- | ----------------- | -------- | ---------------------------------------------- |
+| `taskQueue`     | `string`          | Yes      | Task queue name                                |
+| `workflowsPath` | `string`          | Yes      | Path to workflow files                         |
+| `activities`    | `object`          | Yes      | Activities object (can be empty)               |
+| `connection`    | `ConnectionOptions` | No     | Connection options for Temporal server         |
+| `namespace`     | `string`          | No       | Temporal namespace                             |
+
+### TemporalModule.registerClient
+
+Registers a Temporal WorkflowClient for starting workflows.
+
+| Option            | Type                    | Required | Description                        |
+| ----------------- | ----------------------- | -------- | ---------------------------------- |
+| `name`            | `string`                | No       | Client name (for named clients)    |
+| `connection`      | `ConnectionOptions`     | No       | Connection options                 |
+| `workflowOptions` | `WorkflowClientOptions` | No       | Workflow client options            |
+
+## Usage
+
+### Creating Activities
+
+Activities are the building blocks of Temporal workflows. They represent the actual work that needs to be done:
+
+```typescript
+import { Injectable } from "@nestjs/common";
+import { Activities, Activity } from "@globalart/nestjs-temporal";
+
+@Injectable()
+@Activities({ name: "payment-queue" })
+export class PaymentActivities {
+  @Activity()
+  async chargeCreditCard(
+    cardNumber: string,
+    amount: number
+  ): Promise<{ transactionId: string }> {
+    return { transactionId: `txn-${Date.now()}` };
+  }
+
+  @Activity("refund-payment")
+  async refundPayment(transactionId: string): Promise<void> {
+    console.log(`Refunding transaction: ${transactionId}`);
+  }
+}
+```
+
+### Creating Workflows
+
+Workflows orchestrate activities and define the business logic:
+
+```typescript
+import { Workflows, WorkflowMethod } from "@globalart/nestjs-temporal";
+import { proxyActivities } from "@temporalio/workflow";
+
+interface PaymentActivities {
+  chargeCreditCard(
+    cardNumber: string,
+    amount: number
+  ): Promise<{ transactionId: string }>;
+  refundPayment(transactionId: string): Promise<void>;
+}
+
+@Workflows()
+export class PaymentWorkflows {
+  @WorkflowMethod("process-payment")
+  async processPayment(
+    cardNumber: string,
+    amount: number
+  ): Promise<{ transactionId: string }> {
+    const activities = proxyActivities<PaymentActivities>({
+      startToCloseTimeout: "5 minutes",
+    });
+
+    try {
+      const result = await activities.chargeCreditCard(cardNumber, amount);
+      return result;
+    } catch (error) {
+      await activities.refundPayment(result.transactionId);
+      throw error;
+    }
+  }
+}
+```
+
+### Using Multiple Workers
+
+You can configure multiple workers with different task queues:
+
+```typescript
+import { Module } from "@nestjs/common";
+import { TemporalModule } from "@globalart/nestjs-temporal";
+
+@Module({
+  imports: [
+    TemporalModule.registerWorker({
+      taskQueue: "order-queue",
+      workflowsPath: require.resolve("./workflows/order"),
+      activities: {},
+    }),
+    TemporalModule.registerWorker({
+      taskQueue: "payment-queue",
+      workflowsPath: require.resolve("./workflows/payment"),
+      activities: {},
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+### Async Configuration
+
+Use `registerWorkerAsync` when configuration depends on other async providers:
+
+```typescript
+import { Module } from "@nestjs/common";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { TemporalModule } from "@globalart/nestjs-temporal";
+
+@Module({
+  imports: [
+    ConfigModule.forRoot(),
+    TemporalModule.registerWorkerAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        taskQueue: configService.get("TEMPORAL_TASK_QUEUE"),
+        workflowsPath: require.resolve("./workflows"),
+        activities: {},
+        connection: {
+          address: configService.get("TEMPORAL_ADDRESS"),
+        },
+      }),
+      inject: [ConfigService],
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+### Using Named Clients
+
+You can register multiple clients with different names:
+
+```typescript
+import { Module } from "@nestjs/common";
+import { TemporalModule } from "@globalart/nestjs-temporal";
+
+@Module({
+  imports: [
+    TemporalModule.registerClient({
+      name: "primary",
+      connection: {
+        address: "localhost:7233",
+      },
+    }),
+    TemporalModule.registerClient({
+      name: "secondary",
+      connection: {
+        address: "localhost:7234",
+      },
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+Then inject the named client:
+
+```typescript
+import { Injectable } from "@nestjs/common";
+import { InjectTemporalClient } from "@globalart/nestjs-temporal";
+import { WorkflowClient } from "@temporalio/client";
+
+@Injectable()
+export class MyService {
+  constructor(
+    @InjectTemporalClient("primary")
+    private readonly primaryClient: WorkflowClient,
+    @InjectTemporalClient("secondary")
+    private readonly secondaryClient: WorkflowClient
+  ) {}
+}
+```
+
+## API Reference
+
+### TemporalModule
+
+#### `registerWorker(options: WorkerOptions): DynamicModule`
+
+Creates a global module with a configured Temporal worker.
+
+**Parameters:**
+
+- `options` - Worker configuration options
+
+**Returns:** `DynamicModule` - Configured module
+
+#### `registerWorkerAsync(options: SharedWorkerAsyncConfiguration): DynamicModule`
+
+Creates a global module with a configured Temporal worker asynchronously.
+
+**Parameters:**
+
+- `options` - Async worker configuration options
+
+**Returns:** `DynamicModule` - Configured module
+
+#### `registerClient(options?: TemporalModuleOptions): DynamicModule`
+
+Registers a Temporal WorkflowClient.
+
+**Parameters:**
+
+- `options` - Optional client configuration options
+
+**Returns:** `DynamicModule` - Configured module
+
+#### `registerClientAsync(options: SharedWorkflowClientOptions): DynamicModule`
+
+Registers a Temporal WorkflowClient asynchronously.
+
+**Parameters:**
+
+- `options` - Async client configuration options
+
+**Returns:** `DynamicModule` - Configured module
+
+### Activities Decorator
+
+#### `@Activities(queueNameOrOptions?: string | ActivitiesOptions): ClassDecorator`
+
+Marks a class as containing Temporal activities.
+
+**Parameters:**
+
+- `queueNameOrOptions` - Optional queue name (string) or options object
+
+**Example:**
+
+```typescript
+@Injectable()
+@Activities("my-queue")
+export class MyActivities {
+  @Activity()
+  async doSomething() {}
+}
+```
+
+### Activity Decorator
+
+#### `@Activity(nameOrOptions?: string | ActivityOptions): MethodDecorator`
+
+Marks a method as a Temporal activity.
+
+**Parameters:**
+
+- `nameOrOptions` - Optional activity name (string) or options object
+
+**Example:**
+
+```typescript
+@Activity()
+async processOrder(orderId: string) {}
+
+@Activity("custom-activity-name")
+async anotherActivity() {}
+```
+
+### Workflows Decorator
+
+#### `@Workflows(nameOrOptions?: string | WorkflowsOptions): ClassDecorator`
+
+Marks a class as containing Temporal workflows.
+
+**Parameters:**
+
+- `nameOrOptions` - Optional queue name (string) or options object
+
+**Example:**
+
+```typescript
+@Workflows("my-queue")
+export class MyWorkflows {
+  @WorkflowMethod()
+  async myWorkflow() {}
+}
+```
+
+### WorkflowMethod Decorator
+
+#### `@WorkflowMethod(nameOrOptions?: string | WorkflowMethodOptions): MethodDecorator`
+
+Marks a method as a Temporal workflow method.
+
+**Parameters:**
+
+- `nameOrOptions` - Optional workflow name (string) or options object
+
+**Example:**
+
+```typescript
+@WorkflowMethod()
+async myWorkflow() {}
+
+@WorkflowMethod("custom-workflow-name")
+async anotherWorkflow() {}
+```
+
+### InjectTemporalClient
+
+#### `InjectTemporalClient(name?: string): ParameterDecorator`
+
+Decorator for injecting a Temporal WorkflowClient.
+
+**Parameters:**
+
+- `name` - Optional client name specified in the configuration
+
+**Example:**
+
+```typescript
+constructor(
+  @InjectTemporalClient()
+  private readonly client: WorkflowClient
+) {}
+
+constructor(
+  @InjectTemporalClient("primary")
+  private readonly client: WorkflowClient
+) {}
+```
+
+## Features
+
+### Automatic Activity Discovery
+
+The module automatically discovers all classes decorated with `@Activities()` and registers their methods decorated with `@Activity()` as Temporal activities.
+
+### Global Module
+
+`TemporalModule` is registered as a global module, meaning all configured workers and clients are available in all application modules without needing to import `TemporalModule` in each module.
+
+### Application Shutdown
+
+The module automatically handles cleanup of Temporal client connections when the application shuts down.
+
+## Usage Examples
+
+### Complete Example
+
+```typescript
+import { Module } from "@nestjs/common";
+import { TemporalModule, Activities, Activity, InjectTemporalClient } from "@globalart/nestjs-temporal";
+import { WorkflowClient } from "@temporalio/client";
+
+@Injectable()
+@Activities()
+export class EmailActivities {
+  @Activity()
+  async sendEmail(to: string, subject: string, body: string): Promise<void> {
+    console.log(`Sending email to ${to}: ${subject}`);
+  }
+}
+
+@Injectable()
+export class EmailService {
+  constructor(
+    @InjectTemporalClient()
+    private readonly client: WorkflowClient
+  ) {}
+
+  async startEmailWorkflow(to: string, subject: string, body: string) {
+    const handle = await this.client.start("sendEmailWorkflow", {
+      args: [to, subject, body],
+      taskQueue: "email-queue",
+      workflowId: `email-${Date.now()}`,
+    });
+    return handle;
+  }
+}
+
+@Module({
+  imports: [
+    TemporalModule.registerWorker({
+      taskQueue: "email-queue",
+      workflowsPath: require.resolve("./workflows"),
+      activities: {},
+    }),
+    TemporalModule.registerClient(),
+  ],
+  providers: [EmailActivities, EmailService],
+})
+export class EmailModule {}
+```
+
+### Error Handling
+
+```typescript
+import { Injectable } from "@nestjs/common";
+import { InjectTemporalClient } from "@globalart/nestjs-temporal";
+import { WorkflowClient } from "@temporalio/client";
+
+@Injectable()
+export class OrderService {
+  constructor(
+    @InjectTemporalClient()
+    private readonly client: WorkflowClient
+  ) {}
+
+  async startOrderWorkflow(orderId: string) {
+    try {
+      const handle = await this.client.start("processOrderWorkflow", {
+        args: [orderId],
+        taskQueue: "order-queue",
+        workflowId: `order-${orderId}`,
+      });
+      return handle;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to start workflow: ${error.message}`);
+      }
+      throw error;
+    }
+  }
+}
+```
+
+### Using with ConfigService
+
+```typescript
+import { Module } from "@nestjs/common";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { TemporalModule } from "@globalart/nestjs-temporal";
+
+@Module({
+  imports: [
+    ConfigModule.forRoot(),
+    TemporalModule.registerWorkerAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        taskQueue: configService.get<string>("TEMPORAL_TASK_QUEUE") || "default",
+        workflowsPath: require.resolve("./workflows"),
+        activities: {},
+        connection: {
+          address: configService.get<string>("TEMPORAL_ADDRESS") || "localhost:7233",
+        },
+        namespace: configService.get<string>("TEMPORAL_NAMESPACE") || "default",
+      }),
+      inject: [ConfigService],
+    }),
+    TemporalModule.registerClientAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        connection: {
+          address: configService.get<string>("TEMPORAL_ADDRESS") || "localhost:7233",
+        },
+      }),
+      inject: [ConfigService],
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+## Best Practices
+
+- **Use decorators** - Always use `@Activities()` and `@Activity()` for activities
+- **Use decorators for workflows** - Use `@Workflows()` and `@WorkflowMethod()` for workflows
+- **Handle errors** - Always handle errors from workflow and activity executions
+- **Use type safety** - Define interfaces for your activities and workflows
+- **Organize workflows** - Store workflow files in a separate directory
+- **Use named clients** - Use named clients when working with multiple Temporal clusters
+- **Configure timeouts** - Always configure appropriate timeouts for activities and workflows
+
+## Troubleshooting
+
+### Worker Not Starting
+
+If the worker is not starting, make sure:
+
+1. The `taskQueue` is specified correctly
+2. The `workflowsPath` points to a valid directory
+3. The Temporal server is running and accessible
+4. The connection options are correct
+
+### Activities Not Found
+
+If activities are not being discovered:
+
+1. Make sure the class is decorated with `@Activities()`
+2. Make sure methods are decorated with `@Activity()`
+3. Ensure the class is registered as a provider in a module
+4. Check that `DiscoveryModule` is imported (automatically imported by `TemporalModule`)
+
+### Client Not Found
+
+If you get a "Temporal client not found" error:
+
+1. Make sure `TemporalModule.registerClient()` is called in your root module
+2. The client name in `@InjectTemporalClient()` matches the name in the configuration (if using named clients)
+3. The client is used after module initialization
+
+### Connection Errors
+
+If you experience connection issues:
+
+1. Check that the Temporal server is running and accessible
+2. Ensure the connection address is specified correctly
+3. Check network settings and firewalls
+4. Verify the namespace is correct (if using a custom namespace)
+
