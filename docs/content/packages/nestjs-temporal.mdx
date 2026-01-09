@@ -130,23 +130,23 @@ export class OrderWorkflows {
 
 Registers a Temporal worker that will discover and execute activities.
 
-| Option          | Type              | Required | Description                                    |
-| --------------- | ----------------- | -------- | ---------------------------------------------- |
-| `taskQueue`     | `string`          | Yes      | Task queue name                                |
-| `workflowsPath` | `string`          | Yes      | Path to workflow files                         |
-| `activities`    | `object`          | Yes      | Activities object (can be empty)               |
-| `connection`    | `ConnectionOptions` | No     | Connection options for Temporal server         |
-| `namespace`     | `string`          | No       | Temporal namespace                             |
+| Option          | Type                | Required | Description                            |
+| --------------- | ------------------- | -------- | -------------------------------------- |
+| `taskQueue`     | `string`            | Yes      | Task queue name                        |
+| `workflowsPath` | `string`            | Yes      | Path to workflow files                 |
+| `activities`    | `object`            | Yes      | Activities object (can be empty)       |
+| `connection`    | `ConnectionOptions` | No       | Connection options for Temporal server |
+| `namespace`     | `string`            | No       | Temporal namespace                     |
 
 ### TemporalModule.registerClient
 
 Registers a Temporal WorkflowClient for starting workflows.
 
-| Option            | Type                    | Required | Description                        |
-| ----------------- | ----------------------- | -------- | ---------------------------------- |
-| `name`            | `string`                | No       | Client name (for named clients)    |
-| `connection`      | `ConnectionOptions`     | No       | Connection options                 |
-| `workflowOptions` | `WorkflowClientOptions` | No       | Workflow client options            |
+| Option            | Type                    | Required | Description                     |
+| ----------------- | ----------------------- | -------- | ------------------------------- |
+| `name`            | `string`                | No       | Client name (for named clients) |
+| `connection`      | `ConnectionOptions`     | No       | Connection options              |
+| `workflowOptions` | `WorkflowClientOptions` | No       | Workflow client options         |
 
 ## Usage
 
@@ -482,7 +482,12 @@ The module automatically handles cleanup of Temporal client connections when the
 
 ```typescript
 import { Module } from "@nestjs/common";
-import { TemporalModule, Activities, Activity, InjectTemporalClient } from "@globalart/nestjs-temporal";
+import {
+  TemporalModule,
+  Activities,
+  Activity,
+  InjectTemporalClient,
+} from "@globalart/nestjs-temporal";
 import { WorkflowClient } from "@temporalio/client";
 
 @Injectable()
@@ -570,11 +575,13 @@ import { TemporalModule } from "@globalart/nestjs-temporal";
     TemporalModule.registerWorkerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        taskQueue: configService.get<string>("TEMPORAL_TASK_QUEUE") || "default",
+        taskQueue:
+          configService.get<string>("TEMPORAL_TASK_QUEUE") || "default",
         workflowsPath: require.resolve("./workflows"),
         activities: {},
         connection: {
-          address: configService.get<string>("TEMPORAL_ADDRESS") || "localhost:7233",
+          address:
+            configService.get<string>("TEMPORAL_ADDRESS") || "localhost:7233",
         },
         namespace: configService.get<string>("TEMPORAL_NAMESPACE") || "default",
       }),
@@ -584,7 +591,8 @@ import { TemporalModule } from "@globalart/nestjs-temporal";
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         connection: {
-          address: configService.get<string>("TEMPORAL_ADDRESS") || "localhost:7233",
+          address:
+            configService.get<string>("TEMPORAL_ADDRESS") || "localhost:7233",
         },
       }),
       inject: [ConfigService],
@@ -640,4 +648,3 @@ If you experience connection issues:
 2. Ensure the connection address is specified correctly
 3. Check network settings and firewalls
 4. Verify the namespace is correct (if using a custom namespace)
-
