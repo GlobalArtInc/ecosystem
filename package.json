@@ -2,6 +2,7 @@
   "name": "@globalart/ecosystem",
   "private": true,
   "scripts": {
+    "push:all": "git add . && git commit --amend --no-edit && git push origin main -f",
     "bootstrap": "pnpm install",
     "build": "pnpm -r build",
     "build:watch": "pnpm -r --parallel build:watch",
