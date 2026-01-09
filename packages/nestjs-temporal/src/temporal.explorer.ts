@@ -5,9 +5,9 @@ import {
   OnApplicationBootstrap,
   OnModuleDestroy,
   OnModuleInit,
-} from '@nestjs/common';
-import { DiscoveryService, MetadataScanner } from '@nestjs/core';
-import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
+} from "@nestjs/common";
+import { DiscoveryService, MetadataScanner } from "@nestjs/core";
+import { InstanceWrapper } from "@nestjs/core/injector/instance-wrapper";
 import {
   NativeConnection,
   NativeConnectionOptions,
@@ -15,12 +15,12 @@ import {
   RuntimeOptions,
   Worker,
   WorkerOptions,
-} from '@temporalio/worker';
+} from "@temporalio/worker";
+import { TemporalMetadataAccessor } from "./temporal-metadata.accessors";
 import {
   TEMPORAL_MODULE_OPTIONS_TOKEN,
-  TemporalModuleOptions,
-} from './temporal.module-definition';
-import { TemporalMetadataAccessor } from './temporal-metadata.accessors';
+  type TemporalModuleOptions,
+} from "./temporal.module-definition";
 
 /**
  * TemporalExplorer is responsible for discovering and registering Temporal activities
@@ -34,7 +34,7 @@ export class TemporalExplorer
   implements OnModuleInit, OnModuleDestroy, OnApplicationBootstrap
 {
   @Inject(TEMPORAL_MODULE_OPTIONS_TOKEN)
-  private readonly options: TemporalModuleOptions;
+  private readonly options!: TemporalModuleOptions;
   private readonly logger = new Logger(TemporalExplorer.name);
   private worker?: Worker;
   private workerRunPromise?: Promise<void>;
@@ -42,7 +42,7 @@ export class TemporalExplorer
   constructor(
     private readonly discoveryService: DiscoveryService,
     private readonly metadataAccessor: TemporalMetadataAccessor,
-    private readonly metadataScanner: MetadataScanner,
+    private readonly metadataScanner: MetadataScanner
   ) {}
 
   /**
@@ -66,7 +66,7 @@ export class TemporalExplorer
         await this.workerRunPromise;
       }
     } catch (err: unknown) {
-      this.logger.warn('Temporal worker was not cleanly shutdown.', {
+      this.logger.warn("Temporal worker was not cleanly shutdown.", {
         err: err instanceof Error ? err.message : String(err),
       });
     }
@@ -93,7 +93,7 @@ export class TemporalExplorer
     // Worker must have a taskQueue configured
     if (!workerConfig.taskQueue) {
       this.logger.warn(
-        'Temporal worker configuration missing taskQueue. Worker will not be created.',
+        "Temporal worker configuration missing taskQueue. Worker will not be created."
       );
       return;
     }
@@ -103,7 +103,7 @@ export class TemporalExplorer
     const activitiesFunc = await this.handleActivities();
 
     if (runTimeOptions) {
-      this.logger.verbose('Instantiating a new Runtime object');
+      this.logger.verbose("Instantiating a new Runtime object");
       Runtime.install(runTimeOptions);
     }
 
@@ -112,12 +112,13 @@ export class TemporalExplorer
     };
 
     if (connectionOptions) {
-      this.logger.verbose('Connecting to the Temporal server');
-      workerOptions.connection =
-        await NativeConnection.connect(connectionOptions);
+      this.logger.verbose("Connecting to the Temporal server");
+      workerOptions.connection = await NativeConnection.connect(
+        connectionOptions
+      );
     }
 
-    this.logger.verbose('Creating a new Worker');
+    this.logger.verbose("Creating a new Worker");
     this.worker = await Worker.create({
       ...workerConfig,
       ...workerOptions,
@@ -176,7 +177,7 @@ export class TemporalExplorer
       // Handle both InstanceWrapper and class constructor
       const wrapper = classOrWrapper as InstanceWrapper;
       const instance =
-        'instance' in wrapper && wrapper.instance
+        "instance" in wrapper && wrapper.instance
           ? wrapper.instance
           : new (classOrWrapper as new () => unknown)();
 
@@ -185,19 +186,19 @@ export class TemporalExplorer
         .forEach((key) => {
           if (this.metadataAccessor.isActivity(instance[key])) {
             activityMethods[key] = (activityMethods[key] || []).concat(
-              instance.constructor.name,
+              instance.constructor.name
             );
           }
         });
     });
 
     const violations = Object.entries(activityMethods).filter(
-      ([, classes]) => classes.length > 1,
+      ([, classes]) => classes.length > 1
     );
 
     if (violations.length > 0) {
       const message = `Activity names must be unique across all Activity classes. Identified activities with conflicting names: ${JSON.stringify(
-        Object.fromEntries(violations),
+        Object.fromEntries(violations)
       )}`;
       this.logger.error(message);
       throw new Error(message);
@@ -219,16 +220,16 @@ export class TemporalExplorer
           this.metadataAccessor.isActivities(
             !wrapper.metatype || wrapper.inject
               ? wrapper.instance?.constructor
-              : wrapper.metatype,
+              : wrapper.metatype
           ) &&
           (!activityClasses ||
             activityClasses.some(
               (cls) =>
                 cls === wrapper.metatype ||
                 (cls instanceof Object &&
-                  'metatype' in cls &&
-                  (cls as InstanceWrapper).metatype === wrapper.metatype),
-            )),
+                  "metatype" in cls &&
+                  (cls as InstanceWrapper).metatype === wrapper.metatype)
+            ))
       );
 
     activities.forEach((wrapper: InstanceWrapper) => {
@@ -242,12 +243,12 @@ export class TemporalExplorer
           if (this.metadataAccessor.isActivity(instance[key])) {
             if (isRequestScoped) {
               this.logger.warn(
-                `Request-scoped activities are not yet fully supported. Activity "${key}" from class "${instance.constructor.name}" may not work correctly.`,
+                `Request-scoped activities are not yet fully supported. Activity "${key}" from class "${instance.constructor.name}" may not work correctly.`
               );
             }
             activitiesMethod[key] = instance[key].bind(instance);
           }
-        },
+        }
       );
     });
 
