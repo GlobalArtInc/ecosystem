@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@angular-devkit/core": "21.0.6",
-    "@angular-devkit/schematics": "21.0.5",
+    "@angular-devkit/schematics": "21.0.6",
     "@nestjs/common": "11.1.11",
     "@nestjs/core": "11.1.11",
     "@nestjs/terminus": "11.0.0",
