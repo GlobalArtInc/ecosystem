@@ -38,7 +38,7 @@
   },
   "description": "Convert Protobuf definitions to Zod schemas",
   "devDependencies": {
-    "@types/node": "25.0.8",
+    "@types/node": "25.0.9",
     "prettier": "3.7.4",
     "release-it": "19.2.3",
     "ts-node": "^10.9.2",
