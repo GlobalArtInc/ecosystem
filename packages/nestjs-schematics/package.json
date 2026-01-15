@@ -39,7 +39,7 @@
     "@angular-devkit/core": "21.1.0",
     "@angular-devkit/schematics": "21.0.6",
     "@nestjs/common": "11.1.12",
-    "@nestjs/core": "11.1.11",
+    "@nestjs/core": "11.1.12",
     "@nestjs/terminus": "11.0.0",
     "@nestjs/throttler": "6.5.0",
     "comment-json": "4.5.1",
