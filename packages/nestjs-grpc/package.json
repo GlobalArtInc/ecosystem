@@ -39,7 +39,7 @@
     "@grpc/grpc-js": "^1.14.3",
     "@grpc/reflection": "^1.0.4",
     "@nestjs/cache-manager": "3.1.0",
-    "@nestjs/common": "11.1.11",
+    "@nestjs/common": "11.1.12",
     "@nestjs/core": "11.1.11",
     "@nestjs/microservices": "11.1.11",
     "@nestjs/platform-socket.io": "11.1.12",
