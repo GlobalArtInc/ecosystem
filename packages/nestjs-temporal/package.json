@@ -45,7 +45,7 @@
     "publish:npm": "release-it --config ../../.release-it.json"
   },
   "dependencies": {
-    "@nestjs/common": "11.1.11",
+    "@nestjs/common": "11.1.12",
     "@nestjs/core": "11.1.11",
     "@temporalio/activity": "^1.8.3",
     "@temporalio/client": "^1.8.3",
