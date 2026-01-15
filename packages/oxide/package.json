@@ -44,7 +44,7 @@
   "description": "A simple toolkit for building scalable and maintainable applications",
   "devDependencies": {
     "@types/node": "25.0.8",
-    "prettier": "3.7.4",
+    "prettier": "3.8.0",
     "release-it": "19.2.3",
     "tsdown": "0.19.0",
     "typescript": "^5.9.3"
