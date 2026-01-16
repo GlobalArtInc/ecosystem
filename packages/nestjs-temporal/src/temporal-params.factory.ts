@@ -1,7 +1,7 @@
 import { ParamData } from '@nestjs/common';
 import { ParamsFactory } from '@nestjs/core/helpers/external-context-creator';
 import { TemporalParamType } from './temporal-enums';
-import { ActivityExecutionContext } from './activity-execution-context';
+import { TemporalExecutionContext } from './temporal-execution-context';
 
 export class TemporalParamsFactory implements ParamsFactory {
   constructor(
@@ -21,7 +21,7 @@ export class TemporalParamsFactory implements ParamsFactory {
           : args[0];
 
       case TemporalParamType.CONTEXT:
-        return new ActivityExecutionContext(this.instance, this.handler, args);
+        return new TemporalExecutionContext(this.instance, this.handler, args);
 
       default:
         return null;

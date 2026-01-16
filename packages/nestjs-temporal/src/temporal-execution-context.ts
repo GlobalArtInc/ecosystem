@@ -1,6 +1,7 @@
 import { ExecutionContext } from '@nestjs/common';
+import { Info } from '@temporalio/activity';
 
-export class ActivityExecutionContext implements ExecutionContext {
+export class TemporalExecutionContext implements ExecutionContext {
   constructor(
     private readonly instance: object,
     private readonly handler: Function,
@@ -17,6 +18,10 @@ export class ActivityExecutionContext implements ExecutionContext {
 
   getArgs<T extends Array<unknown> = unknown[]>(): T {
     return this.args as T;
+  }
+
+  getWorkflowInfo(): Info {
+    return this.args[0] as Info;
   }
 
   getArgByIndex<T = unknown>(index: number): T {

@@ -24,6 +24,7 @@ import {
 } from "./temporal.module-definition";
 import { TEMPORAL_ARGS_METADATA } from "./temporal.constants";
 import { TemporalParamsFactory } from "./temporal-params.factory";
+import { Context } from "@temporalio/activity";
 
 /**
  * TemporalExplorer is responsible for discovering and registering Temporal activities
@@ -269,7 +270,7 @@ export class TemporalExplorer
             Reflect.defineMetadata(TEMPORAL_ARGS_METADATA, paramsFactory, instance[key]);
 
             activitiesMethod[key] = async (...args: unknown[]) => {
-              const result = handler(...args);
+              const result = handler(...args, Context.current().info);
               return isObservable(result)
                 ? await lastValueFrom(result)
                 : await result;
