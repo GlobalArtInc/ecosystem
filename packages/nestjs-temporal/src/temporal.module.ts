@@ -41,7 +41,10 @@ export class TemporalModule extends ConfigurableModuleClass {
     );
     superDynamicModule.exports?.push(TemporalExplorer, TemporalMetadataAccessor, DiscoveryModule);
 
-    return superDynamicModule;
+    return {
+      ...superDynamicModule,
+      exports: [DiscoveryModule],
+    };
   }
 
   /**
