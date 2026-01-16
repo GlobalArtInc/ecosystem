@@ -24,19 +24,6 @@ import {
 @Module({})
 export class TemporalModule extends ConfigurableModuleClass {
   /**
-   * Create a new Temporal worker asynchronously.
-   *
-   * @deprecated Use registerWorkerAsync instead.
-   * @param options - Async worker configuration options
-   * @returns Dynamic module configuration
-   */
-  static forRootAsync(
-    options: typeof TEMPORAL_MODULE_ASYNC_OPTIONS_TYPE
-  ): DynamicModule {
-    return TemporalModule.registerWorkerAsync(options);
-  }
-
-  /**
    * Registers a Temporal worker asynchronously.
    * Useful when configuration depends on other async providers (e.g., ConfigService).
    *
@@ -52,6 +39,8 @@ export class TemporalModule extends ConfigurableModuleClass {
       TemporalExplorer,
       TemporalMetadataAccessor
     );
+    superDynamicModule.exports?.push(TemporalExplorer, TemporalMetadataAccessor, DiscoveryModule);
+
     return superDynamicModule;
   }
 
