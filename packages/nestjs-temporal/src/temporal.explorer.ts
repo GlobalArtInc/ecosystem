@@ -6,8 +6,9 @@ import {
   OnModuleDestroy,
   OnModuleInit,
 } from "@nestjs/common";
-import { DiscoveryService, MetadataScanner } from "@nestjs/core";
+import { DiscoveryService, MetadataScanner, ExternalContextCreator } from "@nestjs/core";
 import { InstanceWrapper } from "@nestjs/core/injector/instance-wrapper";
+import { lastValueFrom, isObservable } from "rxjs";
 import {
   NativeConnection,
   NativeConnectionOptions,
@@ -21,6 +22,8 @@ import {
   TEMPORAL_MODULE_OPTIONS_TOKEN,
   type TemporalModuleOptions,
 } from "./temporal.module-definition";
+import { TEMPORAL_ARGS_METADATA } from "./temporal.constants";
+import { TemporalParamsFactory } from "./temporal-params.factory";
 
 /**
  * TemporalExplorer is responsible for discovering and registering Temporal activities
@@ -42,7 +45,8 @@ export class TemporalExplorer
   constructor(
     private readonly discoveryService: DiscoveryService,
     private readonly metadataAccessor: TemporalMetadataAccessor,
-    private readonly metadataScanner: MetadataScanner
+    private readonly metadataScanner: MetadataScanner,
+    private readonly externalContextCreator: ExternalContextCreator
   ) {}
 
   /**
@@ -246,12 +250,34 @@ export class TemporalExplorer
                 `Request-scoped activities are not yet fully supported. Activity "${key}" from class "${instance.constructor.name}" may not work correctly.`
               );
             }
-            activitiesMethod[key] = instance[key].bind(instance);
+            const paramsFactory = new TemporalParamsFactory(
+              instance,
+              instance[key]
+            );
+
+            const handler = this.externalContextCreator.create(
+              instance,
+              instance[key],
+              key,
+              TEMPORAL_ARGS_METADATA,
+              paramsFactory,
+              undefined,
+              undefined,
+              undefined,
+              "temporal"
+            );
+            Reflect.defineMetadata(TEMPORAL_ARGS_METADATA, paramsFactory, instance[key]);
+
+            activitiesMethod[key] = async (...args: unknown[]) => {
+              const result = handler(...args);
+              return isObservable(result)
+                ? await lastValueFrom(result)
+                : await result;
+            };
           }
         }
       );
     });
-
     return activitiesMethod;
   }
 }
