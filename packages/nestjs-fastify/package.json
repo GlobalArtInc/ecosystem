@@ -52,7 +52,7 @@
     "@nestjs/common": "11.1.12",
     "@nestjs/core": "11.1.12",
     "@nestjs/microservices": "11.1.12",
-    "@nestjs/platform-fastify": "11.1.11",
+    "@nestjs/platform-fastify": "11.1.12",
     "@nestjs/swagger": "^11.2.4",
     "@nestjs/testing": "11.1.12",
     "@nestjs/typeorm": "^11.0.0",
