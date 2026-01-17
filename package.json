@@ -44,7 +44,7 @@
   "author": "GlobalArt, Inc",
   "license": "MIT",
   "dependencies": {
-    "css-select": "4.3.0"
+    "css-select": "6.0.0"
   },
   "pnpm": {
     "overrides": {

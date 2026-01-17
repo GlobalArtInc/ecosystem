@@ -3,5 +3,3 @@ export * from './activity.decorator';
 export * from './inject-temporal-client.decorator';
 export * from './workflow.decorator';
 export * from './workflows.decorator';
-export * from './payload.decorator';
-export * from './context.decorator';
