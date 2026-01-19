@@ -1,0 +1,1 @@
+export { RpcErrorException } from "./rpc-error.exception";
