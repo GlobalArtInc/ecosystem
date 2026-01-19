@@ -1,4 +1,4 @@
 packages:
   - "packages/*"
-  - "examples/*"
+  - "ecosystem-examples/examples/*"
   - "docs"

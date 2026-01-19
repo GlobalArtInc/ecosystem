@@ -1,6 +1,6 @@
 import { SetMetadata } from '@nestjs/common';
 
-import { TEMPORAL_MODULE_ACTIVITY } from '../temporal.constants';
+import { TEMPORAL_MODULE_ACTIVITY } from '../constants/temporal.constants';
 
 /**
  * Options for the @Activity() decorator.

@@ -22,7 +22,7 @@ import {
   TEMPORAL_MODULE_OPTIONS_TOKEN,
   type TemporalModuleOptions,
 } from "./temporal.module-definition";
-import { TEMPORAL_ARGS_METADATA } from "./temporal.constants";
+import { TEMPORAL_ARGS_METADATA, TEMPORAL_CONTEXT_METADATA } from "./constants/temporal.constants";
 import { TemporalParamsFactory } from "./temporal-params.factory";
 import { Context } from "@temporalio/activity";
 
@@ -127,7 +127,7 @@ export class TemporalExplorer
     this.worker = await Worker.create({
       ...workerConfig,
       ...workerOptions,
-    } as WorkerOptions);
+    });
   }
 
   /**
@@ -267,10 +267,10 @@ export class TemporalExplorer
               undefined,
               "temporal"
             );
-            Reflect.defineMetadata(TEMPORAL_ARGS_METADATA, paramsFactory, instance[key]);
-
+            
             activitiesMethod[key] = async (...args: unknown[]) => {
               const result = handler(...args, Context.current().info);
+
               return isObservable(result)
                 ? await lastValueFrom(result)
                 : await result;

@@ -17,7 +17,8 @@
     "changeset": "changeset",
     "upgrade:all": "pnpm upgrade --latest --interactive -r",
     "version-packages": "changeset version",
-    "release": "pnpm build && changeset publish"
+    "release": "pnpm build && changeset publish",
+    "clone:examples": "git clone https://github.com/GlobalArtInc/ecosystem-examples.git ecosystem-examples && pnpm install"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.7",

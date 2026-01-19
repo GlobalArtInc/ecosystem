@@ -6,7 +6,7 @@ import {
   TEMPORAL_MODULE_ACTIVITY,
   TEMPORAL_MODULE_WORKFLOW,
   TEMPORAL_MODULE_WORKFLOW_METHOD,
-} from './temporal.constants';
+} from './constants/temporal.constants';
 
 /**
  * TemporalMetadataAccessor provides methods to check and retrieve Temporal decorator metadata.

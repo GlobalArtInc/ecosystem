@@ -1,7 +1,7 @@
 import { Scope, SetMetadata } from '@nestjs/common';
 import { SCOPE_OPTIONS_METADATA } from '@nestjs/common/constants';
 
-import { TEMPORAL_MODULE_WORKFLOW } from '../temporal.constants';
+import { TEMPORAL_MODULE_WORKFLOW } from '../constants/temporal.constants';
 
 export interface WorkflowsOptions {
   /**
