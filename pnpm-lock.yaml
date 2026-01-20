@@ -1757,6 +1757,28 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  packages/text-utils:
+    dependencies:
+      rimraf:
+        specifier: ^6.0.1
+        version: 6.1.2
+    devDependencies:
+      prettier:
+        specifier: 3.8.0
+        version: 3.8.0
+      release-it:
+        specifier: 19.2.3
+        version: 19.2.3(@types/node@25.0.9)
+      rxjs:
+        specifier: 7.8.2
+        version: 7.8.2
+      tsdown:
+        specifier: 0.20.0-beta.3
+        version: 0.20.0-beta.3(synckit@0.11.12)(typescript@5.9.3)
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+
   packages/zod-to-proto:
     dependencies:
       inflection:
@@ -13118,7 +13140,7 @@ snapshots:
   '@babel/helper-member-expression-to-functions@7.28.5':
     dependencies:
       '@babel/traverse': 7.28.5
-      '@babel/types': 7.28.5
+      '@babel/types': 7.28.6
     transitivePeerDependencies:
       - supports-color
 
@@ -13153,7 +13175,7 @@ snapshots:
 
   '@babel/helper-optimise-call-expression@7.27.1':
     dependencies:
-      '@babel/types': 7.28.5
+      '@babel/types': 7.28.6
 
   '@babel/helper-plugin-utils@7.27.1': {}
 
@@ -13210,7 +13232,7 @@ snapshots:
     dependencies:
       '@babel/template': 7.27.2
       '@babel/traverse': 7.28.5
-      '@babel/types': 7.28.5
+      '@babel/types': 7.28.6
     transitivePeerDependencies:
       - supports-color
 
@@ -16478,7 +16500,7 @@ snapshots:
 
   '@manypkg/get-packages@1.1.3':
     dependencies:
-      '@babel/runtime': 7.28.4
+      '@babel/runtime': 7.28.6
       '@changesets/types': 4.1.0
       '@manypkg/find-root': 1.1.0
       fs-extra: 8.1.0
@@ -17544,16 +17566,16 @@ snapshots:
 
   '@types/babel__generator@7.27.0':
     dependencies:
-      '@babel/types': 7.28.5
+      '@babel/types': 7.28.6
 
   '@types/babel__template@7.4.4':
     dependencies:
-      '@babel/parser': 7.28.5
-      '@babel/types': 7.28.5
+      '@babel/parser': 7.28.6
+      '@babel/types': 7.28.6
 
   '@types/babel__traverse@7.28.0':
     dependencies:
-      '@babel/types': 7.28.5
+      '@babel/types': 7.28.6
 
   '@types/body-parser@1.19.6':
     dependencies:
