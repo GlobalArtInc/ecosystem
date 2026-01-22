@@ -8,8 +8,8 @@ import {
 
 @Entity('outbox')
 export class TypeormOutboxEntity {
-  @PrimaryGeneratedColumn("uuid")
-  id!: string;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
