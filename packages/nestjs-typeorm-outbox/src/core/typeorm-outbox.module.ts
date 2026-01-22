@@ -140,7 +140,6 @@ export class TypeormOutboxModule {
     const configProvider = this.createCronConfigProvider(options);
     const brokerProvider = this.createCronBrokerProvider(options);
     const serviceProvider = this.createServiceProvider();
-    console.log(configProvider);
 
     return {
       module: TypeormOutboxModule,
