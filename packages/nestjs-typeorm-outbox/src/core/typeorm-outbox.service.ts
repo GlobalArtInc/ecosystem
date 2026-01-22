@@ -17,8 +17,8 @@ export class TypeormOutboxService {
     private readonly outboxRepository: Repository<TypeormOutboxEntity>,
   ) {}
 
-  async create(options: CreateOutboxOptions): Promise<void> {
-    await this.outboxRepository.save({
+  async create(options: CreateOutboxOptions): Promise<TypeormOutboxEntity> {
+    return this.outboxRepository.save({
       destinationTopic: options.destinationTopic,
       headers: options.headers,
       keys: options.keys,
