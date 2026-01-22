@@ -16,6 +16,7 @@ const sidebars: SidebarsConfig = {
         "packages/nestjs-etcd",
         "packages/nestjs-grpc",
         "packages/nestjs-temporal",
+        "packages/nestjs-typeorm-outbox",
         "packages/zod-to-proto",
         "packages/passport",
         "packages/oxide",
