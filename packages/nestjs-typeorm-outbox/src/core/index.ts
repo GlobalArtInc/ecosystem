@@ -1,4 +1,4 @@
-export * from './typeorm-outbox.controller';
+export * from './typeorm-outbox-cron.service';
 export * from './typeorm-outbox.di-tokens';
 export * from './typeorm-outbox.entity';
 export * from './typeorm-outbox.interfaces';

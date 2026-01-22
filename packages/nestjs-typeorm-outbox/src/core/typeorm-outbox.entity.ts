@@ -24,7 +24,7 @@ export class TypeormOutboxEntity {
   headers!: Record<string, string>;
 
   @Column("jsonb", { nullable: true })
-  keys!: Record<any, any>;
+  keys!: Record<string, unknown>;
 
   @Column("jsonb")
   payload!: Record<string, any>;

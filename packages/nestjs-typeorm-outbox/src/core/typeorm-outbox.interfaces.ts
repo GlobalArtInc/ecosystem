@@ -1,33 +1,33 @@
 import { KafkaOptions } from "@nestjs/microservices";
 import { InjectionToken, ModuleMetadata, Type } from "@nestjs/common";
+import { CronExpression } from "@nestjs/schedule";
 
-// register cron options
 export class TypeormOutboxRegisterCronModuleOptions {
   typeOrmConnectionName?: string = "default";
   kafkaConfig?: KafkaOptions = {};
+  cronExpression?: string = CronExpression.EVERY_10_SECONDS;
 }
-export interface TypeormOutboxRegisterCronAsyncOptions extends Pick<
-  ModuleMetadata,
-  "imports"
-> {
-  inject?: any[];
+
+export interface TypeormOutboxRegisterCronAsyncOptions
+  extends Pick<ModuleMetadata, "imports"> {
+  inject?: InjectionToken[];
   useExisting?: Type<TypeormOutboxRegisterCronModuleOptions>;
   useClass?: Type<TypeormOutboxRegisterCronModuleOptions>;
   useFactory?: (
-    ...args: any[]
+    ...args: unknown[]
   ) =>
     | Promise<TypeormOutboxRegisterCronModuleOptions>
     | TypeormOutboxRegisterCronModuleOptions;
 }
 
-// register module options
 export class TypeormOutboxModuleOptions {
   typeOrmConnectionName?: string = "default";
 }
-export class TypeormOutboxModuleAsyncOptions {
-  imports?: Type[] = [];
-  inject?: InjectionToken[] = [];
+
+export interface TypeormOutboxModuleAsyncOptions
+  extends Pick<ModuleMetadata, "imports"> {
+  inject?: InjectionToken[];
   useFactory?: (
-    ...args: any[]
+    ...args: unknown[]
   ) => Promise<TypeormOutboxModuleOptions> | TypeormOutboxModuleOptions;
 }
