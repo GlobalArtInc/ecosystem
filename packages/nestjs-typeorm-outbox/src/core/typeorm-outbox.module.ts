@@ -36,6 +36,7 @@ export class TypeormOutboxModule {
 
     return {
       module: TypeormOutboxModule,
+      global: true,
       imports: [
         TypeOrmModule.forFeature(
           [TypeormOutboxEntity],
@@ -69,6 +70,7 @@ export class TypeormOutboxModule {
 
     return {
       module: TypeormOutboxModule,
+      global: true,
       imports: [TypeOrmModule.forFeature([TypeormOutboxEntity], "default")],
       providers: [configProvider, serviceProvider, brokerProvider],
       exports: [configProvider, serviceProvider, brokerProvider],
@@ -106,6 +108,7 @@ export class TypeormOutboxModule {
 
     return {
       module: TypeormOutboxModule,
+      global: true,
       imports: [
         ScheduleModule.forRoot(),
         TypeOrmModule.forFeature([TypeormOutboxEntity], "default")
