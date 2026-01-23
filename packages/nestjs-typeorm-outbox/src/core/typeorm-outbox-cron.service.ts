@@ -1,9 +1,7 @@
 import { Injectable, OnModuleInit } from "@nestjs/common";
 import { InjectTypeormOutboxBroker, InjectTypeormOutboxCronConfig, InjectTypeormOutboxModuleConfig } from "./typeorm-outbox.di-tokens";
 import { hashStringToInt } from "@globalart/text-utils";
-import { EntityManager, Repository } from "typeorm";
 import { TypeormOutboxEntity } from "./typeorm-outbox.entity";
-import { InjectRepository } from "@nestjs/typeorm";
 import { firstValueFrom } from "rxjs";
 import { ClientProxy } from "@nestjs/microservices";
 import { CronJob } from "cron";
@@ -13,20 +11,13 @@ import { DataSource } from "typeorm";
 
 @Injectable()
 export class TypeormOutboxCronService implements OnModuleInit {
-  private readonly lockKey: number;
-
   constructor(
-    private readonly entityManager: EntityManager,
-    @InjectRepository(TypeormOutboxEntity)
-    private readonly outboxRepository: Repository<TypeormOutboxEntity>,
     @InjectTypeormOutboxBroker()
     private readonly brokerClient: ClientProxy,
     @InjectTypeormOutboxCronConfig()
     private readonly moduleConfig: TypeormOutboxRegisterCronModuleOptions,
     private readonly dataSource: DataSource,
-  ) {
-    this.lockKey = hashStringToInt('typeorm-outbox-cron-lock');
-  }
+  ) { }
 
   onModuleInit() {
     const cronJob = new CronJob(this.moduleConfig.cronExpression ?? CronExpression.EVERY_10_SECONDS, () => {
@@ -38,11 +29,12 @@ export class TypeormOutboxCronService implements OnModuleInit {
   async executeCronJob() {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
+    const lockKey = hashStringToInt('typeorm-outbox-cron-lock');
 
     try {
       const lockResult = await queryRunner.query(
         'SELECT pg_try_advisory_lock($1) as locked',
-        [this.lockKey],
+        [lockKey],
       );
 
       if (!lockResult[0].locked) {
@@ -69,7 +61,7 @@ export class TypeormOutboxCronService implements OnModuleInit {
         await queryRunner.rollbackTransaction();
         throw error;
       } finally {
-        await queryRunner.query('SELECT pg_advisory_unlock($1)', [this.lockKey]);
+        await queryRunner.query('SELECT pg_advisory_unlock($1)', [lockKey]);
       }
     } finally {
       await queryRunner.release();
