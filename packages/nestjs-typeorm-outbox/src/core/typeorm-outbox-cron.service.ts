@@ -9,9 +9,12 @@ import { ClientProxy } from "@nestjs/microservices";
 import { CronJob } from "cron";
 import { TypeormOutboxRegisterCronModuleOptions } from "./typeorm-outbox.interfaces";
 import { CronExpression } from "@nestjs/schedule";
+import { DataSource } from "typeorm";
 
 @Injectable()
 export class TypeormOutboxCronService implements OnModuleInit {
+  private readonly lockKey: number;
+
   constructor(
     private readonly entityManager: EntityManager,
     @InjectRepository(TypeormOutboxEntity)
@@ -20,7 +23,10 @@ export class TypeormOutboxCronService implements OnModuleInit {
     private readonly brokerClient: ClientProxy,
     @InjectTypeormOutboxCronConfig()
     private readonly moduleConfig: TypeormOutboxRegisterCronModuleOptions,
-  ) {}
+    private readonly dataSource: DataSource,
+  ) {
+    this.lockKey = hashStringToInt('typeorm-outbox-cron-lock');
+  }
 
   onModuleInit() {
     const cronJob = new CronJob(this.moduleConfig.cronExpression ?? CronExpression.EVERY_10_SECONDS, () => {
@@ -30,26 +36,43 @@ export class TypeormOutboxCronService implements OnModuleInit {
   }
 
   async executeCronJob() {
-    const lockId = hashStringToInt("typeorm-outbox-cron-job");
-    const [{ pg_try_advisory_xact_lock: acquired }] =
-      await this.entityManager.query<{ pg_try_advisory_xact_lock: boolean }[]>(
-        `SELECT pg_try_advisory_xact_lock(${lockId})`,
-      );
-    if (!acquired) {
-      return;
-    }
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
 
-    const entities = await this.outboxRepository.find();
-    
-    for (const entity of entities) {
-      await firstValueFrom(
-        this.brokerClient.emit(entity.destinationTopic, {
-          key: entity.keys,
-          value: entity.payload,
-          headers: entity.headers,
-        }),
+    try {
+      const lockResult = await queryRunner.query(
+        'SELECT pg_try_advisory_lock($1) as locked',
+        [this.lockKey],
       );
-      await this.outboxRepository.delete(entity.id);
+
+      if (!lockResult[0].locked) {
+        return;
+      }
+      try {
+        await queryRunner.startTransaction('REPEATABLE READ');
+        
+        const entities = await queryRunner.manager.find(TypeormOutboxEntity);
+        
+        for (const entity of entities) {
+          await firstValueFrom(
+            this.brokerClient.emit(entity.destinationTopic, {
+              key: entity.keys,
+              value: entity.payload,
+              headers: entity.headers,
+            }),
+          );
+          await queryRunner.manager.delete(TypeormOutboxEntity, entity.id);
+        }
+
+        await queryRunner.commitTransaction();
+      } catch (error) {
+        await queryRunner.rollbackTransaction();
+        throw error;
+      } finally {
+        await queryRunner.query('SELECT pg_advisory_unlock($1)', [this.lockKey]);
+      }
+    } finally {
+      await queryRunner.release();
     }
   }
 }
