@@ -70,7 +70,7 @@
     "eslint-plugin-prettier": "^5.5.5",
     "fastify": "^5.7.1",
     "jest": "^30.2.0",
-    "pg": "^8.17.1",
+    "pg": "^8.17.2",
     "prettier": "3.8.1",
     "reflect-metadata": "^0.2.2",
     "release-it": "19.2.4",
@@ -87,7 +87,7 @@
     "@nestjs/swagger": "^11.2.5",
     "class-transformer": "^0.5.1",
     "class-validator": "0.14.3",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "zod": "4.3.6"
   },
   "peerDependencies": {

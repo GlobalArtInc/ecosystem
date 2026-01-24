@@ -107,13 +107,14 @@ export class TypeormOutboxModule {
     const configProvider = this.createModuleConfigProvider(options);
     const serviceProvider = this.createServiceProvider();
     const brokerProvider = this.createBrokerProvider();
+    const PROVIDERS = [configProvider, serviceProvider, brokerProvider];
 
     return {
       module: TypeormOutboxModule,
       global: true,
       imports: [this.createTypeOrmFeature(options.typeOrmConnectionName)],
-      providers: [configProvider, serviceProvider, brokerProvider],
-      exports: [configProvider, serviceProvider, brokerProvider],
+      providers: [...PROVIDERS],
+      exports: [...PROVIDERS],
     };
   }
 

@@ -46,7 +46,7 @@
     "jsonc-parser": "3.3.1"
   },
   "devDependencies": {
-    "@types/node": "^25.0.9",
+    "@types/node": "^25.0.10",
     "cpx2": "8.0.0",
     "reflect-metadata": "^0.2.2",
     "release-it": "19.2.4",
