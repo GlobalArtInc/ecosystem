@@ -20,7 +20,7 @@ export class TypeormOutboxCronService implements OnModuleInit {
   ) { }
 
   onModuleInit() {
-    const cronJob = new CronJob(this.moduleConfig.cronExpression ?? CronExpression.EVERY_10_SECONDS, () => {
+    const cronJob = new CronJob(this.moduleConfig.cronExpression ?? CronExpression.EVERY_SECOND, () => {
       this.executeCronJob();
     });
     cronJob.start();

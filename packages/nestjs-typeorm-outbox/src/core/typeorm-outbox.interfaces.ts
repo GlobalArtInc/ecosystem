@@ -5,7 +5,7 @@ import { CronExpression } from "./typeorm-outbox.enums";
 export class TypeormOutboxRegisterCronModuleOptions {
   typeOrmConnectionName?: string = "default";
   kafkaConfig?: KafkaOptions = {};
-  cronExpression?: string = CronExpression.EVERY_10_SECONDS;
+  cronExpression?: string = CronExpression.EVERY_SECOND;
 }
 
 export interface TypeormOutboxRegisterCronAsyncOptions

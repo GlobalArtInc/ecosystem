@@ -1,5 +1,5 @@
 export enum CronExpression {
-  EVERY_1_SECOND = "* * * * * *",
+  EVERY_SECOND = "* * * * * *",
   EVERY_2_SECONDS = "*/2 * * * * *",
   EVERY_3_SECONDS = "*/3 * * * * *",
   EVERY_4_SECONDS = "*/4 * * * * *",
