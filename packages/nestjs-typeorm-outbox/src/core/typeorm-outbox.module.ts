@@ -14,7 +14,6 @@ import {
 } from "./typeorm-outbox.di-tokens";
 import { TypeormOutboxEntity } from "./typeorm-outbox.entity";
 import { TypeormOutboxService } from "./typeorm-outbox.service";
-import { ScheduleModule } from "@nestjs/schedule";
 import { ClientProxyFactory } from "@nestjs/microservices";
 import { TypeormOutboxCronService } from "./typeorm-outbox-cron.service";
 
@@ -145,7 +144,6 @@ export class TypeormOutboxModule {
       module: TypeormOutboxModule,
       global: true,
       imports: [
-        ScheduleModule.forRoot(),
         this.createTypeOrmFeature(),
       ],
       providers: [

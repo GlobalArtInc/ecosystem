@@ -1,6 +1,6 @@
 import { KafkaOptions } from "@nestjs/microservices";
 import { InjectionToken, ModuleMetadata, Type } from "@nestjs/common";
-import { CronExpression } from "@nestjs/schedule";
+import { CronExpression } from "./typeorm-outbox.enums";
 
 export class TypeormOutboxRegisterCronModuleOptions {
   typeOrmConnectionName?: string = "default";

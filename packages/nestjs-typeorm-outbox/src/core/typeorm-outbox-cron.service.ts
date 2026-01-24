@@ -6,8 +6,8 @@ import { firstValueFrom } from "rxjs";
 import { ClientProxy } from "@nestjs/microservices";
 import { CronJob } from "cron";
 import { TypeormOutboxRegisterCronModuleOptions } from "./typeorm-outbox.interfaces";
-import { CronExpression } from "@nestjs/schedule";
 import { DataSource } from "typeorm";
+import { CronExpression } from "./typeorm-outbox.enums";
 
 @Injectable()
 export class TypeormOutboxCronService implements OnModuleInit {
