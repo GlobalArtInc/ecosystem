@@ -97,7 +97,7 @@ export class TypeormOutboxModule {
           ...new TypeormOutboxRegisterCronModuleOptions(),
           ...moduleOptions,
         };
-        return ClientProxyFactory.create(config?.kafkaConfig ?? {});
+        return ClientProxyFactory.create(config?.brokerConfig ?? {});
       },
       inject: options.inject || [],
     };

@@ -1,10 +1,12 @@
-import { KafkaOptions } from "@nestjs/microservices";
+import { KafkaOptions, MqttOptions, NatsOptions } from "@nestjs/microservices";
 import { InjectionToken, ModuleMetadata, Type } from "@nestjs/common";
 import { CronExpression } from "./typeorm-outbox.enums";
 
+type BrokerConfig = MqttOptions | NatsOptions | KafkaOptions;
+
 export class TypeormOutboxRegisterCronModuleOptions {
   typeOrmConnectionName?: string = "default";
-  kafkaConfig?: KafkaOptions = {};
+  brokerConfig?: BrokerConfig = {};
   cronExpression?: string = CronExpression.EVERY_SECOND;
 }
 
