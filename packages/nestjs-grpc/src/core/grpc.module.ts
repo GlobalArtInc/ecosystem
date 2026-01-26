@@ -18,6 +18,7 @@ interface GrpcOptionsClient {
   protoPath: string;
   url: string;
   loader?: GrpcLoader;
+  credentials?: any;
 }
 
 class GrpcModuleOptions {
@@ -76,6 +77,7 @@ export class GrpcModule {
                 protoPath: client.protoPath,
                 url: client.url,
                 loader: client.loader,
+                credentials: client.credentials,
               });
               factory.register(token, grpcClient);
 

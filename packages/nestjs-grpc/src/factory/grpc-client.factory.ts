@@ -15,6 +15,7 @@ export class GrpcClientFactory {
     protoPath: string;
     url: string;
     loader?: GrpcLoader;
+    credentials?: any;
   }) {
     return ClientProxyFactory.create({
       transport: Transport.GRPC,
