@@ -43,7 +43,7 @@ export abstract class AbstractGrpcClient {
     const stream$ = method(payload, this.getMetadata()).pipe(
       retry({
         delay: (error) => {
-          console.log(error);
+          console.error(error.code, error.message);
           if (
             error?.code === status.UNAVAILABLE ||
             error?.code === status.DEADLINE_EXCEEDED
