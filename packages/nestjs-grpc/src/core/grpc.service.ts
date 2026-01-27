@@ -10,7 +10,7 @@ export class GrpcService {
   constructor(private readonly cls: ClsService) {}
 
   public addMetadata(key: string, value: MetadataValue): void {
-    if (this.cls) {
+    if (this.cls.isActive()) {
       const metadata =
         this.cls.get<Record<string, MetadataValue>>("GRPC_METADATA") || {};
       metadata[key] = value;
@@ -19,7 +19,7 @@ export class GrpcService {
   }
 
   public getMetadata(): Map<string, MetadataValue> {
-    if (this.cls) {
+    if (this.cls.isActive()) {
       const grpcMetadata =
         this.cls.get<Map<string, MetadataValue>>("GRPC_METADATA");
       if (grpcMetadata) {
