@@ -13,9 +13,11 @@ export const setupGrpcFollower = (cls: ClsService, ctx: ExecutionContext) => {
   if (ctx.getType() === "rpc") {
     const metadataContext = ctx.switchToRpc().getContext<Metadata>();
 
-    Object.entries(metadataContext.getMap()).forEach(([key, value]) => {
-      GRPC_METADATA[key] = value;
-    });
+    if (metadataContext?.getMap()) {
+      Object.entries(metadataContext.getMap()).forEach(([key, value]) => {
+        GRPC_METADATA[key] = value;
+      });
+    }
     cls.set(GRPC_METADATA_TOKEN, GRPC_METADATA);
   } else if (ctx.getType() === "http") {
     cls.set(GRPC_METADATA_TOKEN, GRPC_METADATA);
