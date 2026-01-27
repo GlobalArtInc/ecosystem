@@ -1,25 +1,20 @@
 import { ClientGrpc } from "@nestjs/microservices";
-import { firstValueFrom, Observable } from "rxjs";
-import { Metadata, MetadataValue } from "@grpc/grpc-js";
+import { firstValueFrom, Observable, timer, throwError, retry } from "rxjs";
+import { Metadata, MetadataValue, status } from "@grpc/grpc-js";
 import { randomUUID } from "crypto";
 import { GrpcService, InjectGrpcService } from "./grpc.service";
-import { GRPC_METADATA_TOKEN } from "../constants/grpc.constants";
 import { Inject } from "@nestjs/common";
 import { ClsService } from "nestjs-cls";
+import { switchMap } from "rxjs/operators";
 
 type UnwrapObservable<U> = U extends Observable<infer R> ? R : U;
-type GrpcClientServiceOutput<
-  T extends object,
-  K extends keyof T
-> = T[K] extends (...args: any) => any
-  ? UnwrapObservable<ReturnType<T[K]>>
-  : never;
 
 export abstract class AbstractGrpcClient {
   protected constructor(private readonly client: ClientGrpc) {}
 
   @InjectGrpcService()
   protected readonly grpcService!: GrpcService;
+
   @Inject(ClsService)
   protected readonly cls!: ClsService;
 
@@ -27,10 +22,8 @@ export abstract class AbstractGrpcClient {
     return {
       call: <K extends keyof T>(
         methodName: K,
-        payload: T[K] extends (...args: infer P) => any
-          ? P[0]
-          : never = {} as any
-      ): Promise<GrpcClientServiceOutput<T, K>> => {
+        payload: T[K] extends (...args: infer P) => any ? P[0] : never = {} as any
+      ): Promise<UnwrapObservable<T[K] extends (...args: any) => any ? ReturnType<T[K]> : never>> => {
         return this.call<T, K>(serviceName, methodName, payload);
       },
     };
@@ -40,26 +33,33 @@ export abstract class AbstractGrpcClient {
     serviceName: string,
     methodName: K,
     payload: T[K] extends (...args: infer P) => any ? P[0] : never = {} as any
-  ): Promise<
-    T[K] extends (...args: any) => any
-      ? UnwrapObservable<ReturnType<T[K]>>
-      : never
-  > {
-    try {
-      const service = this.client.getService<T>(serviceName);
+  ): Promise<UnwrapObservable<T[K] extends (...args: any) => any ? ReturnType<T[K]> : never>> {
+    const service = this.client.getService<T>(serviceName);
 
-      const method = service[methodName] as unknown as (
-        ...args: any[]
-      ) => Observable<any>;
+    const method = service[methodName] as unknown as (
+      ...args: any[]
+    ) => Observable<any>;
 
-      return firstValueFrom(method(payload, this.getMetadata()));
-    } catch (error) {
-      throw error;
-    }
+    const stream$ = method(payload, this.getMetadata()).pipe(
+      retry({
+        delay: (error) => {
+          if (
+            error?.code === status.UNAVAILABLE ||
+            error?.code === status.DEADLINE_EXCEEDED
+          ) {
+            return timer(5000);
+          }
+          return throwError(() => error);
+        },
+      })
+    );
+
+    return firstValueFrom(stream$);
   }
 
   private getMetadata(): Metadata {
     const metadata = new Metadata();
+
     if (this.grpcService.getMetadata().has("correlation-id")) {
       metadata.set(
         "correlation-id",

@@ -10,7 +10,7 @@ import { InjectRedis } from "@globalart/nestjs-redis";
 import { Redis } from "ioredis";
 import { AbstractDaemon } from "./abstract.daemon";
 import { DAEMON_MODULE_OPTIONS } from "./constants/daemon.constants";
-import { DaemonOptions } from "./interfaces/daemon.interfaces";
+import { type DaemonOptions } from "./interfaces/daemon.interfaces";
 
 @Injectable()
 export class DaemonService implements OnModuleInit, OnModuleDestroy {
