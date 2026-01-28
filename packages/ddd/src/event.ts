@@ -40,7 +40,7 @@ export interface IEventJSON<TPayload extends object = object, TMeta = any> {
 export abstract class BaseEvent<
   TPayload extends object = object,
   TName extends string = string,
-  TMeta extends any = { key?: string; headers?: Record<string, string> },
+  TMeta extends any = { keys?: any; headers?: any },
 > implements IEvent<TPayload>
 {
   abstract name: TName;
