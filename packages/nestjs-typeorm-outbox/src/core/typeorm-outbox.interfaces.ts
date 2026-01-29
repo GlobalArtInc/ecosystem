@@ -5,8 +5,8 @@ import { CronExpression } from "./typeorm-outbox.enums";
 type BrokerConfig = MqttOptions | NatsOptions | KafkaOptions;
 
 export class TypeormOutboxRegisterCronModuleOptions {
+  brokerConfig: BrokerConfig = {};
   typeOrmConnectionName?: string = "default";
-  brokerConfig?: BrokerConfig = {};
   cronExpression?: string = CronExpression.EVERY_SECOND;
 }
 
