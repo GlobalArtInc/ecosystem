@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit } from "@nestjs/common";
-import { InjectTypeormOutboxBroker, InjectTypeormOutboxCronConfig, InjectTypeormOutboxModuleConfig } from "./typeorm-outbox.di-tokens";
+import { InjectTypeormOutboxBroker, InjectTypeormOutboxCronConfig } from "./typeorm-outbox.di-tokens";
 import { hashStringToInt } from "@globalart/text-utils";
 import { TypeormOutboxEntity } from "./typeorm-outbox.entity";
 import { firstValueFrom } from "rxjs";
@@ -43,7 +43,11 @@ export class TypeormOutboxCronService implements OnModuleInit {
       try {
         await queryRunner.startTransaction('REPEATABLE READ');
         
-        const entities = await queryRunner.manager.find(TypeormOutboxEntity);
+        const entities = await queryRunner.manager.find(TypeormOutboxEntity, {
+          order: {
+            createdAt: 'ASC',
+          },
+        });
         
         for (const entity of entities) {
           await firstValueFrom(
