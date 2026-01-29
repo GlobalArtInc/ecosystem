@@ -1,7 +1,7 @@
 {
   "name": "@globalart/nestjs-typeorm-outbox",
   "description": "TypeORM Outbox integration for NestJS",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "type": "module",
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
