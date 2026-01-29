@@ -3,7 +3,7 @@ import { InjectTypeormOutboxBroker, InjectTypeormOutboxCronConfig } from "./type
 import { hashStringToInt } from "@globalart/text-utils";
 import { TypeormOutboxEntity } from "./typeorm-outbox.entity";
 import { firstValueFrom } from "rxjs";
-import { ClientProxy } from "@nestjs/microservices";
+import { ClientProxy, Transport } from "@nestjs/microservices";
 import { CronJob } from "cron";
 import { TypeormOutboxRegisterCronModuleOptions } from "./typeorm-outbox.interfaces";
 import { DataSource } from "typeorm";
@@ -20,13 +20,21 @@ export class TypeormOutboxCronService implements OnModuleInit {
   ) { }
 
   onModuleInit() {
+    this.validateBrokerClient();
     const cronJob = new CronJob(this.moduleConfig.cronExpression ?? CronExpression.EVERY_SECOND, () => {
       this.executeCronJob();
     });
     cronJob.start();
   }
 
-  async executeCronJob() {
+  private validateBrokerClient() {
+    const brokerConfig = this.moduleConfig.brokerConfig;
+    if (![Transport.KAFKA, Transport.NATS, Transport.MQTT].includes(brokerConfig?.transport as Transport)) {
+      throw new Error(`[TypeormOutboxCronService] Broker config must be an instance of KafkaOptions, NatsOptions, or MqttOptions`);
+    }
+  }
+
+  private async executeCronJob() {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     const lockKey = hashStringToInt('typeorm-outbox-cron-lock');
