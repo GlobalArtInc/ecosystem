@@ -30,14 +30,15 @@
 				"publish:npm": "release-it --config ../../.release-it.json"
 		},
 		"dependencies": {
-				"rimraf": "^6.0.1"
+				"rimraf": "^6.0.1",
+				"tldts": "7.0.19"
 		},
 		"devDependencies": {
 				"prettier": "3.8.1",
-				"rxjs": "7.8.2",
-				"typescript": "5.9.3",
 				"release-it": "19.2.4",
-				"tsdown": "0.20.1"
+				"rxjs": "7.8.2",
+				"tsdown": "0.20.1",
+				"typescript": "5.9.3"
 		},
 		"publishConfig": {
 				"access": "public"
