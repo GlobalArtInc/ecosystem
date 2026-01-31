@@ -24,7 +24,7 @@ export abstract class ValueObject<T = any> {
     return obj instanceof ValueObject;
   }
 
-  public unpack(): any {
+  public unpack(): T {
     if (this.isDomainPrimitive(this.props)) {
       return this.props.value;
     }
