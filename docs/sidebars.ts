@@ -21,6 +21,7 @@ const sidebars: SidebarsConfig = {
         "packages/passport",
         "packages/oxide",
         "packages/ddd",
+        "packages/nestjs-unit-of-work",
       ],
     },
   ],
