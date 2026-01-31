@@ -5,9 +5,7 @@ export type CommandProps<T> = Omit<T, "correlationId" | "commandId"> &
 
 export abstract class Command {
   public readonly commandId: string;
-
   public readonly correlationId: string;
-
   public readonly causationId?: string;
 
   constructor(props: CommandProps<unknown>) {

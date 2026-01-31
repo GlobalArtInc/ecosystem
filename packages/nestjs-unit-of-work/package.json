@@ -1,0 +1,65 @@
+{
+  "name": "@globalart/nestjs-unit-of-work",
+  "description": "Transactional integration for NestJS",
+  "version": "1.1.1",
+  "type": "module",
+  "main": "dist/index.mjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GlobalArtInc/ecosystem.git#main",
+    "directory": "packages/nestjs-unit-of-work"
+  },
+  "license": "MIT",
+  "author": "GlobalArt, Inc",
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "nestjs",
+    "unit-of-work"
+  ],
+  "scripts": {
+    "format": "prettier --write \"**/*.ts\"",
+    "build": "tsdown",
+    "build:watch": "tsdown --watch",
+    "prepublishOnly": "npm run build",
+    "publish:dev": "npm publish --access public --tag dev",
+    "publish:npm": "release-it --config ../../.release-it.json"
+  },
+  "dependencies": {
+    "@globalart/text-utils": "^1.0.5",
+    "@nestjs/common": "11.1.12",
+    "@nestjs/core": "11.1.12",
+    "@nestjs/microservices": "^11.1.12",
+    "@nestjs/typeorm": "^11.0.0",
+    "@globalart/ddd": "^1.1.8",
+    "typeorm": "^0.3.28",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "25.1.0",
+    "prettier": "^3.8.1",
+    "reflect-metadata": "^0.2.2",
+    "release-it": "19.2.4",
+    "tsdown": "0.20.1",
+    "typescript": "^5.9.3"
+  }
+}

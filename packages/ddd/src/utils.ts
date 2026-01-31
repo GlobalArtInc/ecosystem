@@ -3,7 +3,6 @@ import { ValueObject } from "./value-objects/value-object";
 export function convertPropsToObject(props: any): any {
   const propsCopy = { ...props };
 
-  // eslint-disable-next-line guard-for-in
   for (const prop in propsCopy) {
     if (Array.isArray(propsCopy[prop])) {
       propsCopy[prop] = (propsCopy[prop] as Array<unknown>).map((item) => {
