@@ -1,7 +1,7 @@
 {
   "name": "@globalart/nestjs-unit-of-work",
   "description": "Transactional integration for NestJS",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "module",
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
