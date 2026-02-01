@@ -1,7 +1,8 @@
-import { DynamicModule, Module, Global } from "@nestjs/common";
+import { DynamicModule, Module, Global, OnModuleInit } from "@nestjs/common";
 import { UnitOfWorkManager } from "./uow.service";
 import { UnitOfWorkContext } from "./uow.context";
 import { UnitOfWorkInterceptor } from "../interceptors/uow.interceptor";
+import { patchTypeORMRepository } from "./repository.patch";
 
 const providers = [
   UnitOfWorkManager,
@@ -11,7 +12,11 @@ const providers = [
 
 @Global()
 @Module({})
-export class UnitOfWorkModule {
+export class UnitOfWorkModule implements OnModuleInit {
+  onModuleInit() {
+    patchTypeORMRepository();
+  }
+
   static forRoot(): DynamicModule {
     return {
       global: true,

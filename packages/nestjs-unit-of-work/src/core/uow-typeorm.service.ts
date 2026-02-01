@@ -45,4 +45,8 @@ export class TypeOrmUnitOfWork implements IUnitOfWork<EntityManager> {
   get isActive(): boolean {
     return !!this.queryRunner?.isTransactionActive;
   }
+
+  getQueryRunner(): QueryRunner | undefined {
+    return this.queryRunner;
+  }
 }
