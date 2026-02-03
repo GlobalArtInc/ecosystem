@@ -41,6 +41,6 @@ export const protobufFieldToType = ({
   return field.types.filter(Boolean).join(" ");
 };
 
-export const getEnumByIndex = (schema: ZodEnum, index: any): unknown => {
+export const getEnumByIndex = (schema: ZodEnum, index: any): any => {
   return schema.options[index] || null;
 }
