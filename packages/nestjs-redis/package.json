@@ -48,7 +48,7 @@
     "publish:npm": "release-it --config ../../.release-it.json"
   },
   "dependencies": {
-    "@nestjs/common": "11.1.12",
+    "@nestjs/common": "11.1.13",
     "@nestjs/core": "11.1.12",
     "@nestjs/platform-socket.io": "11.1.12",
     "@nestjs/terminus": "11.0.0",
