@@ -49,7 +49,7 @@
   "dependencies": {
     "@nestjs/common": "11.1.13",
     "@nestjs/core": "11.1.13",
-    "@nestjs/microservices": "11.1.12",
+    "@nestjs/microservices": "11.1.13",
     "@nestjs/swagger": "^11.2.5",
     "@nestjs/testing": "11.1.13",
     "@nestjs/typeorm": "^11.0.0",
