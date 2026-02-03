@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@nestjs/common": "11.1.12",
-    "@nestjs/core": "11.1.12",
+    "@nestjs/core": "11.1.13",
     "etcd3": "1.1.2"
   },
   "devDependencies": {
