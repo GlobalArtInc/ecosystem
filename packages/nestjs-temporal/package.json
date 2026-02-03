@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@nestjs/common": "11.1.12",
-    "@nestjs/core": "11.1.12",
+    "@nestjs/core": "11.1.13",
     "@temporalio/activity": "^1.8.3",
     "@temporalio/client": "^1.8.3",
     "@temporalio/common": "^1.8.3",
