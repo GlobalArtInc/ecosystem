@@ -41,7 +41,7 @@
   },
   "devDependencies": {
     "@golevelup/ts-jest": "^1.2.0",
-    "@nestjs/common": "11.1.12",
+    "@nestjs/common": "11.1.13",
     "@nestjs/core": "11.1.12",
     "@nestjs/swagger": "^11.2.5",
     "@nestjs/testing": "11.1.13",
