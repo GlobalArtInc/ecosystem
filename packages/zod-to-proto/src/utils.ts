@@ -1,4 +1,4 @@
-import { ZodNumber } from "zod";
+import { ZodEnum, ZodNumber } from "zod";
 import type { ProtobufField } from "./types";
 
 /**
@@ -40,3 +40,7 @@ export const protobufFieldToType = ({
 }): string => {
   return field.types.filter(Boolean).join(" ");
 };
+
+export const getEnumByIndex = (schema: ZodEnum, index: number): unknown => {
+  return schema.options[index] || null;
+}
