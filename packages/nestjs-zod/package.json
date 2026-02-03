@@ -44,7 +44,7 @@
     "@nestjs/common": "11.1.12",
     "@nestjs/core": "11.1.12",
     "@nestjs/swagger": "^11.2.5",
-    "@nestjs/testing": "11.1.12",
+    "@nestjs/testing": "11.1.13",
     "@types/express": "5.0.6",
     "@types/jest": "^30.0.0",
     "@types/lodash": "^4.17.23",
