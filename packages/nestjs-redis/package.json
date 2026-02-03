@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@nestjs/common": "11.1.13",
-    "@nestjs/core": "11.1.12",
+    "@nestjs/core": "11.1.13",
     "@nestjs/platform-socket.io": "11.1.13",
     "@nestjs/terminus": "11.0.0",
     "@nestjs/throttler": "6.5.0",
