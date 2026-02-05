@@ -22,9 +22,10 @@ export abstract class AbstractGrpcClient {
     return {
       call: <K extends keyof T>(
         methodName: K,
-        payload: T[K] extends (...args: infer P) => any ? P[0] : never = {} as any
+        payload: T[K] extends (...args: infer P) => any ? P[0] : never = {} as any,
+        retryNullOnError = true,
       ): Promise<UnwrapObservable<T[K] extends (...args: any) => any ? ReturnType<T[K]> : never>> => {
-        return this.call<T, K>(serviceName, methodName, payload);
+        return this.call<T, K>(serviceName, methodName, payload, retryNullOnError);
       },
     };
   }
@@ -33,7 +34,7 @@ export abstract class AbstractGrpcClient {
     serviceName: string,
     methodName: K,
     payload: T[K] extends (...args: infer P) => any ? P[0] : never = {} as any,
-    retryNullOnError = true,
+    retryNullOnError: boolean,
   ): Promise<UnwrapObservable<T[K] extends (...args: any) => any ? ReturnType<T[K]> : never>> {
     const service = this.client.getService<T>(serviceName);
 
@@ -48,15 +49,13 @@ export abstract class AbstractGrpcClient {
             error?.code === status.UNAVAILABLE ||
             error?.code === status.DEADLINE_EXCEEDED
           ) {
-            console.error(error.code, error.message);
             return timer(5000);
-          }
-          if (retryNullOnError) {
+          } else if (retryNullOnError) {
             return of(null);
+          } else {
+            return throwError(() => error);
           }
-          return throwError(() => error);
         },
-        resetOnSuccess: true,
       })
     );
 
