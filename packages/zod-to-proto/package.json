@@ -44,7 +44,7 @@
     "prettier": "3.8.1",
     "release-it": "19.2.4",
     "ts-node": "^10.9.2",
-    "tsdown": "0.20.1",
+    "tsdown": "0.20.3",
     "typescript": "^5.9.3"
   },
   "dependencies": {
