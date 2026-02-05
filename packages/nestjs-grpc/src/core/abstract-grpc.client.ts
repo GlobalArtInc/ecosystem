@@ -1,5 +1,5 @@
 import { ClientGrpc } from "@nestjs/microservices";
-import { firstValueFrom, Observable, timer, throwError, retry, of } from "rxjs";
+import { firstValueFrom, Observable, timer, throwError, retry, of, catchError } from "rxjs";
 import { Metadata, MetadataValue, status } from "@grpc/grpc-js";
 import { randomUUID } from "crypto";
 import { GrpcService, InjectGrpcService } from "./grpc.service";
@@ -50,12 +50,15 @@ export abstract class AbstractGrpcClient {
             error?.code === status.DEADLINE_EXCEEDED
           ) {
             return timer(5000);
-          } else if (retryNullOnError) {
-            return of(null);
-          } else {
-            return throwError(() => error);
           }
+          return throwError(() => error);
         },
+      }),
+      catchError((error) => {
+        if (retryNullOnError) {
+          return of(null);
+        }
+        return throwError(() => error);
       })
     );
 
