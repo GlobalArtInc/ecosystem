@@ -1,5 +1,5 @@
 import { ClientGrpc } from "@nestjs/microservices";
-import { firstValueFrom, Observable, timer, throwError, retry } from "rxjs";
+import { firstValueFrom, Observable, timer, throwError, retry, of } from "rxjs";
 import { Metadata, MetadataValue, status } from "@grpc/grpc-js";
 import { randomUUID } from "crypto";
 import { GrpcService, InjectGrpcService } from "./grpc.service";
@@ -32,7 +32,8 @@ export abstract class AbstractGrpcClient {
   public async call<T extends object, K extends keyof T>(
     serviceName: string,
     methodName: K,
-    payload: T[K] extends (...args: infer P) => any ? P[0] : never = {} as any
+    payload: T[K] extends (...args: infer P) => any ? P[0] : never = {} as any,
+    retryNullOnError = true,
   ): Promise<UnwrapObservable<T[K] extends (...args: any) => any ? ReturnType<T[K]> : never>> {
     const service = this.client.getService<T>(serviceName);
 
@@ -43,12 +44,15 @@ export abstract class AbstractGrpcClient {
     const stream$ = method(payload, this.getMetadata()).pipe(
       retry({
         delay: (error) => {
-          console.error(error.code, error.message);
           if (
             error?.code === status.UNAVAILABLE ||
             error?.code === status.DEADLINE_EXCEEDED
           ) {
+            console.error(error.code, error.message);
             return timer(5000);
+          }
+          if (retryNullOnError) {
+            return of(null);
           }
           return throwError(() => error);
         },
