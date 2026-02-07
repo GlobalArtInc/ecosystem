@@ -1,7 +1,7 @@
 {
   "name": "@globalart/nestjs-temporal",
   "description": "Temporal integration for NestJS",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "type": "module",
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
