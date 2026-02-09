@@ -4,59 +4,66 @@ import { z } from "zod";
 export const eventSchema = <
   TName extends string,
   TPayload extends z.ZodTypeAny,
-  TMeta extends z.ZodTypeAny,
 >(
-  name: TName,
+  eventName: TName,
   payload: TPayload,
-  meta: TMeta,
 ) =>
   z.object({
-    id: z.string().uuid(),
-    name: z.literal(name),
-    operatorId: z.string().optional(),
+    id: z.uuid(),
+    event: z.literal(eventName),
     payload: payload,
     timestamp: z.coerce.date(),
-    meta: meta,
   });
 
-export interface IEvent<TPayload extends object = object, TMeta = any> {
-  id: string;
-  name: string;
-  operatorId: string;
-  payload: TPayload;
-  timestamp: Date;
-  meta: TMeta;
+export interface IEventMetadata {
+  keys?: Record<string, unknown>;
+  headers?: Record<string, unknown>;
 }
 
-export interface IEventJSON<TPayload extends object = object, TMeta = any> {
+export interface IEvent<
+  TName extends string,
+  TPayload extends object = object,
+  TMeta extends IEventMetadata = IEventMetadata,
+> {
   id: string;
-  name: string;
-  operatorId: string;
+  event: TName;
+  payload: TPayload;
+  meta: TMeta;
+  timestamp: Date;
+}
+
+export interface IEventJSON<
+  TName extends string,
+  TPayload extends object = object,
+  TMeta extends IEventMetadata = IEventMetadata,
+> {
+  id: string;
+  event: TName;
   payload: TPayload;
   timestamp: string;
   meta: TMeta;
 }
 
 export abstract class BaseEvent<
+  TName extends string,
   TPayload extends object = object,
-  TName extends string = string,
-  TMeta extends any = { keys?: any; headers?: any },
-> implements IEvent<TPayload>
-{
-  abstract name: TName;
+  TMeta extends IEventMetadata = IEventMetadata,
+> implements IEvent<TName, TPayload, TMeta> {
   constructor(
+    public readonly event: TName,
     public readonly payload: TPayload,
-    public readonly operatorId: string,
-    public readonly meta: TMeta,
+    public readonly meta: TMeta = {
+      keys: {},
+      headers: {},
+    } as TMeta,
     public readonly id = v4(),
     public readonly timestamp = new Date(),
   ) {}
 
-  toJSON(): IEventJSON<TPayload, TMeta> {
+  toJSON(): IEventJSON<TName, TPayload, TMeta> {
     return {
       id: this.id,
-      name: this.name,
-      operatorId: this.operatorId,
+      event: this.event,
       timestamp: this.timestamp.toISOString(),
       payload: this.payload,
       meta: this.meta,
