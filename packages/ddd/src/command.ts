@@ -63,15 +63,18 @@ export abstract class BaseCommand<
   implements IEnvelopeCommand<TName, TPayload, TMeta>
 {
   public readonly command: TName;
+  public readonly topic?: string;
 
   constructor(
     command: TName,
     payload: TPayload,
     meta: TMeta = { keys: {}, headers: {} } as TMeta,
     id = v4(),
+    topic?: string,
   ) {
     super(payload, meta, id);
     this.command = command;
+    this.topic = topic;
   }
 
   toJSON(): IEnvelopeCommandJSON<TName, TPayload, TMeta> {
