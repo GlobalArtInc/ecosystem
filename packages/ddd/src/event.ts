@@ -47,16 +47,19 @@ export abstract class BaseEvent<
   TName extends string,
   TPayload extends object = object,
   TMeta extends IMessageMetadata = IMessageMetadata,
-> extends BaseEnvelope<TPayload, TMeta> implements IEvent<TName, TPayload, TMeta> {
+>
+  extends BaseEnvelope<TPayload, TMeta>
+  implements IEvent<TName, TPayload, TMeta>
+{
   public readonly event: TName;
-  public readonly timestamp: Date;
+  public readonly timestamp: Date = new Date();
 
   constructor(
     event: TName,
     payload: TPayload,
     meta: TMeta = { keys: {}, headers: {} } as TMeta,
     id = v4(),
-    timestamp = new Date(),
+    timestamp: Date,
   ) {
     super(payload, meta, id);
     this.event = event;

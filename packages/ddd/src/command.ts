@@ -4,9 +4,23 @@ import {
   type IMessageMetadata,
   BaseEnvelope,
 } from "./envelope";
+import { z } from "zod";
 
 export type CommandProps<T> = Omit<T, "correlationId" | "commandId"> &
   Partial<Command>;
+
+export const commandSchema = <
+  TName extends string,
+  TPayload extends z.ZodTypeAny,
+>(
+  commandName: TName,
+  payload: TPayload,
+) =>
+  z.object({
+    id: z.uuid(),
+    command: z.literal(commandName),
+    payload: payload,
+  });
 
 export abstract class Command {
   public readonly commandId: string;
@@ -42,8 +56,10 @@ export abstract class BaseEnvelopeCommand<
   TName extends string,
   TPayload extends object = object,
   TMeta extends IMessageMetadata = IMessageMetadata,
-> extends BaseEnvelope<TPayload, TMeta>
-  implements IEnvelopeCommand<TName, TPayload, TMeta> {
+>
+  extends BaseEnvelope<TPayload, TMeta>
+  implements IEnvelopeCommand<TName, TPayload, TMeta>
+{
   public readonly command: TName;
 
   constructor(
