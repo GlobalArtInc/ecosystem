@@ -1,0 +1,67 @@
+{
+  "name": "@globalart/passport",
+  "version": "1.1.4",
+  "author": {
+    "name": "GlobalArt, Inc"
+  },
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "scripts": {
+    "format": "prettier --write \"**/*.ts\"",
+    "test": "jest --runInBand --passWithNoTests",
+    "test:cov": "jest --coverage --passWithNoTests",
+    "coveralls": "yarn run test:cov --coverageReporters=text-lcov | coveralls",
+    "build": "tsdown",
+    "build:watch": "tsdown --watch",
+    "prepublishOnly": "npm run build",
+    "publish:dev": "npm publish --access public --tag dev",
+    "publish:npm": "release-it --config ../../.release-it.json"
+  },
+  "keywords": [
+    "openid-connect",
+    "oauth2",
+    "authentication",
+    "globalart"
+  ],
+  "description": "OpenID Connect strategy for GlobalArt SSO integration",
+  "devDependencies": {
+    "@types/express": "5.0.6",
+    "@types/node": "25.2.1",
+    "@types/passport": "^1.0.17",
+    "prettier": "3.8.1",
+    "release-it": "19.2.4",
+    "ts-node": "^10.9.2",
+    "tsdown": "0.20.3",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "express": "5.2.1",
+    "node-fetch": "^3.3.2",
+    "openid-connect": "^1.2.4",
+    "passport": "^0.7.0",
+    "url": "0.11.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "$schema": "./node_modules/@angular-devkit/schematics/collection-schema.json",
+  "schematics": {
+    "microservice": {
+      "factory": "./lib/microservice/microservice.factory#main",
+      "description": "Create a Nest microservice.",
+      "schema": "./lib/microservice/schema.json"
+    }
+  }
+}

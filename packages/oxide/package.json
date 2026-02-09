@@ -1,0 +1,55 @@
+{
+  "name": "@globalart/oxide",
+  "version": "1.0.1",
+  "author": {
+    "name": "GlobalArt, Inc"
+  },
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "scripts": {
+    "format": "prettier --write \"**/*.ts\"",
+    "test": "jest --runInBand --passWithNoTests",
+    "test:cov": "jest --coverage --passWithNoTests",
+    "coveralls": "yarn run test:cov --coverageReporters=text-lcov | coveralls",
+    "build": "tsdown",
+    "build:watch": "tsdown --watch",
+    "prepublishOnly": "npm run build",
+    "publish:dev": "npm publish --access public --tag dev",
+    "publish:npm": "release-it --config ../../.release-it.json"
+  },
+  "keywords": [
+    "oxide",
+    "rust"
+  ],
+  "description": "A simple toolkit for building scalable and maintainable applications",
+  "devDependencies": {
+    "@types/node": "25.2.1",
+    "prettier": "3.8.1",
+    "release-it": "19.2.4",
+    "tsdown": "0.20.3",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

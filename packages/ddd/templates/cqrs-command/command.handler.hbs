@@ -1,0 +1,23 @@
+import { type ICommandHandler } from '@globalart/ddd';
+import { CommandHandler } from '@nestjs/cqrs';
+import { {{pascalCase name}}Command } from './{{kebabCase name}}.command';
+import { type I{{pascalCase name}}Output } from './{{kebabCase name}}.command.interface';
+
+type I{{pascalCase name}}CommandHandler = ICommandHandler<{{pascalCase name}}Command, I{{pascalCase name}}Output>;
+
+export class {{pascalCase name}}CommandHandler implements I{{pascalCase name}}CommandHandler {
+  constructor() {}
+
+  async execute(command: {{pascalCase name}}Command): Promise<I{{pascalCase name}}Output> {
+    throw new Error('Not implemented');
+  }
+}
+
+
+@CommandHandler({{pascalCase name}}Command)
+export class Nest{{pascalCase name}}CommandHandler extends {{pascalCase name}}CommandHandler {
+  constructor() {
+    super();
+  }
+}
+

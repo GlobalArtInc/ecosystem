@@ -1,0 +1,12 @@
+import { Option } from 'globalart/oxide';
+import { {{pascalCase name}} } from './{{kebabCase name}}';
+import { I{{pascalCase name}}Spec } from './specifications';
+
+export interface I{{pascalCase name}}Repository {
+  findOneById(id: number): Promise<Option<{{pascalCase name}}>>;
+  findOne(spec: I{{pascalCase name}}Spec): Promise<Option<{{pascalCase name}}>>;
+  find(spec: I{{pascalCase name}}Spec): Promise<{{pascalCase name}}[]>;
+  insert({{camelCase name}}: {{pascalCase name}}): Promise<Option<{{pascalCase name}}>>;
+  updateOneById(id: number, spec: I{{pascalCase name}}Spec): Promise<Option<{{pascalCase name}}>>;
+  deleteOneById(id: number): Promise<void>;
+}

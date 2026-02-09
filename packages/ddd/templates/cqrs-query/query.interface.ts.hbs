@@ -1,0 +1,6 @@
+import { z } from 'zod';
+import { type {{camelCase name}}QuerySchema } from './{{kebabCase name}}.query.schema';
+import { type {{camelCase name}}QueryOutput } from './{{kebabCase name}}.query.output';
+
+export type I{{pascalCase name}}Query = z.infer<typeof {{camelCase name}}QuerySchema>;
+export type I{{pascalCase name}}Output = z.infer<typeof {{camelCase name}}QueryOutput>;

@@ -1,0 +1,46 @@
+{
+		"name": "@globalart/text-utils",
+		"description": "A collection of modules, helpers and utils for working with text.",
+		"version": "1.0.6",
+		"private": false,
+		"license": "MIT",
+		"type": "module",
+		"main": "dist/index.mjs",
+		"module": "dist/index.mjs",
+		"types": "dist/index.d.mts",
+		"exports": "./dist/index.mjs",
+		"files": [
+				"dist",
+				"README.md"
+		],
+		"repository": {
+				"type": "git",
+				"url": "git+https://github.com/GlobalArtInc/ecosystem.git#main",
+				"directory": "packages/text-utils"
+		},
+		"scripts": {
+				"format": "prettier --write \"**/*.ts\"",
+				"test": "jest --runInBand --passWithNoTests",
+				"test:cov": "jest --coverage --passWithNoTests",
+				"coveralls": "yarn run test:cov --coverageReporters=text-lcov | coveralls",
+				"build": "rm -rf ./dist && tsdown",
+				"build:watch": "tsdown --watch",
+				"prepublishOnly": "npm run build",
+				"publish:dev": "npm publish --access public --tag dev",
+				"publish:npm": "release-it --config ../../.release-it.json"
+		},
+		"dependencies": {
+				"rimraf": "^6.0.1",
+				"tldts": "7.0.22"
+		},
+		"devDependencies": {
+				"prettier": "3.8.1",
+				"release-it": "19.2.4",
+				"rxjs": "7.8.2",
+				"tsdown": "0.20.3",
+				"typescript": "5.9.3"
+		},
+		"publishConfig": {
+				"access": "public"
+		}
+}

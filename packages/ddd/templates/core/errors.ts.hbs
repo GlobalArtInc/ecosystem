@@ -1,0 +1,9 @@
+import { ExceptionBase } from '@globalart/ddd';
+
+export class {{pascalCase name}}Error extends ExceptionBase {
+  code = '{{pascalCase name}}.ERROR';
+
+  constructor() {
+    super('{{pascalCase name}} error');
+  }
+}

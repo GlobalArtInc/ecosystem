@@ -1,0 +1,61 @@
+{
+  "name": "@globalart/nestjs-daemon",
+  "version": "1.0.0",
+  "description": "A daemon modules for NestJS",
+  "author": {
+    "name": "GlobalArt, Inc"
+  },
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.mjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.mts",
+  "exports": "./dist/index.mjs",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GlobalArtInc/ecosystem.git#main",
+    "directory": "packages/nestjs-daemon"
+  },
+  "keywords": [
+    "nestjs",
+    "daemon"
+  ],
+  "scripts": {
+    "format": "prettier --write \"**/*.ts\"",
+    "test": "jest --runInBand --passWithNoTests",
+    "test:cov": "jest --coverage --passWithNoTests",
+    "coveralls": "yarn run test:cov --coverageReporters=text-lcov | coveralls",
+    "build": "rm -rf ./dist && tsdown",
+    "build:watch": "tsdown --watch",
+    "prepublishOnly": "npm run build",
+    "publish:dev": "npm publish --access public --tag dev",
+    "publish:npm": "release-it --config ../../.release-it.json"
+  },
+  "dependencies": {
+    "@globalart/nestjs-redis": "workspace:*",
+    "@nestjs/cache-manager": "3.1.0",
+    "@nestjs/common": "11.1.13",
+    "@nestjs/core": "11.1.13",
+    "@nestjs/microservices": "11.1.13",
+    "@nestjs/platform-socket.io": "11.1.13",
+    "@nestjs/terminus": "11.0.0",
+    "@nestjs/throttler": "6.5.0",
+    "ioredis": "^5.9.2",
+    "nestjs-cls": "6.2.0",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.1",
+    "reflect-metadata": "^0.2.2",
+    "release-it": "19.2.4",
+    "tsdown": "0.20.3",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

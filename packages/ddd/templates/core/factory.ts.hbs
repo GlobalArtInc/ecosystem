@@ -1,0 +1,20 @@
+import { Ok, type Result } from 'globalart/oxide';
+import { {{pascalCase name}} } from './{{kebabCase name}}';
+import { ICreate{{pascalCase name}}Internal } from './{{kebabCase name}}.schema';
+import { new{{pascalCase name}}Spec } from './specifications';
+import { type {{pascalCase name}}CompositeSpecification } from './specifications/interface';
+
+export class {{pascalCase name}}Factory {
+  static create(spec: {{pascalCase name}}CompositeSpecification): Result<{{pascalCase name}}, string> {
+    const {{camelCase name}} = {{pascalCase name}}.empty();
+
+    return spec.mutate({{camelCase name}}).map((_) => {{camelCase name}});
+  }
+
+  static from(input: ICreate{{pascalCase name}}Internal) {
+    const spec = new{{pascalCase name}}Spec(input);
+    const {{camelCase name}} = this.create(spec).unwrap();
+
+    return Ok({{camelCase name}});
+  }
+}

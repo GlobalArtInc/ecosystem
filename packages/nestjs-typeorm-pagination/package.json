@@ -1,0 +1,119 @@
+{
+  "name": "@globalart/nestjs-typeorm-pagination",
+  "version": "1.0.17",
+  "author": "GlobalArt, Inc",
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "description": "Pagination and filtering helper method for TypeORM repostiories or query builders using Nest.js framework.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GlobalArtInc/ecosystem/tree/main/packages/nestjs-typeorm-pagination"
+  },
+  "keywords": [
+    "nestjs",
+    "typeorm",
+    "express",
+    "pagination",
+    "paginate",
+    "filtering",
+    "search"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "scripts": {
+    "prebuild": "rimraf lib",
+    "build": "tsdown",
+    "build:watch": "tsdown --watch",
+    "prepare": "tsc",
+    "dev:yalc": "nodemon --watch src --ext ts --exec 'npm run build && yalc push'",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:ci": "prettier --list-different \"src/**/*.ts\"",
+    "lint": "eslint -c .eslintrc.json --ext .ts --max-warnings 0 src",
+    "test": "jest --passWithNoTests",
+    "prepublish:npm": "npm run build",
+    "publish:npm": "release-it --config ../../.release-it.json",
+    "prepublish:dev": "npm run build",
+    "publish:dev": "npm publish --access public --tag dev",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"
+  },
+  "devDependencies": {
+    "@nestjs/common": "11.1.13",
+    "@nestjs/typeorm": "^11.0.0",
+    "@types/express": "5.0.6",
+    "@types/jest": "^30.0.0",
+    "@types/lodash": "^4.17.23",
+    "@types/node": "25.2.1",
+    "@typescript-eslint/eslint-plugin": "8.54.0",
+    "@typescript-eslint/parser": "8.54.0",
+    "eslint": "9.39.2",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "fastify": "^5.7.1",
+    "jest": "^30.2.0",
+    "pg": "^8.17.2",
+    "prettier": "3.8.1",
+    "reflect-metadata": "^0.2.2",
+    "release-it": "19.2.4",
+    "rxjs": "^7.8.2",
+    "sqlite3": "^5.1.7",
+    "ts-jest": "29.4.6",
+    "ts-node": "^10.9.2",
+    "tsdown": "0.20.3",
+    "typeorm": "0.3.28",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@globalart/nestjs-zod": "1.0.0",
+    "@nestjs/swagger": "^11.2.5",
+    "class-transformer": "^0.5.1",
+    "class-validator": "0.14.3",
+    "lodash": "^4.17.23",
+    "zod": "4.3.6"
+  },
+  "peerDependencies": {
+    "@nestjs/typeorm": "^11.0.0",
+    "typeorm": "^0.3.0"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".spec.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "release": {
+    "branches": [
+      "master"
+    ]
+  }
+}

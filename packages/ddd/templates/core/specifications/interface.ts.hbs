@@ -1,0 +1,10 @@
+import { CompositeSpecification, ISpecification, ISpecVisitor } from '@globalart/ddd';
+import { {{pascalCase name}} } from '../{{kebabCase name}}';
+import { With{{pascalCase name}}Id } from './specification';
+
+export interface I{{pascalCase name}}SpecVisitor extends ISpecVisitor {
+  idEqual(spec: With{{pascalCase name}}Id): void;
+}
+
+export type I{{pascalCase name}}Spec = ISpecification<{{pascalCase name}}, I{{pascalCase name}}SpecVisitor>;
+export type {{pascalCase name}}CompositeSpecification = CompositeSpecification<{{pascalCase name}}, I{{pascalCase name}}SpecVisitor>;

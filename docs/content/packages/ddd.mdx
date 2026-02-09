@@ -1,0 +1,345 @@
+---
+sidebar_position: 5
+---
+
+# @globalart/ddd
+
+Comprehensive Domain-Driven Design toolkit providing essential building blocks for robust, maintainable domain models.
+
+## Installation
+
+```bash npm2yarn
+npm install @globalart/ddd
+```
+
+## Overview
+
+The `@globalart/ddd` package provides a complete set of building blocks for implementing Domain-Driven Design patterns in your NestJS applications. It includes base classes, value objects, specifications, and utilities that help you build clean, maintainable domain models.
+
+## Key Features
+
+- **Aggregate Root** - Base class for domain aggregates with event management
+- **Value Objects** - Type-safe value objects with equality comparison
+- **CQRS Support** - Command and query base classes
+- **Specifications** - Composite specification pattern for business rules
+- **Repository Pattern** - Abstract repository interfaces
+- **Domain Events** - Event-driven architecture support
+- **Type Safety** - Full TypeScript support throughout
+
+## Quick Start
+
+### Aggregate Root
+
+```typescript
+import { AggregateRoot } from "@globalart/ddd";
+
+class UserCreatedEvent {
+  constructor(
+    public readonly userId: string,
+    public readonly email: string,
+    public readonly timestamp: Date = new Date()
+  ) {}
+}
+
+class User extends AggregateRoot<UserCreatedEvent> {
+  constructor(
+    public readonly id: string,
+    public readonly email: string,
+    public readonly name: string
+  ) {
+    super();
+    this.addDomainEvent(new UserCreatedEvent(id, email));
+  }
+
+  changeEmail(newEmail: string): void {
+    // Business logic here
+    this.addDomainEvent(new UserEmailChangedEvent(this.id, newEmail));
+  }
+}
+```
+
+### Value Objects
+
+```typescript
+import { ValueObject } from "@globalart/ddd";
+
+class Email extends ValueObject<{ value: string }> {
+  constructor(value: string) {
+    if (!this.isValidEmail(value)) {
+      throw new Error("Invalid email format");
+    }
+    super({ value });
+  }
+
+  private isValidEmail(email: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  get value(): string {
+    return this.props.value;
+  }
+}
+
+// Usage
+const email = new Email("user@example.com");
+const emailValue = email.value; // 'user@example.com'
+```
+
+### Commands and Queries
+
+```typescript
+import { Command, Query } from "@globalart/ddd";
+
+class CreateUserCommand extends Command {
+  constructor(
+    public readonly email: string,
+    public readonly name: string,
+    correlationId?: string
+  ) {
+    super({ correlationId });
+  }
+}
+
+class GetUserQuery extends Query {
+  constructor(public readonly userId: string) {
+    super();
+  }
+}
+```
+
+## Core Components
+
+### Aggregate Root
+
+Base class for domain aggregates that manages domain events:
+
+```typescript
+import { AggregateRoot } from "@globalart/ddd";
+
+abstract class AggregateRoot<EventType> {
+  protected addDomainEvent(event: EventType): void;
+  getDomainEvents(): EventType[];
+  clearDomainEvents(): void;
+}
+```
+
+### Value Objects
+
+Type-safe value objects with built-in equality:
+
+```typescript
+import { ValueObject } from "@globalart/ddd";
+
+abstract class ValueObject<T> {
+  protected readonly props: T;
+
+  constructor(props: T);
+  equals(vo?: ValueObject<T>): boolean;
+}
+```
+
+### Built-in Value Objects
+
+```typescript
+import { Id, NanoId, StringVO, BooleanVO, DateVO } from "@globalart/ddd";
+
+// UUID-based identifier
+const userId = new Id();
+
+// NanoID-based identifier
+const sessionId = new NanoId();
+
+// String value object
+const userName = new StringVO("john_doe");
+
+// Boolean value object
+const isActive = new BooleanVO(true);
+
+// Date value object
+const createdAt = new DateVO(new Date());
+```
+
+### Specifications
+
+Implement business rules using the specification pattern:
+
+```typescript
+import { CompositeSpecification, Result, Ok, Err } from "@globalart/ddd";
+
+class UserEmailSpecification extends CompositeSpecification<User> {
+  isSatisfiedBy(user: User): boolean {
+    return user.email.includes("@") && user.email.includes(".");
+  }
+
+  mutate(user: User): Result<User, string> {
+    return this.isSatisfiedBy(user) ? Ok(user) : Err("Invalid email format");
+  }
+}
+
+// Usage
+const emailSpec = new UserEmailSpecification();
+const ageSpec = new UserAgeSpecification(18);
+
+// Combine specifications
+const validUserSpec = emailSpec.and(ageSpec);
+const isValidUser = validUserSpec.isSatisfiedBy(user);
+```
+
+### Filtering System
+
+Advanced filtering with type-safe operations:
+
+```typescript
+import { StringFilter, NumberFilter, DateFilter } from "@globalart/ddd";
+
+// String filtering
+const nameFilter = new StringFilter("name", "contains", "john");
+
+// Number filtering
+const ageFilter = new NumberFilter("age", "gte", 18);
+
+// Date filtering
+const createdFilter = new DateFilter(
+  "createdAt",
+  "after",
+  new Date("2023-01-01")
+);
+
+// Combine filters
+const combinedFilter = nameFilter.and(ageFilter).and(createdFilter);
+```
+
+### Repository Pattern
+
+Abstract repository interface for data access:
+
+```typescript
+import { Repository } from "@globalart/ddd";
+
+interface UserRepository extends Repository<User> {
+  findByEmail(email: Email): Promise<User | null>;
+  findActiveUsers(): Promise<User[]>;
+  save(user: User): Promise<void>;
+  delete(id: string): Promise<void>;
+}
+
+// Implementation
+class TypeOrmUserRepository implements UserRepository {
+  async findByEmail(email: Email): Promise<User | null> {
+    // Implementation using TypeORM
+  }
+
+  async save(user: User): Promise<void> {
+    // Save user and publish domain events
+  }
+}
+```
+
+### Pagination Support
+
+Built-in pagination with validation:
+
+```typescript
+import { IPagination, ISort, paginationSchema } from "@globalart/ddd";
+
+const pagination: IPagination = {
+  limit: 10,
+  offset: 0,
+};
+
+const sorting: ISort = {
+  field: "createdAt",
+  direction: "DESC",
+};
+
+// Validation using Zod schema
+const validatedPagination = paginationSchema.parse(pagination);
+```
+
+## Advanced Usage
+
+### Domain Events
+
+```typescript
+class OrderCreatedEvent {
+  constructor(
+    public readonly orderId: string,
+    public readonly customerId: string,
+    public readonly amount: number,
+    public readonly timestamp: Date = new Date()
+  ) {}
+}
+
+class Order extends AggregateRoot<OrderCreatedEvent | OrderShippedEvent> {
+  constructor(
+    public readonly id: string,
+    public readonly customerId: string,
+    private _amount: number
+  ) {
+    super();
+    this.addDomainEvent(new OrderCreatedEvent(id, customerId, _amount));
+  }
+
+  ship(): void {
+    // Business logic
+    this.addDomainEvent(new OrderShippedEvent(this.id));
+  }
+}
+```
+
+### Complex Specifications
+
+```typescript
+class PremiumUserSpecification extends CompositeSpecification<User> {
+  isSatisfiedBy(user: User): boolean {
+    return user.subscriptionType === "premium" && user.isActive;
+  }
+}
+
+class RecentActivitySpecification extends CompositeSpecification<User> {
+  constructor(private daysThreshold: number = 30) {
+    super();
+  }
+
+  isSatisfiedBy(user: User): boolean {
+    const daysSinceLastActivity = Date.now() - user.lastActivityAt.getTime();
+    return daysSinceLastActivity <= this.daysThreshold * 24 * 60 * 60 * 1000;
+  }
+}
+
+// Combine specifications
+const eligibleForOfferSpec = new PremiumUserSpecification().and(
+  new RecentActivitySpecification(7)
+);
+```
+
+## Best Practices
+
+- **Keep Aggregates Small** - Focus on consistency boundaries rather than data relationships
+- **Use Value Objects** - Encapsulate primitive values with business meaning
+- **Implement Specifications** - Use the specification pattern for complex business rules
+- **Handle Domain Events** - Use domain events for decoupling and side effects
+- **Repository Abstraction** - Keep domain logic independent of data access concerns
+- **Validate at Boundaries** - Use value objects and specifications to enforce invariants
+
+## Integration with NestJS
+
+```typescript
+import { Injectable } from "@nestjs/common";
+import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
+
+@CommandHandler(CreateUserCommand)
+@Injectable()
+export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {
+  constructor(private userRepository: UserRepository) {}
+
+  async execute(command: CreateUserCommand): Promise<void> {
+    const email = new Email(command.email);
+    const user = new User(new Id().value, email.value, command.name);
+
+    await this.userRepository.save(user);
+
+    // Domain events are handled automatically
+  }
+}
+```

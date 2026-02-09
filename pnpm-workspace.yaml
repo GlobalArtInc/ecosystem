@@ -1,0 +1,4 @@
+packages:
+  - "packages/*"
+  - "ecosystem-examples/examples/*"
+  - "docs"

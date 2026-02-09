@@ -1,0 +1,30 @@
+{
+  "name": "<%= projectScope %>/<%= name %>",
+  "version": "0.0.1",
+  "description": "",
+  "author": "",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "nest build -b swc",
+    "build:watch": "nest build -w -b swc",
+    "prebuild": "rimraf dist",
+    "dev": "run-p build:watch start:dev",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main"
+  },
+  "dependencies": {
+    "@globalart/nestjs-zod": "catalog:prod"
+  },
+  "devDependencies": {
+    "<%= projectScope %>/typescript-configs": "workspace:*",
+    "typescript": "catalog:dev",
+    "@swc/cli": "catalog:dev",
+    "@swc/core": "catalog:dev",
+    "npm-run-all2": "catalog:dev"
+  },
+  "peerDependencies": {},
+  "optionalDependencies": {}
+}

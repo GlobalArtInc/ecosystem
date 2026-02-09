@@ -1,0 +1,67 @@
+{
+  "name": "@globalart/ecosystem",
+  "private": true,
+  "scripts": {
+    "push:all": "git add . && git commit --amend --no-edit && git push origin main -f",
+    "bootstrap": "pnpm install",
+    "build": "pnpm -r build",
+    "build:watch": "pnpm -r --parallel build:watch",
+    "test": "pnpm -r test",
+    "test:cov": "pnpm -r test:cov",
+    "lint": "pnpm -r lint",
+    "format": "pnpm -r format",
+    "clean": "pnpm -r clean && npx rimraf packages/*/node_modules packages/*/dist examples/*/node_modules examples/*/dist",
+    "dev": "pnpm -r --parallel dev",
+    "publish:dev": "pnpm -r publish:dev",
+    "publish:npm": "pnpm -r publish:npm",
+    "changeset": "changeset",
+    "upgrade:all": "pnpm upgrade --latest --interactive -r",
+    "version-packages": "changeset version",
+    "release": "pnpm build && changeset publish",
+    "clone:examples": "git clone https://github.com/GlobalArtInc/ecosystem-examples.git ecosystem-examples && pnpm install"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.7",
+    "rimraf": "^6.1.2",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@10.26.2",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GlobalArtInc/ecosystem.git"
+  },
+  "keywords": [
+    "nestjs",
+    "toolkit",
+    "swagger",
+    "typeorm",
+    "pagination",
+    "microservices"
+  ],
+  "author": "GlobalArt, Inc",
+  "license": "MIT",
+  "dependencies": {
+    "css-select": "6.0.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "css-select": "4.3.0"
+    },
+    "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "@parcel/watcher",
+      "@scarf/scarf",
+      "core-js",
+      "core-js-pure",
+      "esbuild",
+      "hiredis",
+      "protobufjs",
+      "sqlite3",
+      "unrs-resolver"
+    ]
+  }
+}

@@ -1,0 +1,124 @@
+---
+sidebar_position: 5
+---
+
+# @globalart/nestjs-unit-of-work
+
+The `@globalart/nestjs-unit-of-work` package provides a robust implementation of the Unit of Work pattern for NestJS applications using TypeORM. It simplifies transaction management by allowing you to scope database operations within a single transaction using either decorators or a manager service, leveraging `AsyncLocalStorage` to propagate the transaction context.
+
+## Installation
+
+```bash
+npm install @globalart/nestjs-unit-of-work
+```
+
+## Setup
+
+Import the `UnitOfWorkModule` in your root application module. It is a global module, so you only need to import it once.
+
+```typescript
+import { Module } from '@nestjs/common';
+import { UnitOfWorkModule } from '@globalart/nestjs-unit-of-work';
+
+@Module({
+  imports: [
+    UnitOfWorkModule.forRoot(),
+    // ... other modules
+  ],
+})
+export class AppModule {}
+```
+
+## Usage
+
+You can manage transactions in two ways: declaratively using the `@UOW` decorator or imperatively using the `UnitOfWorkManager`.
+
+### Declarative Transactions (@UOW)
+
+The easiest way to make a method transactional is to use the `@UOW` decorator. This automatically starts a transaction before the method executes and commits it afterwards. If an exception is thrown, the transaction is rolled back.
+
+```typescript
+import { Controller, Post, Body } from '@nestjs/common';
+import { UOW, IsolationLevel, UnitOfWorkManager } from '@globalart/nestjs-unit-of-work';
+import { UserEntity } from './user.entity';
+
+@Controller('users')
+export class UserController {
+  constructor(private readonly uowManager: UnitOfWorkManager) {}
+
+  @Post()
+  @UOW({ isolationLevel: IsolationLevel.SERIALIZABLE })
+  async createUser(@Body() dto: CreateUserDto) {
+    // IMPORTANT: Get the EntityManager from the current transaction context
+    const em = this.uowManager.getEntityManager();
+    const repo = em.getRepository(UserEntity);
+
+    const user = repo.create(dto);
+    return await repo.save(user);
+  }
+}
+```
+
+### Imperative Transactions (UnitOfWorkManager)
+
+For more granular control, or when you need to perform operations that don't map cleanly to a single method call, use `UnitOfWorkManager`.
+
+```typescript
+import { Injectable } from '@nestjs/common';
+import { UnitOfWorkManager, IsolationLevel } from '@globalart/nestjs-unit-of-work';
+import { UserEntity } from './user.entity';
+
+@Injectable()
+export class UserService {
+  constructor(private readonly uowManager: UnitOfWorkManager) {}
+
+  async createUserComplexFlow(dto: CreateUserDto) {
+    return this.uowManager.runInTransaction(async (uow) => {
+      // Access the transactional entity manager directly via uow.conn()
+      const em = uow.conn();
+      const repo = em.getRepository(UserEntity);
+
+      const user = repo.create(dto);
+      await repo.save(user);
+      
+      // ... perform other transactional operations
+      
+      return user;
+    }, IsolationLevel.READ_COMMITTED);
+  }
+}
+```
+
+## Important: Using Repositories
+
+When using `@InjectRepository()` from `@nestjs/typeorm`, the injected repository uses a **default, non-transactional connection**.
+
+To ensure your database operations participate in the active Unit of Work transaction, you **must** obtain the repository or entity manager from the current context:
+
+1.  **Inside `runInTransaction`**: Use `uow.conn().getRepository(Entity)`.
+2.  **Inside `@UOW` decorated methods**: Use `this.uowManager.getEntityManager().getRepository(Entity)`.
+
+If you use the standard `@InjectRepository` inside a transaction, those operations will run outside the transaction, leading to data inconsistencies and race conditions.
+
+## API Reference
+
+### UnitOfWorkManager
+
+*   `runInTransaction<T>(fn: (uow: TypeOrmUnitOfWork) => Promise<T>, isolationLevel?: IsolationLevel): Promise<T>`
+    Executes the provided function within a transaction.
+*   `getEntityManager(): EntityManager`
+    Returns the `EntityManager` for the current active transaction context, or the default manager if no transaction is active.
+
+### @UOW Decorator
+
+*   `@UOW(options?: { isolationLevel?: IsolationLevel })`
+    Wraps the decorated method in a transaction.
+
+### IsolationLevel
+
+Supported isolation levels:
+*   `READ_UNCOMMITTED`
+*   `READ_COMMITTED` (Default)
+*   `REPEATABLE_READ`
+*   `SERIALIZABLE`
+

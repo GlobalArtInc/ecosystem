@@ -1,0 +1,92 @@
+{
+  "name": "@globalart/nestjs-swagger",
+  "version": "1.2.7",
+  "description": "A simple documentation builder for NestJS Swagger Module",
+  "author": {
+    "name": "GlobalArt, Inc"
+  },
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GlobalArtInc/ecosystem.git#main"
+  },
+  "keywords": [
+    "nestjs",
+    "swagger",
+    "documentation"
+  ],
+  "scripts": {
+    "format": "prettier --write \"**/*.ts\"",
+    "test": "jest --runInBand --passWithNoTests",
+    "test:cov": "jest --coverage --passWithNoTests",
+    "coveralls": "yarn run test:cov --coverageReporters=text-lcov | coveralls",
+    "build": "tsdown",
+    "build:watch": "tsdown --watch",
+    "prepublishOnly": "npm run build",
+    "publish:dev": "npm publish --access public --tag dev",
+    "publish:npm": "release-it --config ../../.release-it.json"
+  },
+  "dependencies": {
+    "@nestjs/common": "11.1.13",
+    "@nestjs/core": "11.1.13",
+    "@nestjs/swagger": "^11.2.5",
+    "@nestjs/testing": "11.1.13",
+    "@nestjs/typeorm": "^11.0.0",
+    "mysql": "^2.18.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "25.2.1",
+    "coveralls": "^3.1.1",
+    "jest": "^30.2.0",
+    "prettier": "3.8.1",
+    "reflect-metadata": "^0.2.2",
+    "release-it": "19.2.4",
+    "rxjs": "^7.8.2",
+    "ts-jest": "29.4.6",
+    "ts-node": "^10.9.2",
+    "tsdown": "0.20.3",
+    "typeorm": "0.3.28",
+    "typescript": "^5.9.3"
+  },
+  "jest": {
+    "coveragePathIgnorePatterns": [
+      "src/__tests__"
+    ],
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".spec.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "coverageDirectory": "../coverage"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
