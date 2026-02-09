@@ -54,7 +54,7 @@ export interface IEnvelopeCommandJSON<
   meta: TMeta;
 }
 
-export abstract class BaseEnvelopeCommand<
+export abstract class BaseCommand<
   TName extends string,
   TPayload extends object = object,
   TMeta extends IMessageMetadata = IMessageMetadata,
@@ -81,5 +81,16 @@ export abstract class BaseEnvelopeCommand<
       payload: this.payload,
       meta: this.meta,
     };
+  }
+}
+
+const CREATE_USER_COMMAND = "CreateUser" as const;
+
+class CreateUser extends BaseCommand<
+  typeof CREATE_USER_COMMAND,
+  { name: string }
+> {
+  constructor(name: string) {
+    super(CREATE_USER_COMMAND, { name });
   }
 }
