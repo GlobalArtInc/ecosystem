@@ -1,4 +1,9 @@
 import { v4 } from "uuid";
+import {
+  type IEnvelope,
+  type IMessageMetadata,
+  BaseEnvelope,
+} from "./envelope";
 
 export type CommandProps<T> = Omit<T, "correlationId" | "commandId"> &
   Partial<Command>;
@@ -11,5 +16,52 @@ export abstract class Command {
   constructor(props: CommandProps<unknown>) {
     this.correlationId = props.correlationId ?? v4();
     this.commandId = props.commandId ?? v4();
+  }
+}
+
+export interface IEnvelopeCommand<
+  TName extends string,
+  TPayload extends object = object,
+  TMeta extends IMessageMetadata = IMessageMetadata,
+> extends IEnvelope<TPayload, TMeta> {
+  command: TName;
+}
+
+export interface IEnvelopeCommandJSON<
+  TName extends string,
+  TPayload extends object = object,
+  TMeta extends IMessageMetadata = IMessageMetadata,
+> {
+  id: string;
+  command: TName;
+  payload: TPayload;
+  meta: TMeta;
+}
+
+export abstract class BaseEnvelopeCommand<
+  TName extends string,
+  TPayload extends object = object,
+  TMeta extends IMessageMetadata = IMessageMetadata,
+> extends BaseEnvelope<TPayload, TMeta>
+  implements IEnvelopeCommand<TName, TPayload, TMeta> {
+  public readonly command: TName;
+
+  constructor(
+    command: TName,
+    payload: TPayload,
+    meta: TMeta = { keys: {}, headers: {} } as TMeta,
+    id = v4(),
+  ) {
+    super(payload, meta, id);
+    this.command = command;
+  }
+
+  toJSON(): IEnvelopeCommandJSON<TName, TPayload, TMeta> {
+    return {
+      id: this.id,
+      command: this.command,
+      payload: this.payload,
+      meta: this.meta,
+    };
   }
 }
