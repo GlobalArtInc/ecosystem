@@ -8,6 +8,8 @@ import { v4 } from "uuid";
 
 export type { IMessageMetadata as IEventMetadata } from "./envelope";
 
+const tasd = "asd";
+
 export const eventSchema = <
   TName extends string,
   TPayload extends z.ZodTypeAny,
@@ -53,6 +55,7 @@ export abstract class BaseEvent<
 {
   public readonly event: TName;
   public readonly timestamp: Date;
+  public readonly topic?: string;
 
   constructor(
     event: TName,
@@ -60,10 +63,12 @@ export abstract class BaseEvent<
     meta: TMeta = { keys: {}, headers: {} } as TMeta,
     id = v4(),
     timestamp = new Date(),
+    topic?: string,
   ) {
     super(payload, meta, id);
     this.event = event;
     this.timestamp = timestamp;
+    this.topic = topic;
   }
 
   toJSON(): IEventJSON<TName, TPayload, TMeta> {

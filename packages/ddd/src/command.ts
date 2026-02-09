@@ -26,10 +26,12 @@ export abstract class Command {
   public readonly commandId: string;
   public readonly correlationId: string;
   public readonly causationId?: string;
+  public readonly topic?: string;
 
   constructor(props: CommandProps<unknown>) {
     this.correlationId = props.correlationId ?? v4();
     this.commandId = props.commandId ?? v4();
+    this.topic = props.topic;
   }
 }
 
