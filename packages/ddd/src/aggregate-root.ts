@@ -1,6 +1,6 @@
 import { type BaseEvent } from "./event";
 
-export abstract class AggregateRoot<E extends BaseEvent> {
+export abstract class AggregateRoot<E extends BaseEvent<any, any, any>> {
   #domainEvents: E[] = [];
 
   get domainEvents() {

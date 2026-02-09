@@ -52,14 +52,14 @@ export abstract class BaseEvent<
   implements IEvent<TName, TPayload, TMeta>
 {
   public readonly event: TName;
-  public readonly timestamp: Date = new Date();
+  public readonly timestamp: Date;
 
   constructor(
     event: TName,
     payload: TPayload,
     meta: TMeta = { keys: {}, headers: {} } as TMeta,
     id = v4(),
-    timestamp: Date,
+    timestamp = new Date(),
   ) {
     super(payload, meta, id);
     this.event = event;
@@ -74,5 +74,11 @@ export abstract class BaseEvent<
       payload: this.payload,
       meta: this.meta,
     };
+  }
+}
+
+class Test extends BaseEvent<"Test", { name: string }> {
+  constructor(name: string) {
+    super("Test", { name });
   }
 }
