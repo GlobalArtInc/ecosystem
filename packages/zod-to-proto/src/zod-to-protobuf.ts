@@ -23,11 +23,13 @@ export const zodToProtobufService = (
 
   const messages = new Map<string, string[]>();
   const enums = new Map<string, string[]>();
+  const schemaToMessageName = new WeakMap<ZodTypeAny, string>();
 
   const context = {
     messages,
     enums,
     typePrefix: typePrefix || null,
+    schemaToMessageName,
   };
 
   const hasServices =

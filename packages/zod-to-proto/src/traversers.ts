@@ -44,6 +44,7 @@ export const traverseArray = ({
   enums,
   typePrefix,
   parentKey,
+  schemaToMessageName,
 }: {
   key: string;
   value: ZodArray<ZodTypeAny> | ZodSet<ZodTypeAny>;
@@ -51,14 +52,14 @@ export const traverseArray = ({
   enums: Map<string, string[]>;
   typePrefix: string | null;
   parentKey?: string;
+  schemaToMessageName?: WeakMap<ZodTypeAny, string>;
 }): ProtobufField[] => {
   const nestedValue =
     value instanceof ZodArray
       ? value.element
       : value instanceof ZodSet
         ? (value.def as unknown as ZodArrayDefinition).valueType
-        : // @ts-expect-error
-          (value.def as unknown as ZodArrayDefinition).element;
+        : (value as ZodArray<ZodTypeAny>).element;
 
   const singularKey = inflection.singularize(key);
   const elementFields = traverseKey({
@@ -70,6 +71,7 @@ export const traverseArray = ({
     isInArray: true,
     typePrefix,
     parentKey: nestedValue instanceof ZodObject ? parentKey : undefined,
+    schemaToMessageName,
   });
   return elementFields.map((field) => ({
     ...field,
@@ -97,6 +99,7 @@ export const traverseMap = ({
   enums,
   typePrefix,
   parentKey,
+  schemaToMessageName,
 }: {
   key: string;
   value: ZodMap<ZodTypeAny, ZodTypeAny>;
@@ -104,6 +107,7 @@ export const traverseMap = ({
   enums: Map<string, string[]>;
   typePrefix: string | null;
   parentKey?: string;
+  schemaToMessageName?: WeakMap<ZodTypeAny, string>;
 }): ProtobufField[] => {
   const mapDef = value.def as ZodMapDefinition;
 
@@ -116,6 +120,7 @@ export const traverseMap = ({
     isInArray: true,
     typePrefix,
     parentKey,
+    schemaToMessageName,
   });
   const valueType = traverseKey({
     key: inflection.singularize(key),
@@ -126,6 +131,7 @@ export const traverseMap = ({
     isInArray: true,
     typePrefix,
     parentKey,
+    schemaToMessageName,
   });
 
   if (!keyType[0] || keyType.length !== 1) {
@@ -164,6 +170,7 @@ export const traverseRecord = ({
   enums,
   typePrefix,
   parentKey,
+  schemaToMessageName,
 }: {
   key: string;
   value: ZodRecord;
@@ -171,6 +178,7 @@ export const traverseRecord = ({
   enums: Map<string, string[]>;
   typePrefix: string | null;
   parentKey?: string;
+  schemaToMessageName?: WeakMap<ZodTypeAny, string>;
 }): ProtobufField[] => {
   const recordDef = value.def as unknown as ZodRecordDefinition;
 
@@ -183,6 +191,7 @@ export const traverseRecord = ({
     isInArray: true,
     typePrefix,
     parentKey,
+    schemaToMessageName,
   });
   const valueType = traverseKey({
     key: inflection.singularize(key),
@@ -193,6 +202,7 @@ export const traverseRecord = ({
     isInArray: true,
     typePrefix,
     parentKey,
+    schemaToMessageName,
   });
 
   if (!keyType[0] || keyType.length !== 1) {
@@ -235,6 +245,7 @@ export const traverseKey = ({
   isInArray,
   typePrefix,
   parentKey,
+  schemaToMessageName,
 }: {
   key: string;
   value: unknown;
@@ -244,6 +255,7 @@ export const traverseKey = ({
   isInArray: boolean;
   typePrefix: string | null;
   parentKey?: string;
+  schemaToMessageName?: WeakMap<ZodTypeAny, string>;
 }): ProtobufField[] => {
   if (!value) {
     return [];
@@ -259,6 +271,7 @@ export const traverseKey = ({
       isInArray,
       typePrefix,
       parentKey,
+      schemaToMessageName,
     });
   }
 
@@ -270,6 +283,7 @@ export const traverseKey = ({
       enums,
       typePrefix,
       parentKey,
+      schemaToMessageName,
     });
   }
 
@@ -281,6 +295,7 @@ export const traverseKey = ({
       enums,
       typePrefix,
       parentKey,
+      schemaToMessageName,
     });
   }
 
@@ -292,33 +307,59 @@ export const traverseKey = ({
       enums,
       typePrefix,
       parentKey,
+      schemaToMessageName,
     });
   }
 
   const optional = isOptional && !isInArray ? "optional" : null;
 
   if (value instanceof ZodObject) {
-    let messageName = toPascalCase({ value: key });
-    if (parentKey) {
-      const isParentAlreadyPascalCase = /^[A-Z][a-zA-Z0-9]*$/.test(parentKey);
-      if (isParentAlreadyPascalCase) {
-        messageName = `${parentKey}${messageName}`;
-      } else {
-        const parentMessageName = toPascalCase({ value: parentKey });
-        messageName = `${parentMessageName}${messageName}`;
-      }
+    const existingName = schemaToMessageName?.get(value as ZodTypeAny);
+    if (existingName !== undefined) {
+      return [
+        {
+          types: [optional, existingName],
+          name: key,
+        },
+      ];
     }
-    if (typePrefix) {
-      messageName = `${typePrefix}${messageName}`;
+    const keyPascal = toPascalCase({ value: key });
+    const shortName = typePrefix ? `${typePrefix}${keyPascal}` : keyPascal;
+    const longName = (() => {
+      let long = keyPascal;
+      if (parentKey) {
+        const isParentAlreadyPascalCase =
+          /^[A-Z][a-zA-Z0-9]*$/.test(parentKey);
+        long = isParentAlreadyPascalCase
+          ? `${parentKey}${long}`
+          : `${toPascalCase({ value: parentKey })}${long}`;
+      }
+      return typePrefix ? `${typePrefix}${long}` : long;
+    })();
+    let messageName: string;
+    if (!messages.has(shortName) && !enums.has(shortName)) {
+      messageName = shortName;
+    } else if (
+      parentKey &&
+      (parentKey.endsWith(keyPascal) || longName === `${parentKey}${keyPascal}`)
+    ) {
+      const suffix = "Item";
+      messageName = !messages.has(shortName + suffix) && !enums.has(shortName + suffix)
+        ? shortName + suffix
+        : longName;
+    } else {
+      messageName = longName;
     }
     const nestedMessageFields = traverseSchema({
-      schema: value,
+      schema: value as ZodTypeAny,
       messages,
       enums,
       typePrefix,
       parentKey: messageName,
+      schemaToMessageName,
     });
     messages.set(messageName, nestedMessageFields);
+    schemaToMessageName?.set(value as ZodTypeAny, messageName);
     return [
       {
         types: [optional, messageName],
@@ -438,6 +479,7 @@ export const traverseKey = ({
         isInArray,
         typePrefix,
         parentKey,
+        schemaToMessageName,
       });
     });
 
@@ -493,12 +535,14 @@ export const traverseSchema = ({
   enums,
   typePrefix,
   parentKey,
+  schemaToMessageName,
 }: {
   schema: ZodTypeAny;
   messages: Map<string, string[]>;
   enums: Map<string, string[]>;
   typePrefix: string | null;
   parentKey?: string;
+  schemaToMessageName?: WeakMap<ZodTypeAny, string>;
 }): string[] => {
   if (
     !schema ||
@@ -510,7 +554,7 @@ export const traverseSchema = ({
     return [];
   }
 
-  const zodObject = schema as ZodObject<any>;
+  const zodObject = schema as ZodObject<Record<string, ZodTypeAny>>;
   const fields = Object.entries(zodObject.shape).flatMap(([key, value]) => {
     return traverseKey({
       key,
@@ -521,6 +565,7 @@ export const traverseSchema = ({
       isInArray: false,
       typePrefix,
       parentKey,
+      schemaToMessageName,
     });
   });
 

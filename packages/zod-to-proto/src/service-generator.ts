@@ -20,6 +20,8 @@ interface ServiceGenerationContext {
   enums: Map<string, string[]>;
   /** Prefix for type names or null if prefix is not used */
   typePrefix: string | null;
+  /** Map of schema instance to message name for deduplication */
+  schemaToMessageName?: WeakMap<ZodTypeAny, string>;
 }
 
 /**
@@ -157,33 +159,38 @@ const processServiceMethod = (
   method: ServiceMethod,
   context: ServiceGenerationContext,
 ): { requestName: string; responseName: string } => {
-  const { messages, enums, typePrefix } = context;
+  const { messages, enums, typePrefix, schemaToMessageName } = context;
 
-  const requestName = generateRequestMessageName(method.name, typePrefix);
-  const responseName = generateResponseMessageName(method.name, typePrefix);
-
-  if (!messages.has(requestName)) {
-    const requestSchema = ensureZodObject(method.request);
+  const requestSchema = ensureZodObject(method.request);
+  let requestName = schemaToMessageName?.get(requestSchema);
+  if (requestName === undefined) {
+    requestName = generateRequestMessageName(method.name, typePrefix);
     const requestFields = traverseSchema({
       schema: requestSchema,
       messages,
       enums,
       typePrefix,
       parentKey: requestName,
+      schemaToMessageName,
     });
     messages.set(requestName, requestFields);
+    schemaToMessageName?.set(requestSchema, requestName);
   }
 
-  if (!messages.has(responseName)) {
-    const responseSchema = ensureZodObject(method.response);
+  const responseSchema = ensureZodObject(method.response);
+  let responseName = schemaToMessageName?.get(responseSchema);
+  if (responseName === undefined) {
+    responseName = generateResponseMessageName(method.name, typePrefix);
     const responseFields = traverseSchema({
       schema: responseSchema,
       messages,
       enums,
       typePrefix,
       parentKey: responseName,
+      schemaToMessageName,
     });
     messages.set(responseName, responseFields);
+    schemaToMessageName?.set(responseSchema, responseName);
   }
 
   return { requestName, responseName };
