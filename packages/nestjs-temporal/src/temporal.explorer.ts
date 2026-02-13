@@ -6,7 +6,11 @@ import {
   OnModuleDestroy,
   OnModuleInit,
 } from "@nestjs/common";
-import { DiscoveryService, MetadataScanner, ExternalContextCreator } from "@nestjs/core";
+import {
+  DiscoveryService,
+  MetadataScanner,
+  ExternalContextCreator,
+} from "@nestjs/core";
 import { InstanceWrapper } from "@nestjs/core/injector/instance-wrapper";
 import { lastValueFrom, isObservable } from "rxjs";
 import {
@@ -22,7 +26,10 @@ import {
   TEMPORAL_MODULE_OPTIONS_TOKEN,
   type TemporalModuleOptions,
 } from "./temporal.module-definition";
-import { TEMPORAL_ARGS_METADATA, TEMPORAL_CONTEXT_METADATA } from "./constants/temporal.constants";
+import {
+  TEMPORAL_ARGS_METADATA,
+  TEMPORAL_CONTEXT_METADATA,
+} from "./constants/temporal.constants";
 import { TemporalParamsFactory } from "./temporal-params.factory";
 import { Context } from "@temporalio/activity";
 
@@ -40,14 +47,14 @@ export class TemporalExplorer
   @Inject(TEMPORAL_MODULE_OPTIONS_TOKEN)
   private readonly options!: TemporalModuleOptions;
   private readonly logger = new Logger(TemporalExplorer.name);
-  private worker?: Worker;
-  private workerRunPromise?: Promise<void>;
+  private workers?: Worker[];
+  private workerRunPromises?: Promise<void>[];
 
   constructor(
     private readonly discoveryService: DiscoveryService,
     private readonly metadataAccessor: TemporalMetadataAccessor,
     private readonly metadataScanner: MetadataScanner,
-    private readonly externalContextCreator: ExternalContextCreator
+    private readonly externalContextCreator: ExternalContextCreator,
   ) {}
 
   /**
@@ -61,17 +68,17 @@ export class TemporalExplorer
    * Shuts down the Temporal worker when the module is destroyed.
    */
   async onModuleDestroy(): Promise<void> {
-    if (!this.worker) {
+    if (!this.workers) {
       return;
     }
 
     try {
-      this.worker.shutdown();
-      if (this.workerRunPromise) {
-        await this.workerRunPromise;
+      this.workers.forEach((worker) => worker.shutdown());
+      if (this.workerRunPromises) {
+        await Promise.all(this.workers.map((worker) => worker.run()));
       }
     } catch (err: unknown) {
-      this.logger.warn("Temporal worker was not cleanly shutdown.", {
+      this.logger.warn("Temporal workers were not cleanly shutdown.", {
         err: err instanceof Error ? err.message : String(err),
       });
     }
@@ -81,8 +88,8 @@ export class TemporalExplorer
    * Starts the Temporal worker when the application is fully bootstrapped.
    */
   onApplicationBootstrap(): void {
-    if (this.worker) {
-      this.workerRunPromise = this.worker.run();
+    if (this.workers) {
+      this.workerRunPromises = this.workers.map((worker) => worker.run());
     }
   }
 
@@ -96,9 +103,9 @@ export class TemporalExplorer
     const connectionOptions = this.getNativeConnectionOptions();
 
     // Worker must have a taskQueue configured
-    if (!workerConfig.taskQueue) {
+    if (workerConfig.some((workerConfig) => !workerConfig.taskQueue)) {
       this.logger.warn(
-        "Temporal worker configuration missing taskQueue. Worker will not be created."
+        "Temporal worker configuration missing taskQueue. Worker will not be created.",
       );
       return;
     }
@@ -118,22 +125,25 @@ export class TemporalExplorer
 
     if (connectionOptions) {
       this.logger.verbose("Connecting to the Temporal server");
-      workerOptions.connection = await NativeConnection.connect(
-        connectionOptions
-      );
+      workerOptions.connection =
+        await NativeConnection.connect(connectionOptions);
     }
 
     this.logger.verbose("Creating a new Worker");
-    this.worker = await Worker.create({
-      ...workerConfig,
-      ...workerOptions,
-    });
+    this.workers = await Promise.all(
+      workerConfig.map(async (workerConfig) => {
+        return Worker.create({
+          ...workerConfig,
+          ...workerOptions,
+        });
+      }),
+    );
   }
 
   /**
    * Gets the worker configuration options.
    */
-  getWorkerConfigOptions(): WorkerOptions {
+  getWorkerConfigOptions(): WorkerOptions[] {
     return this.options.workerOptions;
   }
 
@@ -191,19 +201,19 @@ export class TemporalExplorer
         .forEach((key) => {
           if (this.metadataAccessor.isActivity(instance[key])) {
             activityMethods[key] = (activityMethods[key] || []).concat(
-              instance.constructor.name
+              instance.constructor.name,
             );
           }
         });
     });
 
     const violations = Object.entries(activityMethods).filter(
-      ([, classes]) => classes.length > 1
+      ([, classes]) => classes.length > 1,
     );
 
     if (violations.length > 0) {
       const message = `Activity names must be unique across all Activity classes. Identified activities with conflicting names: ${JSON.stringify(
-        Object.fromEntries(violations)
+        Object.fromEntries(violations),
       )}`;
       this.logger.error(message);
       throw new Error(message);
@@ -225,7 +235,7 @@ export class TemporalExplorer
           this.metadataAccessor.isActivities(
             !wrapper.metatype || wrapper.inject
               ? wrapper.instance?.constructor
-              : wrapper.metatype
+              : wrapper.metatype,
           ) &&
           (!activityClasses ||
             activityClasses.some(
@@ -233,8 +243,8 @@ export class TemporalExplorer
                 cls === wrapper.metatype ||
                 (cls instanceof Object &&
                   "metatype" in cls &&
-                  (cls as InstanceWrapper).metatype === wrapper.metatype)
-            ))
+                  (cls as InstanceWrapper).metatype === wrapper.metatype),
+            )),
       );
 
     activities.forEach((wrapper: InstanceWrapper) => {
@@ -248,12 +258,12 @@ export class TemporalExplorer
           if (this.metadataAccessor.isActivity(instance[key])) {
             if (isRequestScoped) {
               this.logger.warn(
-                `Request-scoped activities are not yet fully supported. Activity "${key}" from class "${instance.constructor.name}" may not work correctly.`
+                `Request-scoped activities are not yet fully supported. Activity "${key}" from class "${instance.constructor.name}" may not work correctly.`,
               );
             }
             const paramsFactory = new TemporalParamsFactory(
               instance,
-              instance[key]
+              instance[key],
             );
 
             const handler = this.externalContextCreator.create(
@@ -265,9 +275,9 @@ export class TemporalExplorer
               undefined,
               undefined,
               undefined,
-              "temporal"
+              "temporal",
             );
-            
+
             activitiesMethod[key] = async (...args: unknown[]) => {
               const result = handler(...args, Context.current().info);
 
@@ -276,7 +286,7 @@ export class TemporalExplorer
                 : await result;
             };
           }
-        }
+        },
       );
     });
     return activitiesMethod;

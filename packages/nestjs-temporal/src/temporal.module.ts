@@ -12,7 +12,6 @@ import { createClientAsyncProvider } from "./utils";
 import {
   ConfigurableModuleClass,
   TEMPORAL_MODULE_ASYNC_OPTIONS_TYPE,
-  TEMPORAL_MODULE_OPTIONS_TYPE,
 } from "./temporal.module-definition";
 
 /**
@@ -31,15 +30,19 @@ export class TemporalModule extends ConfigurableModuleClass {
    * @returns Dynamic module configuration
    */
   static registerWorkerAsync(
-    options: typeof TEMPORAL_MODULE_ASYNC_OPTIONS_TYPE
+    options: typeof TEMPORAL_MODULE_ASYNC_OPTIONS_TYPE,
   ): DynamicModule {
     const superDynamicModule = super.registerWorkerAsync(options);
     superDynamicModule.imports?.push(DiscoveryModule);
     superDynamicModule.providers?.push(
       TemporalExplorer,
-      TemporalMetadataAccessor
+      TemporalMetadataAccessor,
     );
-    superDynamicModule.exports?.push(TemporalExplorer, TemporalMetadataAccessor, DiscoveryModule);
+    superDynamicModule.exports?.push(
+      TemporalExplorer,
+      TemporalMetadataAccessor,
+      DiscoveryModule,
+    );
 
     return {
       ...superDynamicModule,
@@ -55,10 +58,10 @@ export class TemporalModule extends ConfigurableModuleClass {
    * @returns Dynamic module configuration
    */
   static registerClientAsync(
-    asyncSharedWorkflowClientOptions: SharedWorkflowClientOptions
+    asyncSharedWorkflowClientOptions: SharedWorkflowClientOptions,
   ): DynamicModule {
     const providers = createClientAsyncProvider(
-      asyncSharedWorkflowClientOptions
+      asyncSharedWorkflowClientOptions,
     );
 
     return {

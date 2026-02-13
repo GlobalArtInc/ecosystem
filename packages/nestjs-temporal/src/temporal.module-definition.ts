@@ -2,11 +2,11 @@ import {
   NativeConnectionOptions,
   RuntimeOptions,
   WorkerOptions,
-} from '@temporalio/worker';
-import { ConfigurableModuleBuilder } from '@nestjs/common';
+} from "@temporalio/worker";
+import { ConfigurableModuleBuilder } from "@nestjs/common";
 
 export interface TemporalModuleOptions {
-  workerOptions: WorkerOptions;
+  workerOptions: WorkerOptions[];
   connectionOptions?: NativeConnectionOptions;
   runtimeOptions?: RuntimeOptions;
   activityClasses?: object[];
@@ -19,5 +19,5 @@ export const {
   OPTIONS_TYPE: TEMPORAL_MODULE_OPTIONS_TYPE,
   ASYNC_OPTIONS_TYPE: TEMPORAL_MODULE_ASYNC_OPTIONS_TYPE,
 } = new ConfigurableModuleBuilder<TemporalModuleOptions>()
-  .setClassMethodName('registerWorker')
+  .setClassMethodName("registerWorker")
   .build();
