@@ -1,4 +1,8 @@
-import { Injectable, OnModuleInit } from "@nestjs/common";
+import {
+  Injectable,
+  OnApplicationBootstrap,
+  OnModuleInit,
+} from "@nestjs/common";
 import {
   InjectTypeormOutboxBroker,
   InjectTypeormOutboxCronConfig,
@@ -13,7 +17,7 @@ import { DataSource } from "typeorm";
 import { CronExpression } from "./typeorm-outbox.enums";
 
 @Injectable()
-export class TypeormOutboxCronService implements OnModuleInit {
+export class TypeormOutboxCronService implements OnApplicationBootstrap {
   constructor(
     @InjectTypeormOutboxBroker()
     private readonly brokerClient: ClientProxy,
@@ -22,7 +26,7 @@ export class TypeormOutboxCronService implements OnModuleInit {
     private readonly dataSource: DataSource,
   ) {}
 
-  onModuleInit() {
+  onApplicationBootstrap() {
     this.validateBrokerClient();
     const cronJob = new CronJob(
       this.moduleConfig.cronExpression ?? CronExpression.EVERY_SECOND,
@@ -30,9 +34,7 @@ export class TypeormOutboxCronService implements OnModuleInit {
         this.executeCronJob();
       },
     );
-    setTimeout(() => {
-      cronJob.start();
-    }, 5000);
+    cronJob.start();
   }
 
   private validateBrokerClient() {
