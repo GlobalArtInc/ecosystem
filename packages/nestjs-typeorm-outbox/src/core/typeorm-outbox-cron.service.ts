@@ -1,5 +1,8 @@
 import { Injectable, OnModuleInit } from "@nestjs/common";
-import { InjectTypeormOutboxBroker, InjectTypeormOutboxCronConfig } from "./typeorm-outbox.di-tokens";
+import {
+  InjectTypeormOutboxBroker,
+  InjectTypeormOutboxCronConfig,
+} from "./typeorm-outbox.di-tokens";
 import { hashStringToInt } from "@globalart/text-utils";
 import { TypeormOutboxEntity } from "./typeorm-outbox.entity";
 import { firstValueFrom } from "rxjs";
@@ -17,31 +20,42 @@ export class TypeormOutboxCronService implements OnModuleInit {
     @InjectTypeormOutboxCronConfig()
     private readonly moduleConfig: TypeormOutboxRegisterCronModuleOptions,
     private readonly dataSource: DataSource,
-  ) { }
+  ) {}
 
   onModuleInit() {
     this.validateBrokerClient();
-    const cronJob = new CronJob(this.moduleConfig.cronExpression ?? CronExpression.EVERY_SECOND, () => {
-      this.executeCronJob();
-    });
-    cronJob.start();
+    const cronJob = new CronJob(
+      this.moduleConfig.cronExpression ?? CronExpression.EVERY_SECOND,
+      () => {
+        this.executeCronJob();
+      },
+    );
+    setTimeout(() => {
+      cronJob.start();
+    }, 5000);
   }
 
   private validateBrokerClient() {
     const brokerConfig = this.moduleConfig.brokerConfig;
-    if (![Transport.KAFKA, Transport.NATS, Transport.MQTT].includes(brokerConfig?.transport as Transport)) {
-      throw new Error(`[TypeormOutboxCronService] Broker config must be an instance of KafkaOptions, NatsOptions, or MqttOptions`);
+    if (
+      ![Transport.KAFKA, Transport.NATS, Transport.MQTT].includes(
+        brokerConfig?.transport as Transport,
+      )
+    ) {
+      throw new Error(
+        `[TypeormOutboxCronService] Broker config must be an instance of KafkaOptions, NatsOptions, or MqttOptions`,
+      );
     }
   }
 
   private async executeCronJob() {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
-    const lockKey = hashStringToInt('typeorm-outbox-cron-lock');
+    const lockKey = hashStringToInt("typeorm-outbox-cron-lock");
 
     try {
       const lockResult = await queryRunner.query(
-        'SELECT pg_try_advisory_lock($1) as locked',
+        "SELECT pg_try_advisory_lock($1) as locked",
         [lockKey],
       );
 
@@ -49,14 +63,14 @@ export class TypeormOutboxCronService implements OnModuleInit {
         return;
       }
       try {
-        await queryRunner.startTransaction('REPEATABLE READ');
-        
+        await queryRunner.startTransaction("REPEATABLE READ");
+
         const entities = await queryRunner.manager.find(TypeormOutboxEntity, {
           order: {
-            createdAt: 'ASC',
+            createdAt: "ASC",
           },
         });
-        
+
         for (const entity of entities) {
           await firstValueFrom(
             this.brokerClient.emit(entity.destinationTopic, {
@@ -73,7 +87,7 @@ export class TypeormOutboxCronService implements OnModuleInit {
         await queryRunner.rollbackTransaction();
         throw error;
       } finally {
-        await queryRunner.query('SELECT pg_advisory_unlock($1)', [lockKey]);
+        await queryRunner.query("SELECT pg_advisory_unlock($1)", [lockKey]);
       }
     } finally {
       await queryRunner.release();
