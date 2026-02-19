@@ -44,6 +44,14 @@ export class JsonFormatter extends BaseFormatter {
       result.trace = entry.trace;
     }
 
+    if (entry.traceId) {
+      result.traceId = entry.traceId;
+    }
+
+    if (entry.spanId) {
+      result.spanId = entry.spanId;
+    }
+
     return result;
   }
 }

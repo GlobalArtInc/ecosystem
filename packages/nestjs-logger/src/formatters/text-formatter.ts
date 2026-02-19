@@ -23,8 +23,16 @@ export class TextFormatter extends BaseFormatter {
     this.addContext(parts, entry);
     this.addMessage(parts, entry);
     this.addMetadata(parts, entry);
+    this.addTraceIds(parts, entry);
 
     return parts;
+  }
+
+  private addTraceIds(parts: string[], entry: LogEntry): void {
+    if (entry.traceId || entry.spanId) {
+      const ids = [entry.traceId, entry.spanId].filter(Boolean).join("/");
+      parts.push(this.colorize(`[${ids}]`, "magenta"));
+    }
   }
 
   private addTimestamp(parts: string[], entry: LogEntry): void {

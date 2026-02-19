@@ -30,13 +30,17 @@ export interface LogEntry {
   readonly context?: string;
   readonly metadata?: Record<string, unknown>;
   readonly trace?: string;
+  readonly traceId?: string;
+  readonly spanId?: string;
 }
 
 export interface LogOptions {
-  message: any;
+  message: string;
   context?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
   trace?: string;
+  traceId?: string;
+  spanId?: string;
 }
 
 // HTTP Logging Interfaces
@@ -66,6 +70,8 @@ export interface HttpRequestLogEntry {
   readonly res: HttpResponse;
   readonly responseTime: number;
   readonly msg: string;
+  readonly traceId?: string;
+  readonly spanId?: string;
 }
 
 // Configuration Interfaces
