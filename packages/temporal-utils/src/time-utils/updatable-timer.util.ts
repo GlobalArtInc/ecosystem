@@ -1,5 +1,3 @@
-import * as wf from "@temporalio/workflow";
-
 // // example usage
 // export async function countdownWorkflow(): Promise<void> {
 //   const target = Date.now() + 24 * 60 * 60 * 1000; // 1 day!!!
@@ -14,6 +12,8 @@ import * as wf from "@temporalio/workflow";
 //   await timer; // if you send in a signal with a new time, this timer will resolve earlier!
 //   console.log('countdown done!');
 // }
+
+import { condition } from "@temporalio/workflow";
 
 /**
  * A timer that can be updated with a new deadline.
@@ -31,7 +31,7 @@ export class UpdatableTimer implements PromiseLike<void> {
     while (true) {
       this.deadlineUpdated = false;
       if (
-        !(await wf.condition(
+        !(await condition(
           () => this.deadlineUpdated,
           this.#deadline - Date.now(),
         ))

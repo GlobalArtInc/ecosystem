@@ -1,4 +1,4 @@
-import * as wf from "@temporalio/workflow";
+import { sleep } from "@temporalio/workflow";
 import { differenceInMilliseconds } from "date-fns";
 
 /**
@@ -7,7 +7,7 @@ import { differenceInMilliseconds } from "date-fns";
  *
  * @param futureDate future Date to wake up at. give a string if you prefer
  * @param fromDate optional - Date to start from, if not today
- * @returns wf.sleep with the right number of milliseconds
+ * @returns sleep with the right number of milliseconds
  */
 export async function sleepUntil(
   futureDate: Date | string,
@@ -17,5 +17,5 @@ export async function sleepUntil(
     new Date(futureDate),
     fromDate,
   );
-  return wf.sleep(timeUntilDate);
+  return sleep(timeUntilDate);
 }
