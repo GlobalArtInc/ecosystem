@@ -6,7 +6,7 @@ import {
 import { ConfigurableModuleBuilder } from "@nestjs/common";
 
 export interface TemporalModuleOptions {
-  workerOptions: WorkerOptions[];
+  workerOptions: WorkerOptions;
   connectionOptions?: NativeConnectionOptions;
   runtimeOptions?: RuntimeOptions;
   activityClasses?: object[];
