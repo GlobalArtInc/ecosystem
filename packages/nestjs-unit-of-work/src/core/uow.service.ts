@@ -9,7 +9,7 @@ let unitOfWorkManagerRef: UnitOfWorkManager | null = null;
 export function getUnitOfWorkManager(): UnitOfWorkManager {
   if (!unitOfWorkManagerRef) {
     throw new Error(
-      "UnitOfWorkModule not initialized. Ensure UnitOfWorkModule.forRoot() is imported in your app."
+      'UnitOfWorkModule not initialized. Ensure UnitOfWorkModule.forRoot() is imported in your app.',
     );
   }
   return unitOfWorkManagerRef;
@@ -36,7 +36,7 @@ export class UnitOfWorkManager implements OnModuleInit {
 
   getEntityManager(): EntityManager {
     const uow = this.context.get();
-    if (uow && uow.isActive) {
+    if (uow?.isActive) {
       return uow.conn();
     }
     return this.dataSource.manager;

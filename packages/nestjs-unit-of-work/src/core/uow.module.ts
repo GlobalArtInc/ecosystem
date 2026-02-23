@@ -1,19 +1,24 @@
-import { DynamicModule, Module, Global, OnModuleInit } from "@nestjs/common";
-import { UnitOfWorkManager } from "./uow.service";
-import { UnitOfWorkContext } from "./uow.context";
-import { UnitOfWorkInterceptor } from "../interceptors/uow.interceptor";
-import { patchTypeORMRepository } from "./repository.patch";
+import {
+  DynamicModule,
+  Global,
+  Module,
+  OnModuleInit,
+} from '@nestjs/common';
+import { UnitOfWorkManager } from './uow.service';
+import { UnitOfWorkContext } from './uow.context';
+import { UnitOfWorkInterceptor } from '../interceptors/uow.interceptor';
+import { patchTypeORMRepository } from './repository.patch';
 
 const providers = [
   UnitOfWorkManager,
   UnitOfWorkContext,
-  UnitOfWorkInterceptor
-]
+  UnitOfWorkInterceptor,
+];
 
 @Global()
 @Module({})
 export class UnitOfWorkModule implements OnModuleInit {
-  onModuleInit() {
+  onModuleInit(): void {
     patchTypeORMRepository();
   }
 
@@ -22,7 +27,7 @@ export class UnitOfWorkModule implements OnModuleInit {
       global: true,
       module: UnitOfWorkModule,
       providers,
-      exports: [...providers],
-    }
+      exports: providers,
+    };
   }
 }

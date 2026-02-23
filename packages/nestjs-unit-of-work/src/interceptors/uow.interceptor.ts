@@ -16,7 +16,10 @@ export class UnitOfWorkInterceptor implements NestInterceptor {
     private readonly uowManager: UnitOfWorkManager,
   ) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler,
+  ): Observable<unknown> {
     const uowMetadata = this.reflector.getAllAndOverride<UowOptions>(
       UOW_METADATA_KEY,
       [context.getHandler(), context.getClass()],
@@ -27,10 +30,10 @@ export class UnitOfWorkInterceptor implements NestInterceptor {
     }
 
     return from(
-      this.uowManager.runInTransaction(async () => {
-        return await lastValueFrom(next.handle());
-      }, uowMetadata.isolationLevel),
+      this.uowManager.runInTransaction(
+        async () => lastValueFrom(next.handle()),
+        uowMetadata.isolationLevel,
+      ),
     );
   }
 }
-

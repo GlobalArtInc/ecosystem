@@ -6,7 +6,7 @@ export const uowStorage = new AsyncLocalStorage<TypeOrmUnitOfWork>();
 
 @Injectable()
 export class UnitOfWorkContext {
-  run(uow: TypeOrmUnitOfWork, callback: () => any) {
+  run<T>(uow: TypeOrmUnitOfWork, callback: () => T): T {
     return uowStorage.run(uow, callback);
   }
 
