@@ -45,14 +45,14 @@
     "publish:npm": "release-it --config ../../.release-it.json"
   },
   "dependencies": {
-    "@globalart/text-utils": "^1.0.5",
-    "@nestjs/common": "11.1.13",
-    "@nestjs/core": "11.1.13",
-    "@nestjs/microservices": "^11.1.12",
+    "@globalart/ddd": "^1.2.7",
+    "@globalart/text-utils": "^1.0.6",
+    "@nestjs/common": "11.1.14",
+    "@nestjs/core": "11.1.14",
+    "@nestjs/microservices": "^11.1.14",
     "@nestjs/typeorm": "^11.0.0",
-    "@globalart/ddd": "^1.1.8",
-    "typeorm": "^0.3.28",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "typeorm": "^0.3.28"
   },
   "devDependencies": {
     "@types/node": "25.3.0",

@@ -47,11 +47,11 @@
     "publish:npm": "release-it --config ../../.release-it.json"
   },
   "dependencies": {
-    "@nestjs/common": "11.1.13",
-    "@nestjs/core": "11.1.13",
-    "@nestjs/microservices": "11.1.13",
-    "@nestjs/swagger": "^11.2.5",
-    "@nestjs/testing": "11.1.13",
+    "@nestjs/common": "11.1.14",
+    "@nestjs/core": "11.1.14",
+    "@nestjs/microservices": "11.1.14",
+    "@nestjs/swagger": "^11.2.6",
+    "@nestjs/testing": "11.1.14",
     "@nestjs/typeorm": "^11.0.0",
     "mysql": "^2.18.1"
   },
