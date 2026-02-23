@@ -1,15 +1,34 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 import { IsolationLevel } from '../enums/uow.enums';
 import { TypeOrmUnitOfWork } from './uow-typeorm.service';
 import { UnitOfWorkContext } from './uow.context';
 
+let unitOfWorkManagerRef: UnitOfWorkManager | null = null;
+
+export function getUnitOfWorkManager(): UnitOfWorkManager {
+  if (!unitOfWorkManagerRef) {
+    throw new Error(
+      "UnitOfWorkModule not initialized. Ensure UnitOfWorkModule.forRoot() is imported in your app."
+    );
+  }
+  return unitOfWorkManagerRef;
+}
+
+export function setUnitOfWorkManager(manager: UnitOfWorkManager): void {
+  unitOfWorkManagerRef = manager;
+}
+
 @Injectable()
-export class UnitOfWorkManager {
+export class UnitOfWorkManager implements OnModuleInit {
   constructor(
     private readonly dataSource: DataSource,
     private readonly context: UnitOfWorkContext,
   ) {}
+
+  onModuleInit(): void {
+    setUnitOfWorkManager(this);
+  }
 
   create(): TypeOrmUnitOfWork {
     return new TypeOrmUnitOfWork(this.dataSource);
