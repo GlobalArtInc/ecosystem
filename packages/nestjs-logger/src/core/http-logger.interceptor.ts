@@ -108,18 +108,6 @@ export class HttpLoggerInterceptor implements NestInterceptor {
             errorMessage || "request failed"
           );
           this.logger.logHttpRequest(entry);
-
-          const baseEntry = this.createLogEntry(
-            request,
-            response,
-            requestId,
-            startTime
-          );
-          this.logger.error({
-            ...baseEntry,
-            message: errorMessage || baseEntry.message,
-            trace: errorTrace,
-          });
         } else {
           const baseEntry = this.createLogEntry(
             request,
