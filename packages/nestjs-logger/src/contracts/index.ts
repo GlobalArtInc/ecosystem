@@ -19,8 +19,10 @@ export interface ILogFormatter {
   formatHttpRequest(entry: HttpRequestLogEntry): string;
 }
 
+export type LogLevel = "error" | "warn" | "info" | "debug" | "verbose";
+
 export interface ILogWriter {
-  write(formattedLog: string): void;
+  write(formattedLog: string, level?: LogLevel): void;
 }
 
 export interface IContextResolver {

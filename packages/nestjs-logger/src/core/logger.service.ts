@@ -14,6 +14,15 @@ import type {
 } from "../types/index";
 import { getOpenTelemetryTraceIds } from "../utils/opentelemetry-trace";
 
+const PINO_LEVEL_TO_LOG_LEVEL: Record<number, LogLevel> = {
+  60: "error",
+  50: "error",
+  40: "warn",
+  30: "info",
+  20: "debug",
+  10: "verbose",
+};
+
 @Injectable()
 export class LoggerService implements NestLoggerService, ILogger {
   private context?: string;
@@ -52,7 +61,8 @@ export class LoggerService implements NestLoggerService, ILogger {
   logHttpRequest(entry: HttpRequestLogEntry): void {
     const enriched = this.enrichWithTraceIds(entry);
     const formatted = this.formatter.formatHttpRequest(enriched);
-    this.writer.write(formatted);
+    const level = PINO_LEVEL_TO_LOG_LEVEL[entry.level] ?? "info";
+    this.writer.write(formatted, level);
   }
 
   private writeLog(level: LogLevel, options: LogOptions): void {
@@ -69,7 +79,7 @@ export class LoggerService implements NestLoggerService, ILogger {
     };
 
     const formatted = this.formatter.format(entry);
-    this.writer.write(formatted);
+    this.writer.write(formatted, level);
   }
 
   private resolveTraceIds(options: LogOptions): { traceId?: string; spanId?: string } {
