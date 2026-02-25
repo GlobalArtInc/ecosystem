@@ -52,7 +52,7 @@
     "@types/node": "25.3.0",
     "@types/supertest": "^6.0.3",
     "class-transformer": "^0.5.1",
-    "class-validator": "0.14.3",
+    "class-validator": "0.14.4",
     "esbuild": "0.27.3",
     "eslint": "10.0.2",
     "eslint-kit": "^11.39.0",
