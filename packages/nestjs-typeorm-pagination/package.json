@@ -86,7 +86,7 @@
     "@globalart/nestjs-zod": "1.0.0",
     "@nestjs/swagger": "^11.2.6",
     "class-transformer": "^0.5.1",
-    "class-validator": "0.14.3",
+    "class-validator": "0.14.4",
     "lodash": "^4.17.23",
     "zod": "4.3.6"
   },
