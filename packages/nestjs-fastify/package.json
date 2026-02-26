@@ -61,7 +61,7 @@
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
-    "@types/node": "25.3.0",
+    "@types/node": "25.3.2",
     "class-validator": "0.15.1",
     "coveralls": "^3.1.1",
     "jest": "^30.2.0",
