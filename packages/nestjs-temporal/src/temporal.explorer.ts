@@ -47,8 +47,8 @@ export class TemporalExplorer
   @Inject(TEMPORAL_MODULE_OPTIONS_TOKEN)
   private readonly options!: TemporalModuleOptions;
   private readonly logger = new Logger(TemporalExplorer.name);
-  private worker?: Worker;
-  private workerRunPromise?: Promise<void>;
+  private workers?: Worker[];
+  private workerRunPromises?: Promise<void>[];
 
   constructor(
     private readonly discoveryService: DiscoveryService,
@@ -68,14 +68,14 @@ export class TemporalExplorer
    * Shuts down the Temporal worker when the module is destroyed.
    */
   async onModuleDestroy(): Promise<void> {
-    if (!this.worker) {
+    if (!this.workers) {
       return;
     }
 
     try {
-      this.worker.shutdown();
-      if (this.workerRunPromise) {
-        await this.worker.run();
+      this.workers.forEach((worker) => worker.shutdown());
+      if (this.workerRunPromises) {
+        await Promise.all(this.workerRunPromises);
       }
     } catch (err: unknown) {
       this.logger.warn("Temporal workers were not cleanly shutdown.", {
@@ -88,8 +88,8 @@ export class TemporalExplorer
    * Starts the Temporal worker when the application is fully bootstrapped.
    */
   onApplicationBootstrap(): void {
-    if (this.worker) {
-      this.workerRunPromise = this.worker.run();
+    if (this.workers) {
+      this.workerRunPromises = this.workers.map((worker) => worker.run());
     }
   }
 
@@ -103,7 +103,7 @@ export class TemporalExplorer
     const connectionOptions = this.getNativeConnectionOptions();
 
     // Worker must have a taskQueue configured
-    if (!workerConfig.taskQueue) {
+    if (!workerConfig.some((config) => !config.taskQueue)) {
       this.logger.warn(
         "Temporal worker configuration missing taskQueue. Worker will not be created.",
       );
@@ -130,16 +130,15 @@ export class TemporalExplorer
     }
 
     this.logger.verbose("Creating a new Worker");
-    this.worker = await Worker.create({
-      ...workerConfig,
-      ...workerOptions,
-    });
+    this.workers = await Promise.all(
+      workerConfig.map((config) => Worker.create(config)),
+    );
   }
 
   /**
    * Gets the worker configuration options.
    */
-  getWorkerConfigOptions(): WorkerOptions {
+  getWorkerConfigOptions(): WorkerOptions[] {
     return this.options.workerOptions;
   }
 
