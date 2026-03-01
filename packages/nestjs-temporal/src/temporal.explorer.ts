@@ -103,7 +103,7 @@ export class TemporalExplorer
     const connectionOptions = this.getNativeConnectionOptions();
 
     // Worker must have a taskQueue configured
-    if (!workerConfig.some((config) => !config.taskQueue)) {
+    if (!workerConfig.some((config) => config.taskQueue)) {
       this.logger.warn(
         "Temporal worker configuration missing taskQueue. Worker will not be created.",
       );
