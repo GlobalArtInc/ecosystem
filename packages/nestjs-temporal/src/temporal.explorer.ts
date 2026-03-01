@@ -119,19 +119,21 @@ export class TemporalExplorer
       Runtime.install(runTimeOptions);
     }
 
-    const workerOptions: Partial<WorkerOptions> = {
+    const sharedWorkerOptions: Partial<WorkerOptions> = {
       activities: activitiesFunc,
     };
 
     if (connectionOptions) {
       this.logger.verbose("Connecting to the Temporal server");
-      workerOptions.connection =
+      sharedWorkerOptions.connection =
         await NativeConnection.connect(connectionOptions);
     }
 
     this.logger.verbose("Creating a new Worker");
     this.workers = await Promise.all(
-      workerConfig.map((config) => Worker.create(config)),
+      workerConfig.map((config) =>
+        Worker.create({ ...sharedWorkerOptions, ...config }),
+      ),
     );
   }
 
