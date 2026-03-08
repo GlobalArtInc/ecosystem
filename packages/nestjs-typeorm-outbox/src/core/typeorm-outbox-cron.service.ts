@@ -42,6 +42,9 @@ export class TypeormOutboxCronService
   }
 
   onApplicationShutdown() {
+    if (!this.cronJob) {
+      return;
+    }
     this.cronJob.stop();
   }
 
