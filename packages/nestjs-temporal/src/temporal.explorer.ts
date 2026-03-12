@@ -278,9 +278,17 @@ export class TemporalExplorer
             activitiesMethod[key] = async (...args: unknown[]) => {
               const result = handler(...args, Context.current().info);
 
-              return isObservable(result)
-                ? await lastValueFrom(result)
-                : await result;
+              const interval = setInterval(() => {
+                Context.current().heartbeat(Date.now());
+              }, 5000);
+
+              try {
+                return isObservable(result)
+                  ? await lastValueFrom(result)
+                  : await result;
+              } catch {
+                clearInterval(interval);
+              }
             };
           }
         },
