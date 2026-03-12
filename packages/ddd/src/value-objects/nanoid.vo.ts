@@ -1,5 +1,9 @@
 import { customAlphabet } from "nanoid";
 import { ID } from "./id.vo.js";
+import z from "zod";
+
+export const nanoidSchema = z.string().length(5);
+export type INanoid = z.infer<typeof nanoidSchema>;
 
 export abstract class NanoID extends ID {
   private static ALPHABETS = "0123456789abcdefghijklmnopqrstuvwxyz";

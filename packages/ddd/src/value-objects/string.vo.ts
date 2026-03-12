@@ -1,15 +1,19 @@
+import z from "zod";
 import { ValueObject } from "./value-object.js";
 
-export class StringVO extends ValueObject<string> {
-  constructor(value: string) {
+export const stringSchema = z.string().trim().min(1);
+export type IString = z.infer<typeof stringSchema>;
+
+export class StringVO extends ValueObject<IString> {
+  constructor(value: IString) {
     super({ value });
   }
 
-  public get value(): string {
+  public get value(): IString {
     return this.props.value;
   }
 
-  public static fromString(value: string) {
+  public static fromString(value: IString) {
     return new StringVO(value);
   }
 

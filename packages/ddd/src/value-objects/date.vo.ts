@@ -1,9 +1,12 @@
+import z from "zod";
 import { ValueObject } from "./value-object.js";
 
-export class DateVO extends ValueObject<Date> {
-  constructor(value: Date | string | number) {
-    const date = new Date(value);
-    super({ value: date });
+export const dateSchema = z.date();
+export type IDate = z.infer<typeof dateSchema>;
+
+export class DateVO extends ValueObject<IDate> {
+  constructor(value: IDate) {
+    super({ value });
   }
 
   public get value(): Date {
@@ -15,6 +18,6 @@ export class DateVO extends ValueObject<Date> {
   }
 
   public static now(): DateVO {
-    return new DateVO(Date.now());
+    return new DateVO(new Date());
   }
 }

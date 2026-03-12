@@ -1,15 +1,19 @@
 import { ValueObject } from "./value-object.js";
+import z from "zod";
 
-export class IntegerVO extends ValueObject<number> {
-  constructor(value: number) {
+export const integerSchema = z.number().int();
+export type IInteger = z.infer<typeof integerSchema>;
+
+export class IntegerVO extends ValueObject<IInteger> {
+  constructor(value: IInteger) {
     super({ value });
   }
 
-  public get value(): number {
+  public get value(): IInteger {
     return this.props.value;
   }
 
-  public static fromNumber(value: number) {
+  public static fromNumber(value: IInteger) {
     return new IntegerVO(value);
   }
 }
