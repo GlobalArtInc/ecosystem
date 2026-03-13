@@ -57,7 +57,7 @@ export class TypeormOutboxModule {
   ): Provider {
     return {
       provide: TYPEORM_OUTBOX_MODULE_CONFIG_TOKEN,
-      useFactory: async (...args: unknown[]) => {
+      useFactory: async (...args: any[]) => {
         const moduleOptions = (await options.useFactory?.(...args)) as
           | TypeormOutboxModuleOptions;
   
@@ -75,7 +75,7 @@ export class TypeormOutboxModule {
   ): Provider {
     return {
       provide: TYPEORM_OUTBOX_CRON_CONFIG_TOKEN,
-      useFactory: async (...args: unknown[]) => {
+      useFactory: async (...args: any[]) => {
         const moduleOptions = await options.useFactory?.(...args);
         return {
           ...new TypeormOutboxRegisterCronModuleOptions(),
@@ -91,7 +91,7 @@ export class TypeormOutboxModule {
   ): Provider {
     return {
       provide: TYPEORM_OUTBOX_BROKER_TOKEN,
-      useFactory: async (...args: unknown[]) => {
+      useFactory: async (...args: any[]) => {
         const moduleOptions = await options.useFactory?.(...args);
         const config = {
           ...new TypeormOutboxRegisterCronModuleOptions(),
