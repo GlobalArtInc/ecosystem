@@ -26,7 +26,7 @@ export class TypeormOutboxModule {
     };
   }
 
-  private static createBrokerProvider(useValue: unknown = null): Provider {
+  private static createBrokerProvider(useValue: any = {}): Provider {
     return {
       provide: TYPEORM_OUTBOX_BROKER_TOKEN,
       useValue,
@@ -58,9 +58,10 @@ export class TypeormOutboxModule {
     return {
       provide: TYPEORM_OUTBOX_MODULE_CONFIG_TOKEN,
       useFactory: async (...args: any[]) => {
-        const moduleOptions = (await options.useFactory?.(...args)) as
-          | TypeormOutboxModuleOptions;
-  
+        const moduleOptions = (await options.useFactory?.(
+          ...args,
+        )) as TypeormOutboxModuleOptions;
+
         return {
           ...new TypeormOutboxModuleOptions(),
           ...moduleOptions,
@@ -118,9 +119,7 @@ export class TypeormOutboxModule {
     };
   }
 
-  static forRootAsync(
-    options: TypeormOutboxModuleAsyncOptions,
-  ): DynamicModule {
+  static forRootAsync(options: TypeormOutboxModuleAsyncOptions): DynamicModule {
     const configProvider = this.createAsyncModuleConfigProvider(options);
     const serviceProvider = this.createServiceProvider();
     const brokerProvider = this.createBrokerProvider();
@@ -144,9 +143,7 @@ export class TypeormOutboxModule {
     return {
       module: TypeormOutboxModule,
       global: true,
-      imports: [
-        this.createTypeOrmFeature(),
-      ],
+      imports: [this.createTypeOrmFeature()],
       providers: [
         TypeormOutboxCronService,
         configProvider,
