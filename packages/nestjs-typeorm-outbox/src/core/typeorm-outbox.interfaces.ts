@@ -10,13 +10,15 @@ export class TypeormOutboxRegisterCronModuleOptions {
   cronExpression?: string = CronExpression.EVERY_SECOND;
 }
 
-export interface TypeormOutboxRegisterCronAsyncOptions
-  extends Pick<ModuleMetadata, "imports"> {
+export interface TypeormOutboxRegisterCronAsyncOptions extends Pick<
+  ModuleMetadata,
+  "imports"
+> {
   inject?: InjectionToken[];
   useExisting?: Type<TypeormOutboxRegisterCronModuleOptions>;
   useClass?: Type<TypeormOutboxRegisterCronModuleOptions>;
   useFactory?: (
-    ...args: unknown[]
+    ...args: any[]
   ) =>
     | Promise<TypeormOutboxRegisterCronModuleOptions>
     | TypeormOutboxRegisterCronModuleOptions;
@@ -26,10 +28,12 @@ export class TypeormOutboxModuleOptions {
   typeOrmConnectionName?: string = "default";
 }
 
-export interface TypeormOutboxModuleAsyncOptions
-  extends Pick<ModuleMetadata, "imports"> {
+export interface TypeormOutboxModuleAsyncOptions extends Pick<
+  ModuleMetadata,
+  "imports"
+> {
   inject?: InjectionToken[];
   useFactory?: (
-    ...args: unknown[]
+    ...args: any[]
   ) => Promise<TypeormOutboxModuleOptions> | TypeormOutboxModuleOptions;
 }
