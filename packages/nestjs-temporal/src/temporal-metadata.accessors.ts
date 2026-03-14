@@ -1,12 +1,11 @@
-import { Injectable, Type } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
+import { Injectable, Type } from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
 
 import {
   TEMPORAL_MODULE_ACTIVITIES,
   TEMPORAL_MODULE_ACTIVITY,
   TEMPORAL_MODULE_WORKFLOW,
-  TEMPORAL_MODULE_WORKFLOW_METHOD,
-} from './constants/temporal.constants';
+} from "./constants/temporal.constants";
 
 /**
  * TemporalMetadataAccessor provides methods to check and retrieve Temporal decorator metadata.
@@ -43,14 +42,12 @@ export class TemporalMetadataAccessor {
     return this.reflector.get(TEMPORAL_MODULE_WORKFLOW, target);
   }
 
-  isWorkflowMethod(
-    target: Type<unknown> | Function | null | undefined,
-  ): boolean {
+  isWorkflow(target: Type<unknown> | Function | null | undefined): boolean {
     if (!target) return false;
-    return !!this.reflector.get(TEMPORAL_MODULE_WORKFLOW_METHOD, target);
+    return !!this.reflector.get(TEMPORAL_MODULE_WORKFLOW, target);
   }
 
-  getWorkflowMethod(target: Type<unknown> | Function): unknown {
-    return this.reflector.get(TEMPORAL_MODULE_WORKFLOW_METHOD, target);
+  getWorkflow(target: Type<unknown> | Function): unknown {
+    return this.reflector.get(TEMPORAL_MODULE_WORKFLOW, target);
   }
 }
