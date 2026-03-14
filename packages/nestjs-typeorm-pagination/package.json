@@ -57,8 +57,6 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"
   },
   "devDependencies": {
-    "@nestjs/common": "11.1.14",
-    "@nestjs/typeorm": "^11.0.0",
     "@types/express": "5.0.6",
     "@types/jest": "^30.0.0",
     "@types/lodash": "^4.17.24",
@@ -84,14 +82,16 @@
   },
   "dependencies": {
     "@globalart/nestjs-zod": "1.0.0",
-    "@nestjs/swagger": "^11.2.6",
     "class-transformer": "^0.5.1",
     "class-validator": "0.15.1",
     "lodash": "^4.17.23",
     "zod": "4.3.6"
   },
   "peerDependencies": {
-    "@nestjs/typeorm": "^11.0.0",
+    "@nestjs/common": "^10.0.0 || ^11.0.0",
+    "@nestjs/core": "^10.0.0 || ^11.0.0",
+    "@nestjs/swagger": "^10.0.0 || ^11.0.0",
+    "@nestjs/typeorm": "^10.0.0 || ^11.0.0",
     "typeorm": "^0.3.0"
   },
   "jest": {

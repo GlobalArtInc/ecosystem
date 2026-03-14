@@ -48,9 +48,11 @@
     "publish:npm": "release-it --config ../../.release-it.json"
   },
   "dependencies": {
-    "@nestjs/common": "11.1.14",
-    "@nestjs/core": "11.1.14",
     "etcd3": "1.1.2"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^10.0.0 || ^11.0.0",
+    "@nestjs/core": "^10.0.0 || ^11.0.0"
   },
   "devDependencies": {
     "reflect-metadata": "^0.2.2",
