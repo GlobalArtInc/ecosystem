@@ -5,7 +5,7 @@ import { Repository } from "typeorm";
 
 export interface CreateOutboxOptions {
   destinationTopic: string;
-  payload: Record<string, unknown>;
+  value: Record<string, unknown>;
   headers?: Record<string, string>;
   keys?: Record<string, unknown>;
 }
@@ -22,7 +22,7 @@ export class TypeormOutboxService {
       destinationTopic: options.destinationTopic,
       headers: options.headers,
       keys: options.keys,
-      payload: options.payload,
+      value: options.value,
     });
   }
 }

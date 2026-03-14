@@ -88,7 +88,7 @@ export class TypeormOutboxCronService
           await firstValueFrom(
             this.brokerClient.emit(entity.destinationTopic, {
               key: entity.keys,
-              value: entity.payload,
+              value: entity.value,
               headers: entity.headers,
             }),
           );

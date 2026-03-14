@@ -6,18 +6,18 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 
-@Entity('outbox')
+@Entity("outbox")
 export class TypeormOutboxEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn({ name: "created_at" })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at' })
+  @UpdateDateColumn({ name: "updated_at" })
   updatedAt!: Date;
 
-  @Column("character varying", { name: 'destination_topic' })
+  @Column("character varying", { name: "destination_topic" })
   destinationTopic!: string;
 
   @Column("jsonb", { nullable: true })
@@ -27,5 +27,5 @@ export class TypeormOutboxEntity {
   keys!: Record<string, unknown>;
 
   @Column("jsonb")
-  payload!: Record<string, any>;
+  value!: Record<string, any>;
 }
