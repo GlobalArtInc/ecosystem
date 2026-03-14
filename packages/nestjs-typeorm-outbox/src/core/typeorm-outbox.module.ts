@@ -17,140 +17,115 @@ import { TypeormOutboxService } from "./typeorm-outbox.service";
 import { ClientProxyFactory } from "@nestjs/microservices";
 import { TypeormOutboxCronService } from "./typeorm-outbox-cron.service";
 
+const serviceProvider = (): Provider => ({
+  provide: TYPEORM_OUTBOX_SERVICE_TOKEN,
+  useClass: TypeormOutboxService,
+});
+
+const brokerProvider = (useValue: any = {}): Provider => ({
+  provide: TYPEORM_OUTBOX_BROKER_TOKEN,
+  useValue,
+});
+
+const typeOrmFeature = (connectionName = "default") =>
+  TypeOrmModule.forFeature([TypeormOutboxEntity], connectionName);
+
+const mergeModuleOptions = <T extends object>(
+  defaults: new () => T,
+  overrides?: Partial<T>,
+): T => ({ ...new defaults(), ...overrides });
+
+const moduleConfigProvider = (
+  options: TypeormOutboxModuleOptions,
+): Provider => ({
+  provide: TYPEORM_OUTBOX_MODULE_CONFIG_TOKEN,
+  useValue: mergeModuleOptions(TypeormOutboxModuleOptions, options),
+});
+
+const asyncModuleConfigProvider = (
+  options: TypeormOutboxModuleAsyncOptions,
+): Provider => ({
+  provide: TYPEORM_OUTBOX_MODULE_CONFIG_TOKEN,
+  useFactory: async (...args: any[]) =>
+    mergeModuleOptions(
+      TypeormOutboxModuleOptions,
+      await options.useFactory?.(...args),
+    ),
+  inject: options.inject || [],
+});
+
+const cronConfigProvider = (
+  options: TypeormOutboxRegisterCronAsyncOptions,
+): Provider => ({
+  provide: TYPEORM_OUTBOX_CRON_CONFIG_TOKEN,
+  useFactory: async (...args: any[]) =>
+    mergeModuleOptions(
+      TypeormOutboxRegisterCronModuleOptions,
+      await options.useFactory?.(...args),
+    ),
+  inject: options.inject || [],
+});
+
+const cronBrokerProvider = (
+  options: TypeormOutboxRegisterCronAsyncOptions,
+): Provider => ({
+  provide: TYPEORM_OUTBOX_BROKER_TOKEN,
+  useFactory: async (...args: any[]) => {
+    const config = mergeModuleOptions(
+      TypeormOutboxRegisterCronModuleOptions,
+      await options.useFactory?.(...args),
+    );
+    return ClientProxyFactory.create(config?.brokerConfig ?? {});
+  },
+  inject: options.inject || [],
+});
+
 @Module({})
 export class TypeormOutboxModule {
-  private static createServiceProvider(): Provider {
-    return {
-      provide: TYPEORM_OUTBOX_SERVICE_TOKEN,
-      useClass: TypeormOutboxService,
-    };
-  }
-
-  private static createBrokerProvider(useValue: any = {}): Provider {
-    return {
-      provide: TYPEORM_OUTBOX_BROKER_TOKEN,
-      useValue,
-    };
-  }
-
-  private static createTypeOrmFeature(connectionName?: string) {
-    return TypeOrmModule.forFeature(
-      [TypeormOutboxEntity],
-      connectionName || "default",
-    );
-  }
-
-  private static createModuleConfigProvider(
-    options: TypeormOutboxModuleOptions,
-  ): Provider {
-    return {
-      provide: TYPEORM_OUTBOX_MODULE_CONFIG_TOKEN,
-      useValue: {
-        ...new TypeormOutboxModuleOptions(),
-        ...options,
-      },
-    };
-  }
-
-  private static createAsyncModuleConfigProvider(
-    options: TypeormOutboxModuleAsyncOptions,
-  ): Provider {
-    return {
-      provide: TYPEORM_OUTBOX_MODULE_CONFIG_TOKEN,
-      useFactory: async (...args: any[]) => {
-        const moduleOptions = (await options.useFactory?.(
-          ...args,
-        )) as TypeormOutboxModuleOptions;
-
-        return {
-          ...new TypeormOutboxModuleOptions(),
-          ...moduleOptions,
-        };
-      },
-      inject: options.inject || [],
-    };
-  }
-
-  private static createCronConfigProvider(
-    options: TypeormOutboxRegisterCronAsyncOptions,
-  ): Provider {
-    return {
-      provide: TYPEORM_OUTBOX_CRON_CONFIG_TOKEN,
-      useFactory: async (...args: any[]) => {
-        const moduleOptions = await options.useFactory?.(...args);
-        return {
-          ...new TypeormOutboxRegisterCronModuleOptions(),
-          ...moduleOptions,
-        };
-      },
-      inject: options.inject || [],
-    };
-  }
-
-  private static createCronBrokerProvider(
-    options: TypeormOutboxRegisterCronAsyncOptions,
-  ): Provider {
-    return {
-      provide: TYPEORM_OUTBOX_BROKER_TOKEN,
-      useFactory: async (...args: any[]) => {
-        const moduleOptions = await options.useFactory?.(...args);
-        const config = {
-          ...new TypeormOutboxRegisterCronModuleOptions(),
-          ...moduleOptions,
-        };
-        return ClientProxyFactory.create(config?.brokerConfig ?? {});
-      },
-      inject: options.inject || [],
-    };
-  }
-
   static forRoot(options: TypeormOutboxModuleOptions = {}): DynamicModule {
-    const configProvider = this.createModuleConfigProvider(options);
-    const serviceProvider = this.createServiceProvider();
-    const brokerProvider = this.createBrokerProvider();
-    const PROVIDERS = [configProvider, serviceProvider, brokerProvider];
-
+    const providers = [
+      moduleConfigProvider(options),
+      serviceProvider(),
+      brokerProvider(),
+    ];
     return {
       module: TypeormOutboxModule,
       global: true,
-      imports: [this.createTypeOrmFeature(options.typeOrmConnectionName)],
-      providers: [...PROVIDERS],
-      exports: [...PROVIDERS],
+      imports: [typeOrmFeature(options.typeOrmConnectionName)],
+      providers,
+      exports: providers,
     };
   }
 
   static forRootAsync(options: TypeormOutboxModuleAsyncOptions): DynamicModule {
-    const configProvider = this.createAsyncModuleConfigProvider(options);
-    const serviceProvider = this.createServiceProvider();
-    const brokerProvider = this.createBrokerProvider();
-
+    const providers = [
+      asyncModuleConfigProvider(options),
+      serviceProvider(),
+      brokerProvider(),
+    ];
     return {
       module: TypeormOutboxModule,
       global: true,
-      imports: [this.createTypeOrmFeature()],
-      providers: [configProvider, serviceProvider, brokerProvider],
-      exports: [configProvider, serviceProvider, brokerProvider],
+      imports: [typeOrmFeature()],
+      providers,
+      exports: providers,
     };
   }
 
   static registerCronAsync(
     options: TypeormOutboxRegisterCronAsyncOptions,
   ): DynamicModule {
-    const configProvider = this.createCronConfigProvider(options);
-    const brokerProvider = this.createCronBrokerProvider(options);
-    const serviceProvider = this.createServiceProvider();
-
+    const providers = [
+      cronConfigProvider(options),
+      cronBrokerProvider(options),
+      serviceProvider(),
+    ];
     return {
       module: TypeormOutboxModule,
       global: true,
-      imports: [this.createTypeOrmFeature()],
-      providers: [
-        TypeormOutboxCronService,
-        configProvider,
-        brokerProvider,
-        serviceProvider,
-      ],
-      exports: [configProvider, brokerProvider, serviceProvider],
+      imports: [typeOrmFeature()],
+      providers: [TypeormOutboxCronService, ...providers],
+      exports: providers,
     };
   }
 }
