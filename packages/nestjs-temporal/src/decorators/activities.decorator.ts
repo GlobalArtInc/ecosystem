@@ -1,8 +1,8 @@
-import { Scope, SetMetadata } from '@nestjs/common';
-import { SCOPE_OPTIONS_METADATA } from '@nestjs/common/constants';
-import { ActivityOptions } from '@temporalio/workflow';
+import { Scope, SetMetadata } from "@nestjs/common";
+import { SCOPE_OPTIONS_METADATA } from "@nestjs/common/constants";
+import { ActivityOptions } from "@temporalio/workflow";
 
-import { TEMPORAL_MODULE_ACTIVITIES } from '../constants/temporal.constants';
+import { TEMPORAL_MODULE_ACTIVITIES } from "../constants/temporal.constants";
 
 /**
  * Options for the @Activities() decorator.
@@ -35,20 +35,9 @@ export interface ActivitiesOptions extends ActivityOptions {
  * }
  * ```
  */
-export function Activities(): ClassDecorator;
-export function Activities(queueName: string): ClassDecorator;
-export function Activities(
-  activitiesOptions: ActivitiesOptions,
-): ClassDecorator;
-export function Activities(
-  queueNameOrOptions?: string | ActivitiesOptions,
-): ClassDecorator {
-  const options =
-    queueNameOrOptions && typeof queueNameOrOptions === 'object'
-      ? queueNameOrOptions
-      : { name: queueNameOrOptions };
-  return (target: Function) => {
+export const Activities =
+  (options?: ActivitiesOptions): ClassDecorator =>
+  (target: Function) => {
     SetMetadata(SCOPE_OPTIONS_METADATA, options)(target);
     SetMetadata(TEMPORAL_MODULE_ACTIVITIES, options)(target);
   };
-}

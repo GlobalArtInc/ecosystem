@@ -1,21 +1,12 @@
-import { SetMetadata } from '@nestjs/common';
+import { SetMetadata } from "@nestjs/common";
 
-import { TEMPORAL_MODULE_WORKFLOW_METHOD } from '../constants/temporal.constants';
+import { TEMPORAL_MODULE_WORKFLOW_METHOD } from "../constants/temporal.constants";
 
 export interface WorkflowMethodOptions {
   name?: string;
 }
 
-export function WorkflowMethod(): MethodDecorator;
-export function WorkflowMethod(name: string): MethodDecorator;
-export function WorkflowMethod(options: WorkflowMethodOptions): MethodDecorator;
-export function WorkflowMethod(
-  nameOrOptions?: string | WorkflowMethodOptions,
-): MethodDecorator {
-  const options =
-    nameOrOptions && typeof nameOrOptions === 'object'
-      ? nameOrOptions
-      : { name: nameOrOptions };
-
-  return SetMetadata(TEMPORAL_MODULE_WORKFLOW_METHOD, options || {});
-}
+export const WorkflowMethod = (
+  options?: WorkflowMethodOptions,
+): MethodDecorator =>
+  SetMetadata(TEMPORAL_MODULE_WORKFLOW_METHOD, options || {});

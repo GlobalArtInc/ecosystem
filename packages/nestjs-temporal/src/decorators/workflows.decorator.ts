@@ -1,7 +1,7 @@
-import { Scope, SetMetadata } from '@nestjs/common';
-import { SCOPE_OPTIONS_METADATA } from '@nestjs/common/constants';
+import { Scope, SetMetadata } from "@nestjs/common";
+import { SCOPE_OPTIONS_METADATA } from "@nestjs/common/constants";
 
-import { TEMPORAL_MODULE_WORKFLOW } from '../constants/temporal.constants';
+import { TEMPORAL_MODULE_WORKFLOW } from "../constants/temporal.constants";
 
 export interface WorkflowsOptions {
   /**
@@ -14,18 +14,9 @@ export interface WorkflowsOptions {
   scope?: Scope;
 }
 
-export function Workflows(): ClassDecorator;
-export function Workflows(name: string): ClassDecorator;
-export function Workflows(options: WorkflowsOptions): ClassDecorator;
-export function Workflows(
-  nameOrOptions?: string | WorkflowsOptions,
-): ClassDecorator {
-  const options =
-    nameOrOptions && typeof nameOrOptions === 'object'
-      ? nameOrOptions
-      : { name: nameOrOptions };
-  return (target: Function) => {
+export const Workflows =
+  (options?: WorkflowsOptions): ClassDecorator =>
+  (target: Function) => {
     SetMetadata(SCOPE_OPTIONS_METADATA, options)(target);
     SetMetadata(TEMPORAL_MODULE_WORKFLOW, options)(target);
   };
-}
