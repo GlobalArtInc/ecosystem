@@ -278,6 +278,8 @@ export class TemporalExplorer
             activitiesMethod[key] = async (...args: unknown[]) => {
               const result = handler(...args, Context.current().info);
 
+              Context.current().heartbeat(Date.now());
+
               const interval = setInterval(() => {
                 Context.current().heartbeat(Date.now());
               }, 5000);
