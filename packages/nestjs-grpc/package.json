@@ -1,6 +1,6 @@
 {
   "name": "@globalart/nestjs-grpc",
-  "version": "1.0.44",
+  "version": "1.1.0",
   "description": "A grpc modules for NestJS",
   "author": {
     "name": "GlobalArt, Inc"
