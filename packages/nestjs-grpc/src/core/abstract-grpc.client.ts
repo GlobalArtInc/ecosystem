@@ -1,5 +1,13 @@
 import { ClientGrpc } from "@nestjs/microservices";
-import { firstValueFrom, Observable, timer, throwError, retry, of, catchError } from "rxjs";
+import {
+  firstValueFrom,
+  Observable,
+  timer,
+  throwError,
+  retry,
+  of,
+  catchError,
+} from "rxjs";
 import { Metadata, MetadataValue, status } from "@grpc/grpc-js";
 import { randomUUID } from "crypto";
 import { GrpcService, InjectGrpcService } from "./grpc.service";
@@ -22,10 +30,21 @@ export abstract class AbstractGrpcClient {
     return {
       call: <K extends keyof T>(
         methodName: K,
-        payload: T[K] extends (...args: infer P) => any ? P[0] : never = {} as any,
+        payload: T[K] extends (...args: infer P) => any
+          ? P[0]
+          : never = {} as any,
         retryNullOnError = true,
-      ): Promise<UnwrapObservable<T[K] extends (...args: any) => any ? ReturnType<T[K]> : never>> => {
-        return this.call<T, K>(serviceName, methodName, payload, retryNullOnError);
+      ): Promise<
+        UnwrapObservable<
+          T[K] extends (...args: any) => any ? ReturnType<T[K]> : never
+        >
+      > => {
+        return this.call<T, K>(
+          serviceName,
+          methodName,
+          payload,
+          retryNullOnError,
+        );
       },
     };
   }
@@ -35,7 +54,11 @@ export abstract class AbstractGrpcClient {
     methodName: K,
     payload: T[K] extends (...args: infer P) => any ? P[0] : never = {} as any,
     retryNullOnError: boolean,
-  ): Promise<UnwrapObservable<T[K] extends (...args: any) => any ? ReturnType<T[K]> : never>> {
+  ): Promise<
+    UnwrapObservable<
+      T[K] extends (...args: any) => any ? ReturnType<T[K]> : never
+    >
+  > {
     const service = this.client.getService<T>(serviceName);
 
     const method = service[methodName] as unknown as (
@@ -49,6 +72,7 @@ export abstract class AbstractGrpcClient {
             error?.code === status.UNAVAILABLE ||
             error?.code === status.DEADLINE_EXCEEDED
           ) {
+            console.error("grpc error", error);
             return timer(5000);
           }
           return throwError(() => error);
@@ -59,7 +83,7 @@ export abstract class AbstractGrpcClient {
           return of(null);
         }
         return throwError(() => error);
-      })
+      }),
     );
 
     return firstValueFrom(stream$);
@@ -71,7 +95,7 @@ export abstract class AbstractGrpcClient {
     if (this.grpcService.getMetadata().has("correlation-id")) {
       metadata.set(
         "correlation-id",
-        this.grpcService.getMetadata().get("correlation-id") as MetadataValue
+        this.grpcService.getMetadata().get("correlation-id") as MetadataValue,
       );
     } else {
       const correlationId = randomUUID();
