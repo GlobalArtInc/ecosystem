@@ -1,9 +1,4 @@
-import {
-  LogEntry,
-  HttpRequestLogEntry,
-  LoggerConfiguration,
-  LogOptions,
-} from "../types";
+import { LogEntry, HttpRequestLogEntry, LogOptions } from "../types";
 
 export interface ILogger {
   log(options: LogOptions): void;

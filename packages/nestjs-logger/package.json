@@ -66,7 +66,13 @@
     "ts-jest": "29.4.6",
     "ts-node": "^10.9.2",
     "tsdown": "0.21.4",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "@types/express": "^5.0.6"
+  },
+  "dependencies": {
+    "nestjs-cls": "6.2.0",
+    "nanoid": "^5.1.7",
+    "express": "^5.2.1"
   },
   "publishConfig": {
     "access": "public"

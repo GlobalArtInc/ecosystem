@@ -38,16 +38,10 @@ export class HttpLoggerInterceptor implements NestInterceptor {
     private readonly dataSanitizer: IDataSanitizer,
     private readonly requestIdGenerator: IRequestIdGenerator,
     @Inject(LOGGER_CONFIG_TOKEN) private readonly config: LoggerConfiguration,
-    private readonly reflector: Reflector
+    private readonly reflector: Reflector,
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
-    const contextType = context.getType<string>();
-
-    if (contextType === "graphql") {
-      return this.handleGraphQLRequest(context, next);
-    }
-
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
 
@@ -62,7 +56,7 @@ export class HttpLoggerInterceptor implements NestInterceptor {
 
     const isExcluded = this.reflector.getAllAndOverride<boolean>(
       LOGGER_EXCLUDE_METADATA,
-      [context.getHandler(), context.getClass()]
+      [context.getHandler(), context.getClass()],
     );
 
     if (isExcluded) {
@@ -81,7 +75,7 @@ export class HttpLoggerInterceptor implements NestInterceptor {
             requestId,
             startTime,
             30,
-            "request completed"
+            "request completed",
           );
           this.logger.logHttpRequest(entry);
         } else {
@@ -89,7 +83,7 @@ export class HttpLoggerInterceptor implements NestInterceptor {
             request,
             response,
             requestId,
-            startTime
+            startTime,
           );
           this.logger.log(entry);
         }
@@ -105,7 +99,7 @@ export class HttpLoggerInterceptor implements NestInterceptor {
             requestId,
             startTime,
             50,
-            errorMessage || "request failed"
+            errorMessage || "request failed",
           );
           this.logger.logHttpRequest(entry);
         } else {
@@ -113,7 +107,7 @@ export class HttpLoggerInterceptor implements NestInterceptor {
             request,
             response,
             requestId,
-            startTime
+            startTime,
           );
           this.logger.error({
             ...baseEntry,
@@ -122,82 +116,8 @@ export class HttpLoggerInterceptor implements NestInterceptor {
           });
         }
         throw error;
-      })
+      }),
     );
-  }
-
-  private handleGraphQLRequest(
-    context: ExecutionContext,
-    next: CallHandler
-  ): Observable<unknown> {
-    if (!GqlExecutionContext) {
-      return next.handle();
-    }
-
-    try {
-      const gqlContext = GqlExecutionContext.create(context);
-      const info = gqlContext.getInfo();
-      const args = gqlContext.getArgs();
-      const startTime = Date.now();
-      const requestId = this.requestIdGenerator.generate();
-
-      const operationType = info.operation.operation;
-      const operationName = info.operation.name?.value || "Anonymous";
-      const fieldName = info.fieldName;
-
-      this.logger.log({
-        message: `GraphQL ${operationType}: ${operationName}.${fieldName}`,
-        context: "GraphQL",
-        metadata: {
-          requestId,
-          operationType,
-          operationName,
-          fieldName,
-          args: this.sanitizeGraphQLArgs(args),
-        },
-      });
-
-      return next.handle().pipe(
-        tap((result) => {
-          const responseTime = Date.now() - startTime;
-          this.logger.log({
-            message: `GraphQL ${operationType} completed: ${operationName}.${fieldName} (${responseTime}ms)`,
-            context: "GraphQL",
-            metadata: {
-              requestId,
-              operationType,
-              operationName,
-              fieldName,
-              responseTime,
-              resultSize: this.getGraphQLResultSize(result),
-            },
-          });
-        }),
-        catchError((error) => {
-          const responseTime = Date.now() - startTime;
-          const errorMessage = this.extractErrorMessage(error);
-          const errorTrace = this.extractErrorTrace(error);
-
-          this.logger.error({
-            message:
-              errorMessage ||
-              `GraphQL ${operationType} failed: ${operationName}.${fieldName} (${responseTime}ms)`,
-            context: "GraphQL",
-            metadata: {
-              requestId,
-              operationType,
-              operationName,
-              fieldName,
-              responseTime,
-            },
-            trace: errorTrace,
-          });
-          throw error;
-        })
-      );
-    } catch (gqlError) {
-      return next.handle();
-    }
   }
 
   private createHttpLogEntry(
@@ -206,7 +126,7 @@ export class HttpLoggerInterceptor implements NestInterceptor {
     requestId: string,
     startTime: number,
     level: number,
-    message: string
+    message: string,
   ): HttpRequestLogEntry {
     const responseTime = Date.now() - startTime;
     const ip = this.getClientIp(request);
@@ -244,7 +164,7 @@ export class HttpLoggerInterceptor implements NestInterceptor {
     request: any,
     response: any,
     requestId: string,
-    startTime: number
+    startTime: number,
   ): LogOptions {
     const responseTime = Date.now() - startTime;
     const ip = this.getClientIp(request);
@@ -275,7 +195,7 @@ export class HttpLoggerInterceptor implements NestInterceptor {
   }
 
   private sanitizeHeaders(
-    headers: Record<string, any>
+    headers: Record<string, any>,
   ): Record<string, string> {
     const sanitized: Record<string, string> = {};
 

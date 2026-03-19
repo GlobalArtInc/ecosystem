@@ -23,7 +23,7 @@ export const DEFAULT_SENSITIVE_FIELDS = [
   "auth",
   "credential",
   "credentials",
-] as const;
+];
 
 export const COLORS = {
   reset: "\x1b[0m",
@@ -35,14 +35,13 @@ export const COLORS = {
   cyan: "\x1b[36m",
   gray: "\x1b[90m",
   bright: "\x1b[1m",
-} as const;
+};
 
 export const DEFAULT_LOGGER_CONFIG = {
-  level: "info" as const,
+  level: "info",
   timestamp: true,
   colors: true,
-  format: "text" as const,
+  format: "text",
   sensitiveFields: DEFAULT_SENSITIVE_FIELDS,
   exclude: [],
-  logRequests: false,
-} as const;
+};

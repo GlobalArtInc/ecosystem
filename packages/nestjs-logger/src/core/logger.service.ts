@@ -13,6 +13,9 @@ import type {
   LogOptions,
 } from "../types/index";
 import { getOpenTelemetryTraceIds } from "../utils/opentelemetry-trace";
+import { ClsService } from "nestjs-cls";
+import { traceContextStorage } from "./trace-context.storage";
+import { nanoid } from "nanoid";
 
 const PINO_LEVEL_TO_LOG_LEVEL: Record<number, LogLevel> = {
   60: "error",
@@ -31,7 +34,8 @@ export class LoggerService implements NestLoggerService, ILogger {
     private readonly config: LoggerConfiguration,
     private readonly formatter: ILogFormatter,
     private readonly writer: ILogWriter,
-    private readonly contextResolver: IContextResolver
+    private readonly contextResolver: IContextResolver,
+    private readonly clsService: ClsService,
   ) {}
 
   setContext(context: string): void {
@@ -59,8 +63,12 @@ export class LoggerService implements NestLoggerService, ILogger {
   }
 
   logHttpRequest(entry: HttpRequestLogEntry): void {
-    const enriched = this.enrichWithTraceIds(entry);
-    const formatted = this.formatter.formatHttpRequest(enriched);
+    const { traceId, spanId } = this.resolveTraceIds(entry);
+    const formatted = this.formatter.formatHttpRequest({
+      ...entry,
+      traceId,
+      spanId,
+    });
     const level = PINO_LEVEL_TO_LOG_LEVEL[entry.level] ?? "info";
     this.writer.write(formatted, level);
   }
@@ -71,7 +79,8 @@ export class LoggerService implements NestLoggerService, ILogger {
       level,
       message: options.message,
       timestamp: new Date(),
-      context: options.context ?? this.context ?? this.contextResolver.resolve(),
+      context:
+        options.context ?? this.context ?? this.contextResolver.resolve(),
       metadata: options.metadata,
       trace: options.trace,
       traceId,
@@ -82,24 +91,20 @@ export class LoggerService implements NestLoggerService, ILogger {
     this.writer.write(formatted, level);
   }
 
-  private resolveTraceIds(options: LogOptions): { traceId?: string; spanId?: string } {
-    if (options.traceId && options.spanId) {
-      return { traceId: options.traceId, spanId: options.spanId };
+  private resolveTraceIds(source: { traceId?: string; spanId?: string }): {
+    traceId?: string;
+    spanId?: string;
+  } {
+    if (source.traceId && source.spanId) {
+      return { traceId: source.traceId, spanId: source.spanId };
     }
-    const otel = getOpenTelemetryTraceIds();
-    return {
-      traceId: options.traceId ?? otel.traceId,
-      spanId: options.spanId ?? otel.spanId,
-    };
-  }
 
-  private enrichWithTraceIds(entry: HttpRequestLogEntry): HttpRequestLogEntry {
-    if (entry.traceId && entry.spanId) return entry;
     const otel = getOpenTelemetryTraceIds();
+    const correlationId = traceContextStorage.getStore()?.correlationId;
+
     return {
-      ...entry,
-      traceId: entry.traceId ?? otel.traceId,
-      spanId: entry.spanId ?? otel.spanId,
+      traceId: source.traceId ?? otel.traceId ?? correlationId,
+      spanId: source.spanId ?? otel.spanId ?? nanoid(10),
     };
   }
 }

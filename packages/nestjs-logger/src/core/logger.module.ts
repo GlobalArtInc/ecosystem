@@ -1,4 +1,11 @@
-import { DynamicModule, Module, Provider } from "@nestjs/common";
+import {
+  ConfigurableModuleBuilder,
+  DynamicModule,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  Provider,
+} from "@nestjs/common";
 import { APP_INTERCEPTOR, Reflector } from "@nestjs/core";
 import { LoggerService } from "./logger.service";
 import { HttpLoggerInterceptor } from "./http-logger.interceptor";
@@ -15,11 +22,8 @@ import {
   DYNAMIC_CONTEXT_LOGGER_FACTORY_TOKEN,
   DEFAULT_LOGGER_CONFIG,
 } from "../constants";
-import {
-  InjectLogger,
-  getAllContextTokens,
-  getContextLoggerToken,
-} from "./logger.di-tokens";
+import { getAllContextTokens, getContextLoggerToken } from "./logger.di-tokens";
+import { TraceContextMiddleware } from "./trace-context.middleware";
 
 export interface LoggerModuleOptions {
   level?: "error" | "warn" | "info" | "debug" | "verbose";
@@ -32,107 +36,107 @@ export interface LoggerModuleOptions {
   logRequests?: boolean;
 }
 
-export interface LoggerModuleAsyncOptions {
-  useFactory: (
-    ...args: any[]
-  ) => LoggerModuleOptions | Promise<LoggerModuleOptions>;
-  inject?: any[];
-}
+export const {
+  ConfigurableModuleClass,
+  MODULE_OPTIONS_TOKEN,
+  OPTIONS_TYPE,
+  ASYNC_OPTIONS_TYPE,
+} = new ConfigurableModuleBuilder<LoggerModuleOptions>()
+  .setClassMethodName("forRoot")
+  .setExtras({ global: true }, (definition, extras) => ({
+    ...definition,
+    global: extras.global,
+  }))
+  .build();
 
 @Module({})
-export class LoggerModule {
-  static forRoot(options: LoggerModuleOptions = {}): DynamicModule {
-    const config = this.createConfiguration(options);
-    const providers = this.createProviders(config);
+export class LoggerModule
+  extends ConfigurableModuleClass
+  implements NestModule
+{
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(TraceContextMiddleware).forRoutes("*");
+  }
+  static forRoot(options: typeof OPTIONS_TYPE = {}): DynamicModule {
+    const parent = super.forRoot(options);
     const contextProviders = this.createDynamicContextProviders();
 
     return {
-      module: LoggerModule,
+      ...parent,
       providers: [
-        ...providers,
+        ...(parent.providers ?? []),
+        ...this.createCoreProviders(),
         ...contextProviders,
+        {
+          provide: LOGGER_CONFIG_TOKEN,
+          useFactory: (opts: LoggerModuleOptions): LoggerConfiguration => ({
+            ...DEFAULT_LOGGER_CONFIG,
+            ...opts,
+            sensitiveFields:
+              opts.sensitiveFields ?? DEFAULT_LOGGER_CONFIG.sensitiveFields,
+            exclude: opts.exclude ?? DEFAULT_LOGGER_CONFIG.exclude,
+          }),
+          inject: [MODULE_OPTIONS_TOKEN],
+        },
         ...(options.logRequests
-          ? [
-              {
-                provide: APP_INTERCEPTOR,
-                useExisting: HttpLoggerInterceptor,
-              },
-            ]
+          ? [{ provide: APP_INTERCEPTOR, useExisting: HttpLoggerInterceptor }]
           : []),
       ],
       exports: [
+        ...(parent.exports ?? []),
         LOGGER_SERVICE_TOKEN,
         HttpLoggerInterceptor,
         DYNAMIC_CONTEXT_LOGGER_FACTORY_TOKEN,
+        TraceContextMiddleware,
         ...contextProviders.map((p: any) => p.provide),
       ],
-      global: true,
     };
   }
 
-  static forRootAsync(options: LoggerModuleAsyncOptions): DynamicModule {
-    const configProvider: Provider = {
-      provide: LOGGER_CONFIG_TOKEN,
-      useFactory: async (...args: any[]) => {
-        const userOptions = await options.useFactory(...args);
-        return this.createConfiguration(userOptions);
-      },
-      inject: options.inject || [],
-    };
-
-    const providers = [configProvider, ...this.createCoreProviders()];
+  static forRootAsync(options: typeof ASYNC_OPTIONS_TYPE): DynamicModule {
+    const parent = super.forRootAsync(options);
     const contextProviders = this.createDynamicContextProviders();
 
     return {
-      module: LoggerModule,
+      ...parent,
       providers: [
-        ...providers,
+        ...(parent.providers ?? []),
+        ...this.createCoreProviders(),
         ...contextProviders,
+        {
+          provide: LOGGER_CONFIG_TOKEN,
+          useFactory: (opts: LoggerModuleOptions): LoggerConfiguration => ({
+            ...DEFAULT_LOGGER_CONFIG,
+            ...opts,
+            sensitiveFields:
+              opts.sensitiveFields ?? DEFAULT_LOGGER_CONFIG.sensitiveFields,
+            exclude: opts.exclude ?? DEFAULT_LOGGER_CONFIG.exclude,
+          }),
+          inject: [MODULE_OPTIONS_TOKEN],
+        },
         {
           provide: APP_INTERCEPTOR,
           useFactory: (
             config: LoggerConfiguration,
-            interceptor: HttpLoggerInterceptor
-          ): HttpLoggerInterceptor | null => {
-            return config.logRequests ? interceptor : null;
-          },
+            interceptor: HttpLoggerInterceptor,
+          ) => (config.logRequests ? interceptor : null),
           inject: [LOGGER_CONFIG_TOKEN, HttpLoggerInterceptor],
         },
       ],
       exports: [
+        ...(parent.exports ?? []),
         LOGGER_SERVICE_TOKEN,
         HttpLoggerInterceptor,
         DYNAMIC_CONTEXT_LOGGER_FACTORY_TOKEN,
+        TraceContextMiddleware,
         ...contextProviders.map((p: any) => p.provide),
       ],
-      global: true,
     };
-  }
-
-  private static createConfiguration(
-    options: LoggerModuleOptions
-  ): LoggerConfiguration {
-    return {
-      ...DEFAULT_LOGGER_CONFIG,
-      ...options,
-      sensitiveFields:
-        options.sensitiveFields ?? DEFAULT_LOGGER_CONFIG.sensitiveFields,
-      exclude: options.exclude ?? DEFAULT_LOGGER_CONFIG.exclude,
-    };
-  }
-
-  private static createProviders(config: LoggerConfiguration): Provider[] {
-    return [
-      {
-        provide: LOGGER_CONFIG_TOKEN,
-        useValue: config,
-      },
-      ...this.createCoreProviders(),
-    ];
   }
 
   private static createCoreProviders(): Provider[] {
     return [
+      TraceContextMiddleware,
       FormatterFactory,
       ConsoleWriter,
       ContextResolver,
@@ -153,14 +157,13 @@ export class LoggerModule {
           config: LoggerConfiguration,
           formatterFactory: FormatterFactory,
           writer: ConsoleWriter,
-          contextResolver: ContextResolver
+          contextResolver: ContextResolver,
         ) => {
           const formatter = formatterFactory.create(config.format, {
             colors: config.colors,
             timestamp: config.timestamp,
             context: config.context,
           });
-
           return new LoggerService(config, formatter, writer, contextResolver);
         },
         inject: [
@@ -174,19 +177,17 @@ export class LoggerModule {
         provide: HttpLoggerInterceptor,
         useFactory: (
           logger: LoggerService,
-          dataSanitizer: DataSanitizer,
+          sanitizer: DataSanitizer,
           requestIdGenerator: RequestIdGenerator,
-          config: LoggerConfiguration
-        ) => {
-          const reflector = new Reflector();
-          return new HttpLoggerInterceptor(
+          config: LoggerConfiguration,
+        ) =>
+          new HttpLoggerInterceptor(
             logger,
-            dataSanitizer,
+            sanitizer,
             requestIdGenerator,
             config,
-            reflector
-          );
-        },
+            new Reflector(),
+          ),
         inject: [
           LOGGER_SERVICE_TOKEN,
           DataSanitizer,
@@ -198,8 +199,7 @@ export class LoggerModule {
   }
 
   private static createDynamicContextProviders(): Provider[] {
-    const contextNames = getAllContextTokens();
-    return contextNames.map((context) => ({
+    return getAllContextTokens().map((context) => ({
       provide: getContextLoggerToken(context),
       useFactory: (factory: DynamicContextLoggerFactory) =>
         factory.createLogger(context),
