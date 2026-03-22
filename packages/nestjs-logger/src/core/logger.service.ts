@@ -13,7 +13,6 @@ import type {
   LogOptions,
 } from "../types/index";
 import { getOpenTelemetryTraceIds } from "../utils/opentelemetry-trace";
-import { ClsService } from "nestjs-cls";
 import { traceContextStorage } from "./trace-context.storage";
 import { nanoid } from "nanoid";
 
@@ -35,7 +34,6 @@ export class LoggerService implements NestLoggerService, ILogger {
     private readonly formatter: ILogFormatter,
     private readonly writer: ILogWriter,
     private readonly contextResolver: IContextResolver,
-    private readonly clsService: ClsService,
   ) {}
 
   setContext(context: string): void {

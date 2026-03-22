@@ -70,7 +70,6 @@
     "@types/express": "^5.0.6"
   },
   "dependencies": {
-    "nestjs-cls": "6.2.0",
     "nanoid": "^5.1.7",
     "express": "^5.2.1"
   },

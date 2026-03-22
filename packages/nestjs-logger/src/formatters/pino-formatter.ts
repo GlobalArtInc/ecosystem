@@ -9,20 +9,17 @@ export class PinoFormatter extends BaseFormatter {
       level: entry.level,
       message: entry.message,
       timestamp: entry.timestamp,
-      context: entry.context,
-      metadata: entry.metadata,
-      trace: entry.trace,
     };
+    if (entry.context) obj.context = entry.context;
+    if (entry.metadata) obj.metadata = entry.metadata;
+    if (entry.trace) obj.trace = entry.trace;
     if (entry.traceId) obj.traceId = entry.traceId;
     if (entry.spanId) obj.spanId = entry.spanId;
     return JSON.stringify(obj);
   }
 
   formatHttpRequest(entry: HttpRequestLogEntry): string {
-    const obj = { ...entry };
-    if (entry.traceId) obj.traceId = entry.traceId;
-    if (entry.spanId) obj.spanId = entry.spanId;
-    const jsonString = JSON.stringify(obj);
+    const jsonString = JSON.stringify(entry);
     return this.options.colors
       ? this.colorize(jsonString, this.getColorForLevel(entry.level))
       : jsonString;

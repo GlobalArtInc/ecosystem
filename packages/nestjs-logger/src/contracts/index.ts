@@ -1,4 +1,4 @@
-import { LogEntry, HttpRequestLogEntry, LogOptions } from "../types";
+import { LogEntry, HttpRequestLogEntry, LogOptions, LogLevel } from "../types";
 
 export interface ILogger {
   log(options: LogOptions): void;
@@ -13,8 +13,6 @@ export interface ILogFormatter {
   format(entry: LogEntry): string;
   formatHttpRequest(entry: HttpRequestLogEntry): string;
 }
-
-export type LogLevel = "error" | "warn" | "info" | "debug" | "verbose";
 
 export interface ILogWriter {
   write(formattedLog: string, level?: LogLevel): void;

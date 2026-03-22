@@ -38,10 +38,10 @@ export const COLORS = {
 };
 
 export const DEFAULT_LOGGER_CONFIG = {
-  level: "info",
+  level: "info" as const,
   timestamp: true,
   colors: true,
-  format: "text",
+  format: "text" as const,
   sensitiveFields: DEFAULT_SENSITIVE_FIELDS,
-  exclude: [],
+  exclude: [] as never[],
 };

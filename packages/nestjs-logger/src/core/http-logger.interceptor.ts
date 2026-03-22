@@ -20,13 +20,6 @@ import type {
   LogOptions,
 } from "../types/index";
 import { LoggerService } from "./logger.service";
-// Опциональный импорт для GraphQL
-let GqlExecutionContext: any;
-try {
-  GqlExecutionContext = require("@nestjs/graphql").GqlExecutionContext;
-} catch {
-  // GraphQL модуль не установлен
-}
 
 @Injectable()
 export class HttpLoggerInterceptor implements NestInterceptor {
@@ -42,6 +35,10 @@ export class HttpLoggerInterceptor implements NestInterceptor {
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+    if (!this.config.logRequests) {
+      return next.handle();
+    }
+
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
 
@@ -247,30 +244,6 @@ export class HttpLoggerInterceptor implements NestInterceptor {
 
       return path === excludeOption.path;
     });
-  }
-
-  private sanitizeGraphQLArgs(args: any): any {
-    if (!args || typeof args !== "object") {
-      return args;
-    }
-
-    const sanitized = { ...args };
-
-    if (sanitized.input && sanitized.input.password) {
-      sanitized.input = { ...sanitized.input, password: "[HIDDEN]" };
-    }
-
-    return this.dataSanitizer.sanitize(sanitized);
-  }
-
-  private getGraphQLResultSize(result: any): string {
-    if (Array.isArray(result)) {
-      return `${result.length} items`;
-    }
-    if (result && typeof result === "object") {
-      return "1 object";
-    }
-    return "primitive";
   }
 
   private extractErrorMessage(error: unknown): string | undefined {

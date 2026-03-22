@@ -4,24 +4,6 @@ import { RequestMethod } from "@nestjs/common";
 export type LogLevel = "error" | "warn" | "info" | "debug" | "verbose";
 export type LogFormat = "json" | "text" | "pino";
 
-// Log Level Constants
-export const LOG_LEVELS: Record<LogLevel, number> = {
-  error: 50,
-  warn: 40,
-  info: 30,
-  debug: 20,
-  verbose: 10,
-} as const;
-
-export const PINO_LEVELS: Record<number, string> = {
-  60: "FATAL",
-  50: "ERROR",
-  40: "WARN",
-  30: "INFO",
-  20: "DEBUG",
-  10: "TRACE",
-} as const;
-
 // Core Interfaces
 export interface LogEntry {
   readonly level: LogLevel;
@@ -97,36 +79,3 @@ export interface FormatterOptions {
   readonly context?: string;
 }
 
-// Logger Options Interfaces
-export interface LoggerOptions {
-  level?: LogLevel;
-  timestamp?: boolean;
-  colors?: boolean;
-  context?: string;
-  format?: LogFormat;
-  transports?: LoggerTransport[];
-  pino?: PinoOptions;
-}
-
-export interface PinoOptions {
-  level?: string;
-  timestamp?: boolean;
-  base?: boolean;
-  name?: string;
-  enabled?: boolean;
-}
-
-export interface LoggerTransport {
-  name: string;
-  level?: string;
-  format?: unknown;
-  filename?: string;
-  dirname?: string;
-  maxsize?: number;
-  maxFiles?: number;
-}
-
-// Utility Types
-export interface LoggerMetadata {
-  [key: string]: unknown;
-}
