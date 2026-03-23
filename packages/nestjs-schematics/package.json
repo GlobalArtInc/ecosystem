@@ -52,7 +52,7 @@
     "cpx2": "8.0.0",
     "reflect-metadata": "^0.2.2",
     "release-it": "19.2.4",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.2"
   },
   "publishConfig": {
     "access": "public"
