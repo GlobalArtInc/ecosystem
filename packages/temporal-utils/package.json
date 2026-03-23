@@ -59,6 +59,6 @@
     "@types/node": "25.5.0",
     "release-it": "19.2.4",
     "tsdown": "0.21.4",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.2"
   }
 }
