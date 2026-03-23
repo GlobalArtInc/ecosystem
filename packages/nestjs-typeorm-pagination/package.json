@@ -78,7 +78,7 @@
     "ts-node": "^10.9.2",
     "tsdown": "0.21.4",
     "typeorm": "0.3.28",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.2"
   },
   "dependencies": {
     "@globalart/nestjs-zod": "1.0.0",
