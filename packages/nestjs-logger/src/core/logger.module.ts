@@ -25,6 +25,7 @@ import {
 } from "../constants";
 import { getAllContextTokens, getContextLoggerToken } from "./logger.di-tokens";
 import { TraceContextMiddleware } from "./trace-context.middleware";
+import { TraceContextService } from "./trace-context.service";
 
 export interface LoggerModuleOptions {
   level?: "error" | "warn" | "info" | "debug" | "verbose";
@@ -104,6 +105,7 @@ export class LoggerModule
     HttpLoggerInterceptor,
     DYNAMIC_CONTEXT_LOGGER_FACTORY_TOKEN,
     TraceContextMiddleware,
+    TraceContextService,
   ];
 
   private static createConfigProvider(): Provider {
@@ -122,6 +124,7 @@ export class LoggerModule
   private static createCoreProviders(): Provider[] {
     return [
       TraceContextMiddleware,
+      TraceContextService,
       FormatterFactory,
       ConsoleWriter,
       ContextResolver,
