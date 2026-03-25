@@ -15,6 +15,7 @@ import type {
 import { getOpenTelemetryTraceIds } from "../utils/opentelemetry-trace";
 import { traceContextStorage } from "./trace-context.storage";
 import { nanoid } from "nanoid";
+import { TraceContextService } from "./trace-context.service";
 
 const PINO_LEVEL_TO_LOG_LEVEL: Record<number, LogLevel> = {
   60: "error",
@@ -34,6 +35,7 @@ export class LoggerService implements NestLoggerService, ILogger {
     private readonly formatter: ILogFormatter,
     private readonly writer: ILogWriter,
     private readonly contextResolver: IContextResolver,
+    private readonly traceContextService: TraceContextService,
   ) {}
 
   setContext(context: string): void {
@@ -96,9 +98,8 @@ export class LoggerService implements NestLoggerService, ILogger {
     if (source.traceId && source.spanId) {
       return { traceId: source.traceId, spanId: source.spanId };
     }
-
+    const correlationId = this.traceContextService.getTraceId();
     const otel = getOpenTelemetryTraceIds();
-    const correlationId = traceContextStorage.getStore()?.correlationId;
 
     return {
       traceId: source.traceId ?? otel.traceId ?? correlationId,
