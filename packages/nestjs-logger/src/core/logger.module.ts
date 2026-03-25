@@ -146,19 +146,27 @@ export class LoggerModule
           formatterFactory: FormatterFactory,
           writer: ConsoleWriter,
           contextResolver: ContextResolver,
+          traceContextService,
         ) => {
           const formatter = formatterFactory.create(config.format, {
             colors: config.colors,
             timestamp: config.timestamp,
             context: config.context,
           });
-          return new LoggerService(config, formatter, writer, contextResolver);
+          return new LoggerService(
+            config, 
+            formatter, 
+            writer, 
+            contextResolver,
+            traceContextService
+          );
         },
         inject: [
           LOGGER_CONFIG_TOKEN,
           FormatterFactory,
           ConsoleWriter,
           ContextResolver,
+          TraceContextService,
         ],
       },
       {
