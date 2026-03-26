@@ -114,7 +114,7 @@ export class TypeormOutboxCronService
     }
   }
 
-  private async finalizeEntity(id: number): Promise<void> {
+  private async finalizeEntity(id: string): Promise<void> {
     if (this.moduleConfig.deleteItem) {
       await this.dataSource.manager.delete(TypeormOutboxEntity, id);
     } else {
