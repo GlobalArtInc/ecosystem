@@ -93,7 +93,7 @@ export class TypeormOutboxCronService
         .createQueryBuilder(TypeormOutboxEntity, "e")
         .where("e.status = :status", { status: "pending" })
         .orderBy("e.createdAt", "ASC")
-        .setLock("pessimistic_write", undefined, ["SKIP LOCKED"])
+        .setLock("pessimistic_partial_write")
         .getMany();
 
       if (entities.length) {
