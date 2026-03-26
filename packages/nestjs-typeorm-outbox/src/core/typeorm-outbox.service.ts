@@ -5,9 +5,9 @@ import { Repository } from "typeorm";
 
 export interface CreateOutboxOptions {
   destinationTopic: string;
-  value: Record<string, unknown>;
-  headers?: Record<string, string>;
-  keys?: Record<string, unknown>;
+  value: any;
+  headers?: any;
+  keys?: any;
 }
 
 @Injectable()
