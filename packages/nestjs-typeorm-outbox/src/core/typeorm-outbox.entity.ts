@@ -6,10 +6,13 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 
-@Entity("outbox")
+@Entity("outbox_messages")
 export class TypeormOutboxEntity {
   @PrimaryGeneratedColumn()
   id!: number;
+
+  @Column({ name: 'status', default: 'pending' })
+  status!: string;
 
   @CreateDateColumn({ name: "created_at" })
   createdAt!: Date;

@@ -6,6 +6,7 @@ type BrokerConfig = MqttOptions | NatsOptions | KafkaOptions;
 
 export class TypeormOutboxRegisterCronModuleOptions {
   brokerConfig: BrokerConfig = {};
+  deleteItem?: boolean = true;
   typeOrmConnectionName?: string = "default";
   cronExpression?: string = CronExpression.EVERY_SECOND;
 }

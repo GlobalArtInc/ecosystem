@@ -2,13 +2,11 @@ import {
   Injectable,
   OnApplicationBootstrap,
   OnApplicationShutdown,
-  OnModuleInit,
 } from "@nestjs/common";
 import {
   InjectTypeormOutboxBroker,
   InjectTypeormOutboxCronConfig,
 } from "./typeorm-outbox.di-tokens";
-import { hashStringToInt } from "@globalart/text-utils";
 import { TypeormOutboxEntity } from "./typeorm-outbox.entity";
 import { firstValueFrom } from "rxjs";
 import { ClientProxy, Transport } from "@nestjs/microservices";
@@ -28,14 +26,20 @@ export class TypeormOutboxCronService
     private readonly moduleConfig: TypeormOutboxRegisterCronModuleOptions,
     private readonly dataSource: DataSource,
   ) {}
+
   private cronJob!: CronJob;
+  private isRunning = false;
 
   onApplicationBootstrap() {
     this.validateBrokerClient();
     this.cronJob = new CronJob(
       this.moduleConfig.cronExpression ?? CronExpression.EVERY_SECOND,
       () => {
-        this.executeCronJob();
+        if (this.isRunning) return;
+        this.isRunning = true;
+        this.executeCronJob().finally(() => {
+          this.isRunning = false;
+        });
       },
     );
     this.cronJob.start();
@@ -62,48 +66,63 @@ export class TypeormOutboxCronService
   }
 
   private async executeCronJob() {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    const lockKey = hashStringToInt("typeorm-outbox-cron-lock");
+    const entities = await this.claimPendingEntities();
+    if (!entities.length) return;
 
-    try {
-      const lockResult = await queryRunner.query(
-        "SELECT pg_try_advisory_lock($1) as locked",
-        [lockKey],
+    for (const entity of entities) {
+      await firstValueFrom(
+        this.brokerClient.emit(entity.destinationTopic, {
+          key: entity.keys,
+          value: entity.value,
+          headers: entity.headers,
+        }),
       );
 
-      if (!lockResult[0].locked) {
-        return;
+      await this.finalizeEntity(entity.id);
+    }
+  }
+
+  private async claimPendingEntities(): Promise<TypeormOutboxEntity[]> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+
+    try {
+      await queryRunner.startTransaction();
+
+      const entities = await queryRunner.manager
+        .createQueryBuilder(TypeormOutboxEntity, "e")
+        .where("e.status = :status", { status: "pending" })
+        .orderBy("e.createdAt", "ASC")
+        .setLock("pessimistic_write_or_fail")
+        .getMany();
+
+      if (entities.length) {
+        await queryRunner.manager.update(
+          TypeormOutboxEntity,
+          entities.map((e) => e.id),
+          { status: "processing" },
+        );
       }
-      try {
-        await queryRunner.startTransaction("REPEATABLE READ");
 
-        const entities = await queryRunner.manager.find(TypeormOutboxEntity, {
-          order: {
-            createdAt: "ASC",
-          },
-        });
-
-        for (const entity of entities) {
-          await firstValueFrom(
-            this.brokerClient.emit(entity.destinationTopic, {
-              key: entity.keys,
-              value: entity.value,
-              headers: entity.headers,
-            }),
-          );
-          await queryRunner.manager.delete(TypeormOutboxEntity, entity.id);
-        }
-
-        await queryRunner.commitTransaction();
-      } catch (error) {
-        await queryRunner.rollbackTransaction();
-        throw error;
-      } finally {
-        await queryRunner.query("SELECT pg_advisory_unlock($1)", [lockKey]);
-      }
+      await queryRunner.commitTransaction();
+      return entities;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
     } finally {
       await queryRunner.release();
+    }
+  }
+
+  private async finalizeEntity(id: number): Promise<void> {
+    if (this.moduleConfig.deleteItem) {
+      await this.dataSource.manager.delete(TypeormOutboxEntity, id);
+    } else {
+      await this.dataSource.manager.update(
+        TypeormOutboxEntity,
+        { id },
+        { status: "sent" },
+      );
     }
   }
 }
