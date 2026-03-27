@@ -48,7 +48,8 @@
     "publish:npm": "release-it --config ../../.release-it.json"
   },
   "dependencies": {
-    "mysql": "^2.18.1"
+    "mysql": "^2.18.1",
+    "@globalart/nestjs-zod": "^1.0.0"
   },
   "peerDependencies": {
     "@nestjs/common": "^10.0.0 || ^11.0.0",

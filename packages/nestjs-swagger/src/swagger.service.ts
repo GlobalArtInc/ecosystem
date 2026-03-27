@@ -1,5 +1,6 @@
 import { INestApplication, Injectable } from '@nestjs/common';
 import { OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
+import { cleanupOpenApiDoc } from '@globalart/nestjs-zod';
 
 type Paths = OpenAPIObject['paths'];
 
@@ -78,6 +79,12 @@ export class SwaggerService {
     if (!doc) return undefined;
     if (!serverUrl) return doc;
     return { ...doc, servers: [{ url: serverUrl }] };
+  }
+
+  formatZod() {
+    for (const key of Object.keys(this.documents)) {
+      this.documents[key] = cleanupOpenApiDoc(this.documents[key]);
+    }
   }
 
   init() {
