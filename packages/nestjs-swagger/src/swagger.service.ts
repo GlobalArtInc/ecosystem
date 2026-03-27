@@ -60,7 +60,8 @@ export class SwaggerService {
   private app: INestApplication | null = null;
   private documents: Record<string, OpenAPIObject> = {};
   private versions: Version[] = [];
-  private metaTags: string[] = ['protected', 'private', 'support'];
+  private metaTags: string[] = [];
+  private zod = false;
 
   setApp(app: any) {
     this.app = app;
@@ -82,6 +83,7 @@ export class SwaggerService {
   }
 
   formatZod() {
+    this.zod = true;
     for (const key of Object.keys(this.documents)) {
       this.documents[key] = cleanupOpenApiDoc(this.documents[key]);
     }
@@ -93,7 +95,7 @@ export class SwaggerService {
     }
 
     for (const version of this.versions) {
-      const { config, filterTag } = version;
+      const { config, filterTag, url } = version;
       const tempDoc = SwaggerModule.createDocument(this.app, config);
       const builder = new OpenApiDocsBuilder(tempDoc, this.metaTags);
 
@@ -101,7 +103,13 @@ export class SwaggerService {
         ? builder.filterByTag(filterTag)
         : builder.stripMetaTags();
 
-      this.documents[version.name] = document;
+      if (this.zod) {
+        this.documents[version.name] = cleanupOpenApiDoc(document);
+        SwaggerModule.setup(url, this.app, cleanupOpenApiDoc(document));
+      } else {
+        this.documents[version.name] = document;
+        SwaggerModule.setup(url, this.app, document);
+      }
     }
   }
 }
