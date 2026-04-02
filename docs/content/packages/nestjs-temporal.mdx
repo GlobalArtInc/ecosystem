@@ -44,7 +44,6 @@ import { TemporalModule } from "@globalart/nestjs-temporal";
     TemporalModule.registerWorker({
       taskQueue: "my-task-queue",
       workflowsPath: require.resolve("./workflows"),
-      activities: {},
     }),
   ],
 })
@@ -166,12 +165,10 @@ import { TemporalModule } from "@globalart/nestjs-temporal";
     TemporalModule.registerWorker({
       taskQueue: "order-queue",
       workflowsPath: require.resolve("./workflows/order"),
-      activities: {},
     }),
     TemporalModule.registerWorker({
       taskQueue: "payment-queue",
       workflowsPath: require.resolve("./workflows/payment"),
-      activities: {},
     }),
   ],
 })
@@ -195,7 +192,6 @@ import { TemporalModule } from "@globalart/nestjs-temporal";
       useFactory: (configService: ConfigService) => ({
         taskQueue: configService.get("TEMPORAL_TASK_QUEUE"),
         workflowsPath: require.resolve("./workflows"),
-        activities: {},
         connection: {
           address: configService.get("TEMPORAL_ADDRESS"),
         },
@@ -420,7 +416,6 @@ export class EmailService {
     TemporalModule.registerWorker({
       taskQueue: "email-queue",
       workflowsPath: require.resolve("./workflows"),
-      activities: {},
     }),
     TemporalModule.registerClient(),
   ],
@@ -477,7 +472,6 @@ import { TemporalModule } from "@globalart/nestjs-temporal";
         taskQueue:
           configService.get<string>("TEMPORAL_TASK_QUEUE") || "default",
         workflowsPath: require.resolve("./workflows"),
-        activities: {},
         connection: {
           address:
             configService.get<string>("TEMPORAL_ADDRESS") || "localhost:7233",

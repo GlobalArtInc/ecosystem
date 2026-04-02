@@ -131,8 +131,12 @@ export class TemporalExplorer
 
     this.logger.verbose("Creating a new Worker");
     this.workers = await Promise.all(
-      workerConfig.map((config) =>
-        Worker.create({ ...sharedWorkerOptions, ...config }),
+      workerConfig.map(({ activities: configActivities, ...config }) =>
+        Worker.create({
+          ...sharedWorkerOptions,
+          ...config,
+          activities: { ...(configActivities as Record<string, Function>), ...activitiesFunc },
+        }),
       ),
     );
   }
