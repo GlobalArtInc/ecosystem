@@ -276,10 +276,11 @@ export class TemporalExplorer
             );
 
             activitiesMethod[key] = async (...args: unknown[]) => {
-              const result = handler(...args, Context.current().info);
+              const ctx = Context.current();
+              const result = handler(...args, ctx.info);
 
               const interval = setInterval(() => {
-                Context.current().heartbeat(crypto.randomUUID());
+                ctx.heartbeat(crypto.randomUUID());
               }, 5000);
 
               try {
