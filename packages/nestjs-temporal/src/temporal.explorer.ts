@@ -286,7 +286,7 @@ export class TemporalExplorer
                 return isObservable(result)
                   ? await lastValueFrom(result)
                   : await result;
-              } finally {
+              } catch {
                 clearInterval(interval);
               }
             };
