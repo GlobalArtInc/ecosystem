@@ -25,7 +25,6 @@ The `@globalart/nestjs-temporal` package simplifies working with Temporal in Nes
 ## Key Features
 
 - **Activity decorators** - Use `@Activities()` and `@Activity()` to register activities
-- **Workflow decorators** - Use `@Workflows()` and `@WorkflowMethod()` to register workflows
 - **Client injection** - Inject Temporal clients using `@InjectTemporalClient()`
 - **Multiple workers** - Configure multiple workers with different queues
 - **Type safety** - Full TypeScript support
@@ -102,28 +101,6 @@ export class OrderService {
 }
 ```
 
-### Registering Workflows
-
-Use the `@Workflows()` and `@WorkflowMethod()` decorators to register workflows:
-
-```typescript
-import { Workflows, WorkflowMethod } from "@globalart/nestjs-temporal";
-import { proxyActivities } from "@temporalio/workflow";
-
-@Workflows()
-export class OrderWorkflows {
-  @WorkflowMethod()
-  async processOrderWorkflow(orderId: string): Promise<void> {
-    const activities = proxyActivities<typeof OrderActivities>({
-      startToCloseTimeout: "1 minute",
-    });
-
-    await activities.processOrder(orderId);
-    await activities.sendNotification(`Order ${orderId} processed`);
-  }
-}
-```
-
 ## Configuration
 
 ### TemporalModule.registerWorker
@@ -172,44 +149,6 @@ export class PaymentActivities {
   @Activity("refund-payment")
   async refundPayment(transactionId: string): Promise<void> {
     console.log(`Refunding transaction: ${transactionId}`);
-  }
-}
-```
-
-### Creating Workflows
-
-Workflows orchestrate activities and define the business logic:
-
-```typescript
-import { Workflows, WorkflowMethod } from "@globalart/nestjs-temporal";
-import { proxyActivities } from "@temporalio/workflow";
-
-interface PaymentActivities {
-  chargeCreditCard(
-    cardNumber: string,
-    amount: number
-  ): Promise<{ transactionId: string }>;
-  refundPayment(transactionId: string): Promise<void>;
-}
-
-@Workflows()
-export class PaymentWorkflows {
-  @WorkflowMethod("process-payment")
-  async processPayment(
-    cardNumber: string,
-    amount: number
-  ): Promise<{ transactionId: string }> {
-    const activities = proxyActivities<PaymentActivities>({
-      startToCloseTimeout: "5 minutes",
-    });
-
-    try {
-      const result = await activities.chargeCreditCard(cardNumber, amount);
-      return result;
-    } catch (error) {
-      await activities.refundPayment(result.transactionId);
-      throw error;
-    }
   }
 }
 ```
@@ -398,46 +337,6 @@ async processOrder(orderId: string) {}
 async anotherActivity() {}
 ```
 
-### Workflows Decorator
-
-#### `@Workflows(nameOrOptions?: string | WorkflowsOptions): ClassDecorator`
-
-Marks a class as containing Temporal workflows.
-
-**Parameters:**
-
-- `nameOrOptions` - Optional queue name (string) or options object
-
-**Example:**
-
-```typescript
-@Workflows("my-queue")
-export class MyWorkflows {
-  @WorkflowMethod()
-  async myWorkflow() {}
-}
-```
-
-### WorkflowMethod Decorator
-
-#### `@WorkflowMethod(nameOrOptions?: string | WorkflowMethodOptions): MethodDecorator`
-
-Marks a method as a Temporal workflow method.
-
-**Parameters:**
-
-- `nameOrOptions` - Optional workflow name (string) or options object
-
-**Example:**
-
-```typescript
-@WorkflowMethod()
-async myWorkflow() {}
-
-@WorkflowMethod("custom-workflow-name")
-async anotherWorkflow() {}
-```
-
 ### InjectTemporalClient
 
 #### `InjectTemporalClient(name?: string): ParameterDecorator`
@@ -605,7 +504,6 @@ export class AppModule {}
 ## Best Practices
 
 - **Use decorators** - Always use `@Activities()` and `@Activity()` for activities
-- **Use decorators for workflows** - Use `@Workflows()` and `@WorkflowMethod()` for workflows
 - **Handle errors** - Always handle errors from workflow and activity executions
 - **Use type safety** - Define interfaces for your activities and workflows
 - **Organize workflows** - Store workflow files in a separate directory

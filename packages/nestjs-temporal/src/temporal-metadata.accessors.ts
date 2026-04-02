@@ -4,12 +4,11 @@ import { Reflector } from "@nestjs/core";
 import {
   TEMPORAL_MODULE_ACTIVITIES,
   TEMPORAL_MODULE_ACTIVITY,
-  TEMPORAL_MODULE_WORKFLOW,
 } from "./constants/temporal.constants";
 
 /**
  * TemporalMetadataAccessor provides methods to check and retrieve Temporal decorator metadata.
- * It uses NestJS Reflector to access metadata set by @Activities(), @Activity(), @Workflows(), and @WorkflowMethod() decorators.
+ * It uses NestJS Reflector to access metadata set by @Activities() and @Activity() decorators.
  */
 @Injectable()
 export class TemporalMetadataAccessor {
@@ -33,21 +32,4 @@ export class TemporalMetadataAccessor {
     return this.reflector.get(TEMPORAL_MODULE_ACTIVITY, target);
   }
 
-  isWorkflows(target: Type<unknown> | Function | null | undefined): boolean {
-    if (!target) return false;
-    return !!this.reflector.get(TEMPORAL_MODULE_WORKFLOW, target);
-  }
-
-  getWorkflows(target: Type<unknown> | Function): unknown {
-    return this.reflector.get(TEMPORAL_MODULE_WORKFLOW, target);
-  }
-
-  isWorkflow(target: Type<unknown> | Function | null | undefined): boolean {
-    if (!target) return false;
-    return !!this.reflector.get(TEMPORAL_MODULE_WORKFLOW, target);
-  }
-
-  getWorkflow(target: Type<unknown> | Function): unknown {
-    return this.reflector.get(TEMPORAL_MODULE_WORKFLOW, target);
-  }
 }
