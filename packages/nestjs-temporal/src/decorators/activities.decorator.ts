@@ -51,7 +51,7 @@ export const Activities =
   (options?: ActivitiesOptions): ClassDecorator =>
   (target: Function) => {
     SetMetadata(SCOPE_OPTIONS_METADATA, options)(target);
-    SetMetadata(TEMPORAL_MODULE_ACTIVITIES, options)(target);
+    SetMetadata(TEMPORAL_MODULE_ACTIVITIES, options ?? {})(target);
   };
 
 /**
