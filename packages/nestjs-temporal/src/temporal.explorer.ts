@@ -279,8 +279,6 @@ export class TemporalExplorer
               const ctx = Context.current();
               const result = handler(...args, ctx.info);
 
-              ctx.heartbeat(Date.now());
-
               const interval = setInterval(() => {
                 ctx.heartbeat(Date.now());
               }, 5000);
