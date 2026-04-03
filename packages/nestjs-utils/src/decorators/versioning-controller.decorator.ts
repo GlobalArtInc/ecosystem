@@ -1,4 +1,5 @@
-import { Controller, Scope } from '@nestjs/common';
+import { applyDecorators, Controller, Scope } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 interface VersioningControllerOptions {
   version?: string;
@@ -7,6 +8,7 @@ interface VersioningControllerOptions {
   durable?: boolean;
   host?: string;
   scope?: Scope;
+  addTag?: boolean;
 }
 
 export const VersioningController = (options: VersioningControllerOptions = {}) => {
@@ -19,11 +21,21 @@ export const VersioningController = (options: VersioningControllerOptions = {}) 
     path += options.path;
   }
 
-  return Controller({
-    version: options.access,
-    path: path || undefined,
-    durable: options.durable,
-    host: options.host,
-    scope: options.scope,
-  });
+  const decorators = [];
+  decorators.push(
+    Controller({
+      version: options.access,
+      path: path || undefined,
+      durable: options.durable,
+      host: options.host,
+      scope: options.scope,
+    })
+  );
+  if (options.addTag && options.access) {
+    decorators.push(
+      ApiTags(options.access)
+    );
+  }
+
+  return applyDecorators(...decorators);
 };

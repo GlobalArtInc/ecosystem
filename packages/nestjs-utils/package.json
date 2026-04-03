@@ -46,10 +46,12 @@
   },
   "peerDependencies": {
     "@nestjs/common": "^10.0.0 || ^11.0.0",
+    "@nestjs/swagger": "^10.0.0 || ^11.0.0",
     "@nestjs/core": "^10.0.0 || ^11.0.0"
   },
   "dependencies": {
-    "@nestjs/common": "^11.1.17"
+    "@nestjs/common": "^11.1.17",
+    "@nestjs/swagger": "^11.2.6"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
