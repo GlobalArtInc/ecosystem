@@ -1,6 +1,6 @@
 import { OnApplicationShutdown } from '@nestjs/common';
 import { WorkflowClient, WorkflowClientOptions } from '@temporalio/client';
-import { TemporalWorkflowService } from '../core';
+import { TemporalWorkflowClient } from '../core';
 
 /**
  * Assigns an application shutdown hook to a WorkflowClient to ensure
@@ -36,6 +36,6 @@ export function assignOnAppShutdownHook(
 export function getWorkflowClient(
   options?: WorkflowClientOptions,
 ): WorkflowClient {
-  const client = new TemporalWorkflowService(options);
+  const client = new TemporalWorkflowClient(options);
   return assignOnAppShutdownHook(client);
 }

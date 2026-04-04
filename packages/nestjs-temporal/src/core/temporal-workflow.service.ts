@@ -1,7 +1,6 @@
-import { Injectable } from "@nestjs/common";
 import { WorkflowClient, WorkflowClientOptions, WorkflowExecutionDescription, WorkflowHandle, WorkflowNotFoundError } from "@temporalio/client";
 
-export class TemporalWorkflowService extends WorkflowClient {
+export class TemporalWorkflowClient extends WorkflowClient {
   constructor(options?: WorkflowClientOptions) {
     super(options);
   }
