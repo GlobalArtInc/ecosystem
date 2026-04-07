@@ -14,13 +14,13 @@ class OpenApiDocsBuilder {
     return this.mapOperations((op) => ({ ...op, tags: this.removeMeta(op.tags) }));
   }
 
-  filterByTag(tag: string): OpenAPIObject {
+  filterByTags(tags: string[]): OpenAPIObject {
     const filteredPaths: Paths = {};
     for (const [path, methods] of Object.entries(this.doc.paths ?? {})) {
       const filteredMethods: Record<string, unknown> = {};
       for (const [method, operation] of Object.entries(methods as Record<string, unknown>)) {
         const op = operation as { tags?: string[] };
-        if (op.tags?.includes(tag)) {
+        if (op.tags?.some((t) => tags.includes(t))) {
           filteredMethods[method] = { ...op, tags: this.removeMeta(op.tags) };
         }
       }
@@ -52,7 +52,7 @@ interface Version {
   name: string;
   url: string;
   config: Omit<OpenAPIObject, 'paths'>;
-  filterTag?: string;
+  filterTags?: string[];
 }
 
 @Injectable()
@@ -95,12 +95,12 @@ export class SwaggerService {
     }
 
     for (const version of this.versions) {
-      const { config, filterTag, url } = version;
+      const { config, filterTags, url } = version;
       const tempDoc = SwaggerModule.createDocument(this.app, config);
       const builder = new OpenApiDocsBuilder(tempDoc, this.metaTags);
 
-      const document = filterTag
-        ? builder.filterByTag(filterTag)
+      const document = filterTags?.length
+        ? builder.filterByTags(filterTags)
         : builder.stripMetaTags();
 
       if (this.zod) {
