@@ -1,6 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { LOGGER_CONFIG_TOKEN } from "../constants";
 import { LoggerService } from "../core/logger.service";
+import { TraceContextService } from "../core/trace-context.service";
 import type { LoggerConfiguration } from "../types/index";
 import { ContextResolver } from "../utils/context-resolver";
 import { ConsoleWriter } from "../writers/console-writer";
@@ -14,7 +15,8 @@ export class DynamicContextLoggerFactory {
     @Inject(LOGGER_CONFIG_TOKEN) private readonly config: LoggerConfiguration,
     private readonly formatterFactory: FormatterFactory,
     private readonly writer: ConsoleWriter,
-    private readonly contextResolver: ContextResolver
+    private readonly contextResolver: ContextResolver,
+    private readonly traceContextService: TraceContextService,
   ) {}
 
   createLogger(context: string): LoggerService {
@@ -32,7 +34,8 @@ export class DynamicContextLoggerFactory {
       this.config,
       formatter,
       this.writer,
-      this.contextResolver
+      this.contextResolver,
+      this.traceContextService,
     );
     logger.setContext(context);
 

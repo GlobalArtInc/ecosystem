@@ -12,7 +12,31 @@ export class TextFormatter extends BaseFormatter {
   }
 
   formatHttpRequest(entry: HttpRequestLogEntry): string {
-    return JSON.stringify(entry);
+    const parts: string[] = [];
+
+    if (this.options.timestamp) {
+      parts.push(this.colorize(`[${new Date(entry.time).toISOString()}]`, "gray"));
+    }
+
+    const level = entry.level >= 50 ? "error" : entry.level >= 40 ? "warn" : "info";
+    parts.push(this.colorize(`[${level.toUpperCase()}]`, this.getColorForLevel(entry.level)));
+    parts.push(this.colorize("[HTTP]", "cyan"));
+
+    const { method, url, statusCode, responseTime } = {
+      method: entry.req.method,
+      url: entry.req.url,
+      statusCode: entry.res.statusCode,
+      responseTime: entry.responseTime,
+    };
+
+    parts.push(this.colorize(`${method} ${url} ${statusCode} ${responseTime}ms`, "bright"));
+
+    if (entry.traceId || entry.spanId) {
+      const ids = [entry.traceId, entry.spanId].filter(Boolean).join("/");
+      parts.push(this.colorize(`[${ids}]`, "magenta"));
+    }
+
+    return parts.join(" ");
   }
 
   private buildLogParts(entry: LogEntry): string[] {
