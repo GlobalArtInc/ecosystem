@@ -11,7 +11,7 @@ import {
   PlatformaticClientEvent,
   PlatformaticKafkaOptions,
   PlatformaticKafkaStatus,
-} from "./platformatic-kafka.types";
+} from "../types/platformatic-kafka.types";
 
 type KafkaClientLike = {
   on(event: PlatformaticClientEvent, handler: () => void): unknown;
@@ -23,6 +23,17 @@ export const EVENTS_MAP: Record<PlatformaticKafkaStatus, PlatformaticClientEvent
   [PlatformaticKafkaStatus.DISCONNECTED]: "client:broker:disconnect",
   [PlatformaticKafkaStatus.FAILED]: "client:broker:failed",
 };
+
+export function resolveKafkaGroupId(
+  configured: string | undefined | null,
+  defaultGroup: string,
+  postfix: string,
+): string {
+  if (typeof configured === "string" && configured.length > 0) {
+    return configured;
+  }
+  return `${defaultGroup}${postfix}`;
+}
 
 /**
  * Serializes async operations into a strict FIFO queue so that connect,
@@ -39,6 +50,10 @@ export class SerialQueue {
       () => undefined,
     );
     return next;
+  }
+
+  idle(): Promise<void> {
+    return this.tail;
   }
 }
 
@@ -77,14 +92,38 @@ export async function closeKafkaClients(
   producer: KafkaProducer | null | undefined,
   forceCloseConsumer = false,
 ): Promise<void> {
+  const closeConsumer = async (): Promise<void> => {
+    if (!consumer) return;
+    await new Promise<void>((resolve) => {
+      (globalThis as unknown as { setTimeout: (fn: () => void, ms: number) => void }).setTimeout(
+        resolve,
+        0,
+      );
+    });
+    const closeOnce = (force: boolean) => Promise.resolve(consumer.close(force));
+    if (forceCloseConsumer) {
+      await closeOnce(true).catch(() => undefined);
+      return;
+    }
+    try {
+      await closeOnce(false);
+    } catch {
+      await closeOnce(true).catch(() => undefined);
+    }
+  };
+
   await Promise.all([
-    consumer
-      ? Promise.resolve(consumer.close(forceCloseConsumer)).catch(() => undefined)
-      : Promise.resolve(),
+    closeConsumer(),
     producer
       ? Promise.resolve(producer.close()).catch(() => undefined)
       : Promise.resolve(),
   ]);
+}
+
+export async function ensureBootstrapMetadata(
+  client: KafkaConsumer | KafkaProducer,
+): Promise<void> {
+  await client.metadata({ topics: [] });
 }
 
 /**

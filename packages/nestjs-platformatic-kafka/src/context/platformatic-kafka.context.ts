@@ -1,11 +1,13 @@
-import { BaseRpcContext } from '@nestjs/microservices/ctx-host/base-rpc.context';
-import type { PlatformaticKafkaMessage } from './platformatic-kafka.types';
+import { BaseRpcContext } from "@nestjs/microservices/ctx-host/base-rpc.context";
+import type { PlatformaticKafkaMessage } from "../types/platformatic-kafka.types";
 
 type PlatformaticKafkaContextArgs = [
   message: PlatformaticKafkaMessage,
   partition: number,
   topic: string,
-  headers: PlatformaticKafkaMessage['headers'],
+  headers: PlatformaticKafkaMessage["headers"],
+  commit: () => Promise<void>,
+  nack: (delayMs?: number) => void,
 ];
 
 /**
@@ -41,7 +43,17 @@ export class PlatformaticKafkaContext extends BaseRpcContext<PlatformaticKafkaCo
   }
 
   /** Returns the message headers map. */
-  getHeaders(): PlatformaticKafkaMessage['headers'] {
+  getHeaders(): PlatformaticKafkaMessage["headers"] {
     return this.args[3];
+  }
+
+  /** Commits the offset for this message (manual ack). */
+  commit(): Promise<void> {
+    return this.args[4]();
+  }
+
+  /** Signals processing failure — message will be retried after `delayMs` (default 5000ms). */
+  nack(delayMs?: number): void {
+    this.args[5](delayMs);
   }
 }

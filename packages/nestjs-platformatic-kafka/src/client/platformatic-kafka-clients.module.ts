@@ -1,6 +1,6 @@
 import { DynamicModule, FactoryProvider, InjectionToken, Module, ModuleMetadata, Type } from '@nestjs/common';
-import { PlatformaticKafkaClient } from './platformatic-kafka.client';
-import { PlatformaticKafkaOptions } from './platformatic-kafka.types';
+import { PlatformaticKafkaClient } from "./platformatic-kafka.client";
+import type { PlatformaticKafkaOptions } from "../types/platformatic-kafka.types";
 
 export interface PlatformaticKafkaClientOptions {
   name: InjectionToken;

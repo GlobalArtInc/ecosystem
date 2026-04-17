@@ -1,4 +1,4 @@
-import type { ReconnectConfig } from './platformatic-kafka.types';
+import type { ReconnectConfig } from "../types/platformatic-kafka.types";
 
 /**
  * Resolves reconnect timing parameters from the user-supplied config,

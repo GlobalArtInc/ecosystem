@@ -23,21 +23,24 @@ import {
   Subject,
   throwError,
 } from "rxjs";
-import { getReconnectDelays, sleepMs } from "./platformatic-kafka-reconnect";
+import { DEFAULT_PLATFORMATIC_STREAM_CONSUME } from "../constants/platformatic-kafka.constants";
+import { getReconnectDelays, sleepMs } from "../utils/platformatic-kafka-reconnect";
 import {
   KafkaConsumer,
   KafkaProducer,
   PlatformaticKafkaMessage,
   PlatformaticKafkaOptions,
   PlatformaticKafkaStatus,
-} from "./platformatic-kafka.types";
+} from "../types/platformatic-kafka.types";
 import {
   closeKafkaClients,
   createKafkaConsumer,
   createKafkaProducer,
+  ensureBootstrapMetadata,
   registerClientEventListeners,
+  resolveKafkaGroupId,
   SerialQueue,
-} from "./platformatic-kafka.utils";
+} from "../utils/platformatic-kafka.utils";
 
 type ResponseMessagesStream = Awaited<ReturnType<KafkaConsumer["consume"]>>;
 
@@ -86,7 +89,7 @@ export class PlatformaticKafkaClient extends ClientProxy<
       false,
     );
     this.clientId = (this.options.clientId ?? KAFKA_DEFAULT_CLIENT) + postfixId;
-    this.groupId = (this.options.groupId ?? KAFKA_DEFAULT_GROUP) + postfixId;
+    this.groupId = resolveKafkaGroupId(this.options.groupId, KAFKA_DEFAULT_GROUP, postfixId);
   }
 
   public subscribeToResponseOf(pattern: unknown): void {
@@ -96,6 +99,7 @@ export class PlatformaticKafkaClient extends ClientProxy<
 
   public async close(): Promise<void> {
     this.clientClosed = true;
+    await this.queue.idle();
     await this.queue.enqueue(() => this.disposeClientTransport());
   }
 
@@ -189,6 +193,13 @@ export class PlatformaticKafkaClient extends ClientProxy<
           this._status$,
           () => this.scheduleClientReconnect(),
         );
+        if (this.producerOnlyMode || this.responsePatterns.length === 0) {
+          const pings: Promise<void>[] = [ensureBootstrapMetadata(this._producer)];
+          if (this._consumer) {
+            pings.push(ensureBootstrapMetadata(this._consumer));
+          }
+          await Promise.all(pings);
+        }
         return;
       } catch (err) {
         if (this.clientClosed) throw err;
@@ -220,6 +231,7 @@ export class PlatformaticKafkaClient extends ClientProxy<
       sessionTimeout: 10000,
       heartbeatInterval: 500,
       topics: this.responsePatterns,
+      ...DEFAULT_PLATFORMATIC_STREAM_CONSUME,
       ...this.options.consumeOptions,
     });
     this.responseStream = stream;
