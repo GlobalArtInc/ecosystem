@@ -29,31 +29,26 @@ export class RedisModule
 
   protected connectionName?: string;
 
+  constructor(private readonly moduleRef: ModuleRef) {
+    super();
+  }
+
   public static forRoot(
     options: RedisModuleForRootOptions = {},
   ): DynamicModule {
     const baseModule = super.forRoot(options);
 
     return {
-      global: true,
-      module: RedisModule,
+      global: options?.isGlobal ?? false,
+      module: class extends RedisModule {
+        override connectionName = options?.connectionName;
+      },
       providers: [
         ...(baseModule.providers || []),
         this.getRedisClientProvider(options?.connectionName),
       ],
       exports: [RedisToken(options?.connectionName)],
-    }
-    // return {
-    //   global: options?.isGlobal ?? false,
-    //   module: class extends RedisModule {
-    //     override connectionName = options?.connectionName;
-    //   },
-    //   providers: [
-    //     ...(baseModule.providers || []),
-    //     this.getRedisClientProvider(options?.connectionName),
-    //   ],
-    //   exports: [RedisToken(options?.connectionName)],
-    // };
+    };
   }
 
   public static forRootAsync(options: RedisModuleAsyncOptions): DynamicModule {
@@ -146,11 +141,14 @@ export class RedisModule
   }
 
   async onApplicationShutdown() {
-    RedisModule.log(`Closing Redis connection...`, this.connectionName);
-    await this.moduleRef
-      .get<RedisInstance>(RedisToken(this.connectionName))
-      .quit();
-    RedisModule.log(`Redis connection closed`, this.connectionName);
+    try {
+      RedisModule.log(`Closing Redis connection...`, this.connectionName);
+      const client = this.moduleRef.get<RedisInstance>(RedisToken(this.connectionName), { strict: false });
+      await client?.quit();
+      RedisModule.log(`Redis connection closed`, this.connectionName);
+    } catch {
+      // client may not have been initialized (e.g. connect failed)
+    }
   }
 
   private static log(
