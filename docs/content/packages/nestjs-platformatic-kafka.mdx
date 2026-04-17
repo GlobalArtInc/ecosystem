@@ -1,0 +1,151 @@
+---
+sidebar_position: 10
+---
+
+# @globalart/platformatic-kafka
+
+A NestJS microservice transport built on top of [`@platformatic/kafka`](https://github.com/platformatic/kafka).
+
+## Installation
+
+```bash npm2yarn
+npm install @globalart/platformatic-kafka @platformatic/kafka
+```
+
+## Overview
+
+The `@globalart/platformatic-kafka` package provides a NestJS microservice transport using the high-performance `@platformatic/kafka` client. It exposes a transport strategy for consuming messages and a client proxy for producing them, with built-in exponential-backoff reconnection.
+
+## Key Features
+
+- **Transport strategy** — drop-in `CustomTransportStrategy` for `app.connectMicroservice()`
+- **Client proxy** — `PlatformaticKafkaClient` for publishing events and messages
+- **Auto-reconnect** — exponential backoff on broker failures, for both strategy and client
+- **Producer-only mode** — skip consumer setup when you only need to produce
+- **Batch emit** — send multiple messages in a single broker round-trip
+- **Type-safe** — full TypeScript support
+
+## Quick Start
+
+### Register the transport in `main.ts`
+
+```typescript
+import { NestFactory } from '@nestjs/core';
+import { PlatformaticKafkaStrategy } from '@globalart/platformatic-kafka';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  app.connectMicroservice({
+    strategy: new PlatformaticKafkaStrategy({
+      brokers: ['localhost:9092'],
+      clientId: 'my-service',
+      groupId: 'my-group',
+    }),
+  });
+
+  await app.startAllMicroservices();
+  await app.listen(3000);
+}
+bootstrap();
+```
+
+### Handle events in a controller
+
+```typescript
+import { Controller } from '@nestjs/common';
+import { EventPattern, Payload, Ctx } from '@nestjs/microservices';
+import { PlatformaticKafkaContext } from '@globalart/platformatic-kafka';
+
+@Controller()
+export class AppController {
+  @EventPattern('orders.created')
+  async handleOrder(
+    @Payload() data: unknown,
+    @Ctx() ctx: PlatformaticKafkaContext,
+  ) {
+    const [message, partition, topic] = ctx.getArgs();
+    console.log(topic, partition, data);
+  }
+}
+```
+
+### Register the client in a module
+
+```typescript
+import { Module } from '@nestjs/common';
+import { PlatformaticKafkaClient } from '@globalart/platformatic-kafka';
+
+@Module({
+  providers: [
+    {
+      provide: 'KAFKA_CLIENT',
+      useValue: new PlatformaticKafkaClient({
+        brokers: ['localhost:9092'],
+        clientId: 'my-service',
+        groupId: 'my-group',
+      }),
+    },
+  ],
+  exports: ['KAFKA_CLIENT'],
+})
+export class KafkaModule {}
+```
+
+### Emit events from a service
+
+```typescript
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { PlatformaticKafkaClient } from '@globalart/platformatic-kafka';
+
+@Injectable()
+export class OrdersService implements OnModuleInit {
+  constructor(
+    @Inject('KAFKA_CLIENT') private readonly client: PlatformaticKafkaClient,
+  ) {}
+
+  async onModuleInit() {
+    await this.client.connect();
+  }
+
+  async createOrder(order: unknown) {
+    this.client.emit('orders.created', order);
+  }
+
+  async createOrders(orders: unknown[]) {
+    this.client.emitBatch('orders.created', { messages: orders });
+  }
+}
+```
+
+## Configuration
+
+### PlatformaticKafkaOptions
+
+| Option            | Type                   | Default           | Description                                                                 |
+| ----------------- | ---------------------- | ----------------- | --------------------------------------------------------------------------- |
+| `brokers`         | `string[] \| Broker[]` | —                 | **Required.** List of broker addresses                                      |
+| `clientId`        | `string`               | `nestjs-consumer` | Kafka client ID                                                             |
+| `groupId`         | `string`               | `nestjs-group`    | Kafka consumer group ID                                                     |
+| `postfixId`       | `string`               | `-server`/`-client` | Suffix appended to `clientId` and `groupId`                               |
+| `forceClose`      | `boolean`              | `false`           | Force-close connections on shutdown                                         |
+| `consumer`        | `ConsumerOptions`      | —                 | `@platformatic/kafka` consumer options (without `clientId`/`bootstrapBrokers`) |
+| `producer`        | `ProducerOptions`      | —                 | `@platformatic/kafka` producer options (without `clientId`/`bootstrapBrokers`/`groupId`) |
+| `consumeOptions`  | `ConsumeOptions`       | —                 | Options passed to `consumer.consume()`                                      |
+| `produceOptions`  | `ProduceOptions`       | —                 | Options passed to `producer.send()`                                         |
+| `producerOnlyMode`| `boolean`              | `false`           | Skip consumer setup (client only)                                           |
+| `reconnect`       | `ReconnectConfig`      | —                 | Exponential backoff configuration                                           |
+
+### ReconnectConfig
+
+| Option           | Type     | Default | Description                          |
+| ---------------- | -------- | ------- | ------------------------------------ |
+| `initialDelayMs` | `number` | `1000`  | Initial retry delay in milliseconds  |
+| `maxDelayMs`     | `number` | `30000` | Maximum retry delay in milliseconds  |
+| `multiplier`     | `number` | `2`     | Backoff multiplier per retry         |
+
+## Notes
+
+- Prefer `@EventPattern` over `@MessagePattern`. Bidirectional (request/reply) communication is supported but messages can be lost during rebalancing due to a limitation of `@platformatic/kafka`.
+- Topics are auto-created by default when producing.
