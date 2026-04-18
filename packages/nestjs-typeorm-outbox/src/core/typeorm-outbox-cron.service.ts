@@ -59,9 +59,9 @@ export class TypeormOutboxCronService
         brokerConfig?.transport as Transport,
       )
     ) {
-      throw new Error(
-        `[TypeormOutboxCronService] Broker config must be an instance of KafkaOptions, NatsOptions, or MqttOptions`,
-      );
+      // throw new Error(
+      //   `[TypeormOutboxCronService] Broker config must be an instance of KafkaOptions, NatsOptions, or MqttOptions`,
+      // );
     }
   }
 
