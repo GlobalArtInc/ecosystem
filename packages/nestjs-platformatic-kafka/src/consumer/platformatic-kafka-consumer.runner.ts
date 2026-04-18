@@ -178,7 +178,7 @@ export class PlatformaticKafkaConsumerRunner implements OnApplicationShutdown {
         .catch((err: unknown) => this.logger.error(err));
     });
     stream.on("error", (error: Error) => {
-      this.logger.error(error.message);
+      this.logger.warn(`Kafka stream error, reconnecting: ${formatError(error)}`);
       this.scheduleReconnect();
     });
   }

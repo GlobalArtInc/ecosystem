@@ -226,7 +226,7 @@ export class PlatformaticKafkaStrategy
         .catch((err: unknown) => this.logger.error(err));
     });
     stream.on("error", (error: Error) => {
-      this.handleError(error.message);
+      this.logger.warn(`Kafka stream error, reconnecting: ${formatError(error)}`);
       this.scheduleReconnect();
     });
   }

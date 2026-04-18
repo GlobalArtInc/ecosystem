@@ -36,6 +36,10 @@ export function sleepMs(ms: number): Promise<void> {
  * Runs `attempt` in a loop with exponential backoff until it succeeds or `isClosed()` returns true.
  * If `isClosed()` is true when an error is caught, the error is rethrown immediately.
  */
+function jitter(ms: number): number {
+  return Math.floor(ms * (0.75 + Math.random() * 0.5));
+}
+
 export async function runWithBackoff(
   reconnect: ReconnectConfig | undefined,
   isClosed: () => boolean,
@@ -50,8 +54,9 @@ export async function runWithBackoff(
       return;
     } catch (err) {
       if (isClosed()) throw err;
-      onWait(delay, err);
-      await sleepMs(delay);
+      const jittered = jitter(delay);
+      onWait(jittered, err);
+      await sleepMs(jittered);
       delay = Math.min(Math.floor(delay * factor), max);
     }
   }
