@@ -175,3 +175,102 @@ export function createKafkaProducer(
     ...options.producer,
   });
 }
+
+export type EmitMessageParts = {
+  value: string;
+  key?: string;
+  headers?: Record<string, string>;
+};
+
+function hasOwnKey(o: object, k: string): boolean {
+  return Object.prototype.hasOwnProperty.call(o, k);
+}
+
+function isEmitEnvelope(data: unknown): data is Record<string, unknown> {
+  if (typeof data !== "object" || data === null || Array.isArray(data)) {
+    return false;
+  }
+  return (
+    hasOwnKey(data, "keys") ||
+    hasOwnKey(data, "key") ||
+    hasOwnKey(data, "headers")
+  );
+}
+
+function serializeEmitJsonValue(data: unknown): string {
+  if (data === undefined) {
+    return "null";
+  }
+  return JSON.stringify(data);
+}
+
+function serializeEmitKeyPart(part: unknown): string | undefined {
+  if (part === undefined) {
+    return undefined;
+  }
+  if (part === null) {
+    return "";
+  }
+  if (typeof part === "string") {
+    return part;
+  }
+  if (typeof part === "number" || typeof part === "boolean") {
+    return String(part);
+  }
+  if (typeof part === "bigint") {
+    return String(part);
+  }
+  return JSON.stringify(part);
+}
+
+function normalizeEmitHeaders(raw: unknown): Record<string, string> | undefined {
+  if (raw === null || raw === undefined) {
+    return undefined;
+  }
+  if (typeof raw !== "object" || Array.isArray(raw)) {
+    return undefined;
+  }
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (v === undefined) {
+      continue;
+    }
+    if (v === null) {
+      out[k] = "null";
+    } else if (typeof v === "string") {
+      out[k] = v;
+    } else if (typeof v === "number" || typeof v === "boolean") {
+      out[k] = String(v);
+    } else if (typeof v === "bigint") {
+      out[k] = String(v);
+    } else {
+      out[k] = JSON.stringify(v);
+    }
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
+export function buildEmitMessageParts(data: unknown): EmitMessageParts {
+  if (isEmitEnvelope(data)) {
+    const o = data;
+    let keyPart: string | undefined;
+    if (hasOwnKey(o, "keys")) {
+      keyPart = serializeEmitKeyPart(o.keys);
+    } else if (hasOwnKey(o, "key")) {
+      keyPart = serializeEmitKeyPart(o.key);
+    }
+    const valuePart = hasOwnKey(o, "value")
+      ? serializeEmitJsonValue(o.value)
+      : "null";
+    const headersPart = normalizeEmitHeaders(o.headers);
+    const parts: EmitMessageParts = { value: valuePart };
+    if (keyPart !== undefined && keyPart.length > 0) {
+      parts.key = keyPart;
+    }
+    if (headersPart !== undefined) {
+      parts.headers = headersPart;
+    }
+    return parts;
+  }
+  return { value: serializeEmitJsonValue(data) };
+}

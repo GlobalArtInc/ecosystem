@@ -36,6 +36,7 @@ import {
   PlatformaticKafkaStatus,
 } from "../types/platformatic-kafka.types";
 import {
+  buildEmitMessageParts,
   closeKafkaClients,
   createKafkaConsumer,
   createKafkaProducer,
@@ -272,21 +273,34 @@ export class PlatformaticKafkaClient extends ClientProxy<
       this.producer.send({
         autocreateTopics: true,
         ...this.options.produceOptions,
-        messages: packets.data.messages.map((message) => ({
-          topic: pattern,
-          value: JSON.stringify(message),
-        })),
+        messages: packets.data.messages.map((message) => {
+          const parts = buildEmitMessageParts(message);
+          return {
+            topic: pattern,
+            value: parts.value,
+            ...(parts.key !== undefined ? { key: parts.key } : {}),
+            ...(parts.headers !== undefined ? { headers: parts.headers } : {}),
+          };
+        }),
       }),
     );
   }
 
   protected async dispatchEvent<T = unknown>(packet: ReadPacket): Promise<T> {
     const pattern = this.normalizePattern(packet.pattern);
+    const parts = buildEmitMessageParts(packet.data);
     await this.queue.enqueue(() =>
       this.producer.send({
         autocreateTopics: true,
         ...this.options.produceOptions,
-        messages: [{ topic: pattern, value: JSON.stringify(packet.data) }],
+        messages: [
+          {
+            topic: pattern,
+            value: parts.value,
+            ...(parts.key !== undefined ? { key: parts.key } : {}),
+            ...(parts.headers !== undefined ? { headers: parts.headers } : {}),
+          },
+        ],
       }),
     );
     return undefined as T;
