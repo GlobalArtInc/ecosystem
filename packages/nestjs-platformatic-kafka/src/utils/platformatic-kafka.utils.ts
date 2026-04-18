@@ -29,10 +29,21 @@ export function resolveKafkaGroupId(
   defaultGroup: string,
   postfix: string,
 ): string {
+  const base =
+    typeof configured === "string" && configured.length > 0
+      ? configured
+      : defaultGroup;
+  return `${base}${postfix}`;
+}
+
+export function resolvePostfixId(
+  configured: string | undefined | null,
+  fallback: string,
+): string {
   if (typeof configured === "string" && configured.length > 0) {
     return configured;
   }
-  return `${defaultGroup}${postfix}`;
+  return fallback;
 }
 
 /**

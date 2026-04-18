@@ -8,6 +8,7 @@ import { Subject } from "rxjs";
 import { ConsumerGroupJoinPayload } from "@platformatic/kafka";
 import {
   DEFAULT_PLATFORMATIC_STREAM_CONSUME,
+  DEFAULT_POSTFIX_SERVER,
   KAFKA_CONSUMER_MODULE_OPTIONS_TOKEN,
 } from "../constants/platformatic-kafka.constants";
 import { getReconnectDelays, sleepMs } from "../utils/platformatic-kafka-reconnect";
@@ -23,6 +24,7 @@ import {
   createKafkaConsumer,
   registerClientEventListeners,
   resolveKafkaGroupId,
+  resolvePostfixId,
   SerialQueue,
 } from "../utils/platformatic-kafka.utils";
 import {
@@ -49,6 +51,7 @@ export class PlatformaticKafkaConsumerRunner implements OnApplicationShutdown {
   private _consumer: KafkaConsumer | undefined;
   private messagesStream: MessagesStream | null = null;
   private closed = false;
+  private activeConsumerGroupId = "";
 
   constructor(
     @Inject(KAFKA_CONSUMER_MODULE_OPTIONS_TOKEN)
@@ -81,13 +84,17 @@ export class PlatformaticKafkaConsumerRunner implements OnApplicationShutdown {
     while (!this.closed) {
       try {
         await this.disposeConsumer();
-        const postfix = this.options.postfixId ?? "-consumer";
+        const postfix = resolvePostfixId(
+          this.options.postfixId,
+          DEFAULT_POSTFIX_SERVER,
+        );
         const clientId = (this.options.clientId ?? "nestjs-consumer") + postfix;
         const groupId = resolveKafkaGroupId(
           this.options.groupId,
           "nestjs-group",
           postfix,
         );
+        this.activeConsumerGroupId = groupId;
         this._consumer = createKafkaConsumer(this.options, clientId, groupId);
         registerClientEventListeners(this._consumer, this._status$, () =>
           this.scheduleReconnect(),
@@ -99,7 +106,10 @@ export class PlatformaticKafkaConsumerRunner implements OnApplicationShutdown {
           },
         );
         await this.attachStream();
-        this.logger.log("Kafka consumer ready");
+        const topics = [...this.handlers.keys()].sort().join(", ");
+        this.logger.log(
+          `Kafka consumer ready — consumer group "${this.activeConsumerGroupId}"${topics.length > 0 ? `, topics: ${topics}` : ""}`,
+        );
         return;
       } catch (err) {
         if (this.closed) throw err;
@@ -196,6 +206,7 @@ export class PlatformaticKafkaConsumerRunner implements OnApplicationShutdown {
     }
     await closeKafkaClients(this._consumer, null, this.options.forceClose);
     this._consumer = undefined;
+    this.activeConsumerGroupId = "";
   }
 
   private logPartitionAssignments(data: ConsumerGroupJoinPayload): void {
@@ -212,7 +223,7 @@ export class PlatformaticKafkaConsumerRunner implements OnApplicationShutdown {
       )
       .join("\n");
     this.logger.log(
-      `Assigned ${total} partition(s) across ${assignments.length} topic(s):\n${rows}`,
+      `Consumer group "${this.activeConsumerGroupId}" — assigned ${total} partition(s) across ${assignments.length} topic(s):\n${rows}`,
     );
   }
 }

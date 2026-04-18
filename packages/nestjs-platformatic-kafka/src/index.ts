@@ -1,3 +1,7 @@
+export {
+  DEFAULT_POSTFIX_CLIENT,
+  DEFAULT_POSTFIX_SERVER,
+} from "./constants/platformatic-kafka.constants";
 export { createPlatformaticKafkaMicroservice } from "./config/platformatic-kafka-microservice.config";
 export type { PlatformaticKafkaConnectConfig } from "./config/platformatic-kafka-microservice.config";
 

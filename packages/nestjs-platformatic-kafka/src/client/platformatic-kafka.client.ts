@@ -23,7 +23,10 @@ import {
   Subject,
   throwError,
 } from "rxjs";
-import { DEFAULT_PLATFORMATIC_STREAM_CONSUME } from "../constants/platformatic-kafka.constants";
+import {
+  DEFAULT_PLATFORMATIC_STREAM_CONSUME,
+  DEFAULT_POSTFIX_CLIENT,
+} from "../constants/platformatic-kafka.constants";
 import { getReconnectDelays, sleepMs } from "../utils/platformatic-kafka-reconnect";
 import {
   KafkaConsumer,
@@ -39,6 +42,7 @@ import {
   ensureBootstrapMetadata,
   registerClientEventListeners,
   resolveKafkaGroupId,
+  resolvePostfixId,
   SerialQueue,
 } from "../utils/platformatic-kafka.utils";
 
@@ -82,7 +86,10 @@ export class PlatformaticKafkaClient extends ClientProxy<
     super();
     this.initializeSerializer(undefined);
     this.initializeDeserializer(undefined);
-    const postfixId = this.getOptionsProp(this.options, "postfixId", "-client");
+    const postfixId = resolvePostfixId(
+      this.options.postfixId,
+      DEFAULT_POSTFIX_CLIENT,
+    );
     this.producerOnlyMode = this.getOptionsProp(
       this.options,
       "producerOnlyMode",

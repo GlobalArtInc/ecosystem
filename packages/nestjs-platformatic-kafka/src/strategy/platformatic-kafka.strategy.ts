@@ -19,7 +19,10 @@ import {
   ProduceResult,
 } from "@platformatic/kafka";
 import { firstValueFrom, isObservable, Observable, ReplaySubject } from "rxjs";
-import { DEFAULT_PLATFORMATIC_STREAM_CONSUME } from "../constants/platformatic-kafka.constants";
+import {
+  DEFAULT_PLATFORMATIC_STREAM_CONSUME,
+  DEFAULT_POSTFIX_SERVER,
+} from "../constants/platformatic-kafka.constants";
 import { getReconnectDelays, sleepMs } from "../utils/platformatic-kafka-reconnect";
 import { PlatformaticKafkaContext } from "../context/platformatic-kafka.context";
 import {
@@ -36,6 +39,7 @@ import {
   ensureBootstrapMetadata,
   registerClientEventListeners,
   resolveKafkaGroupId,
+  resolvePostfixId,
   SerialQueue,
 } from "../utils/platformatic-kafka.utils";
 
@@ -71,7 +75,10 @@ export class PlatformaticKafkaStrategy
     this.setOnProcessingStartHook((_transportId, _context, done) =>
       Promise.resolve().then(() => done()),
     );
-    const postfixId = this.getOptionsProp(this.options, "postfixId", "-server");
+    const postfixId = resolvePostfixId(
+      this.options.postfixId,
+      DEFAULT_POSTFIX_SERVER,
+    );
     this.clientId = (this.options.clientId ?? KAFKA_DEFAULT_CLIENT) + postfixId;
     this.groupId = resolveKafkaGroupId(
       this.options.groupId,
@@ -137,7 +144,10 @@ export class PlatformaticKafkaStrategy
           },
         );
         await this.attachMessageStream();
-        this.logger.log("Kafka transport ready");
+        const patterns = [...this.messageHandlers.keys()].join(", ");
+        this.logger.log(
+          `Kafka transport ready — consumer group "${this.groupId}"${patterns.length > 0 ? `, patterns: ${patterns}` : ""}`,
+        );
         return;
       } catch (err) {
         if (this.closed) throw err;
@@ -167,7 +177,7 @@ export class PlatformaticKafkaStrategy
       })
       .join("\n");
     this.logger.log(
-      `Assigned ${totalPartitions} partition(s) across ${assignments.length} topic(s):\n${rows}`,
+      `Consumer group "${this.groupId}" — assigned ${totalPartitions} partition(s) across ${assignments.length} topic(s):\n${rows}`,
     );
   }
 
