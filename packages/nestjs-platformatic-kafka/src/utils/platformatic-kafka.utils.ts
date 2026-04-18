@@ -38,10 +38,17 @@ export function resolvePostfixId(
 /** Serializes async operations into a strict FIFO queue so that operations never interleave. */
 export class SerialQueue {
   private tail: Promise<void> = Promise.resolve();
+  private _pending = 0;
+
+  get pending(): number { return this._pending; }
 
   enqueue<T>(fn: () => Promise<T>): Promise<T> {
+    this._pending++;
     const next = this.tail.then(() => fn());
-    this.tail = next.then(() => undefined, () => undefined);
+    this.tail = next.then(
+      () => { this._pending--; },
+      () => { this._pending--; },
+    );
     return next;
   }
 
@@ -124,9 +131,30 @@ export function createKafkaProducer(
     clientId,
     serializers: stringSerializers,
     autocreateTopics: true,
+    ...(options.idempotentProducer ? { idempotent: true } : {}),
     ...(options.connection ?? {}),
     ...options.producer,
   });
+}
+
+function formatPartitions(partitions: number[]): string {
+  const sorted = [...partitions].sort((a, b) => a - b);
+  const ranges: string[] = [];
+  let start = sorted[0];
+  let end = sorted[0];
+  for (let i = 1; i <= sorted.length; i++) {
+    if (i < sorted.length && sorted[i] === end + 1) {
+      end = sorted[i];
+    } else {
+      ranges.push(start === end ? `${start}` : `${start}-${end}`);
+      if (i < sorted.length) { start = sorted[i]; end = sorted[i]; }
+    }
+  }
+  return ranges.join(", ");
+}
+
+function plural(n: number, word: string): string {
+  return `${n} ${word}${n === 1 ? "" : "s"}`;
 }
 
 export function logPartitionAssignments(
@@ -137,12 +165,16 @@ export function logPartitionAssignments(
   const assignments = (data.assignments ?? []).filter((a) => a.partitions.length > 0);
   if (!assignments.length) return;
   const total = assignments.reduce((s, a) => s + a.partitions.length, 0);
-  const w = Math.max(...assignments.map((a) => a.topic.length));
+  const topicW = Math.max(...assignments.map((a) => a.topic.length));
+  const rangeW = Math.max(...assignments.map((a) => formatPartitions(a.partitions).length));
   const rows = assignments
-    .map((a) => `  ${a.topic.padEnd(w)}  →  [${a.partitions.join(", ")}]  (${a.partitions.length})`)
+    .map((a) => {
+      const range = formatPartitions(a.partitions).padEnd(rangeW);
+      return `  ${a.topic.padEnd(topicW)}  [${range}]  (${a.partitions.length})`;
+    })
     .join("\n");
   logger.log(
-    `Consumer group "${groupId}" — assigned ${total} partition(s) across ${assignments.length} topic(s):\n${rows}`,
+    `Consumer group "${groupId}" — ${plural(total, "partition")} across ${plural(assignments.length, "topic")}:\n${rows}`,
   );
 }
 

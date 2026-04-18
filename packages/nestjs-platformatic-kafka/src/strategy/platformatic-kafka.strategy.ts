@@ -55,8 +55,9 @@ export class PlatformaticKafkaStrategy
   private messagesStream: MessagesStream | null = null;
   private closed = false;
   private connecting = false;
+  private currentStatus: PlatformaticKafkaStatus = PlatformaticKafkaStatus.DISCONNECTED;
   private readonly queue = new SerialQueue();
-  private readonly inboundMessageQueue = new SerialQueue();
+  private readonly partitionQueues = new Map<number, SerialQueue>();
 
   get consumer(): KafkaConsumer {
     if (!this._consumer) throw new Error("No consumer initialized");
@@ -71,9 +72,14 @@ export class PlatformaticKafkaStrategy
   constructor(private readonly options: PlatformaticKafkaOptions) {
     super();
     this.setOnProcessingStartHook((_, __, done) => done());
+    this._status$.subscribe((s) => { this.currentStatus = s; });
     const postfixId = resolvePostfixId(options.postfixId, DEFAULT_POSTFIX_SERVER);
     this.clientId = (options.clientId ?? KAFKA_DEFAULT_CLIENT) + postfixId;
     this.groupId = resolveKafkaGroupId(options.groupId, KAFKA_DEFAULT_GROUP, postfixId);
+  }
+
+  public getStatus(): PlatformaticKafkaStatus {
+    return this.currentStatus;
   }
 
   public async listen(callback: (err?: unknown) => void): Promise<void> {
@@ -89,8 +95,42 @@ export class PlatformaticKafkaStrategy
   public async close(): Promise<void> {
     this.logger.log("Closing Kafka connection...");
     this.closed = true;
-    await Promise.all([this.inboundMessageQueue.idle(), this.queue.idle()]);
+    this.logPendingMetrics();
+    await this.waitForQueues();
     await this.queue.enqueue(() => this.disposeTransport());
+  }
+
+  public getQueueMetrics(): Record<number, number> {
+    const result: Record<number, number> = {};
+    for (const [partition, queue] of this.partitionQueues) {
+      if (queue.pending > 0) result[partition] = queue.pending;
+    }
+    return result;
+  }
+
+  private logPendingMetrics(): void {
+    const metrics = this.getQueueMetrics();
+    const total = Object.values(metrics).reduce((s, n) => s + n, 0);
+    if (total > 0) {
+      this.logger.log(
+        `Waiting for ${total} pending message(s) across ${Object.keys(metrics).length} partition(s)...`,
+      );
+    }
+  }
+
+  private async waitForQueues(): Promise<void> {
+    const allIdle = Promise.all([
+      ...[...this.partitionQueues.values()].map((q) => q.idle()),
+      this.queue.idle(),
+    ]);
+    const timeout = this.options.shutdownTimeoutMs;
+    if (!timeout) { await allIdle; return; }
+    await Promise.race([
+      allIdle,
+      sleepMs(timeout).then(() =>
+        this.logger.warn(`Shutdown timeout (${timeout}ms) exceeded, forcing close`),
+      ),
+    ]);
   }
 
   public on<
@@ -104,30 +144,39 @@ export class PlatformaticKafkaStrategy
     return [this.consumer, this.producer] as T;
   }
 
+  private getPartitionQueue(partition: number): SerialQueue {
+    let q = this.partitionQueues.get(partition);
+    if (!q) {
+      q = new SerialQueue();
+      this.partitionQueues.set(partition, q);
+    }
+    return q;
+  }
+
   private async connectWithBackoff(): Promise<void> {
     this.connecting = true;
     try {
-    await runWithBackoff(
-      this.options.reconnect,
-      () => this.closed,
-      async () => {
-        await this.disposeTransport();
-        this._consumer = createKafkaConsumer(this.options, this.clientId, this.groupId);
-        this._producer = createKafkaProducer(this.options, this.clientId);
-        registerClientEventListeners(this._consumer, this._status$, () => this.scheduleReconnect());
-        registerClientEventListeners(this._producer, this._status$, () => this.scheduleReconnect());
-        this._consumer.on("consumer:group:join", (data: ConsumerGroupJoinPayload) =>
-          logPartitionAssignments(this.logger, this.groupId, data),
-        );
-        await this.attachMessageStream();
-        const patterns = [...this.messageHandlers.keys()].join(", ");
-        this.logger.log(
-          `Kafka transport ready — consumer group "${this.groupId}"${patterns ? `, patterns: ${patterns}` : ""}`,
-        );
-      },
-      (delay) => this.logger.warn(`Kafka unavailable, retry in ${delay}ms`),
-    );
-    if (this.closed) throw new Error("Kafka transport closed before connect");
+      await runWithBackoff(
+        this.options.reconnect,
+        () => this.closed,
+        async () => {
+          await this.disposeTransport();
+          this._consumer = createKafkaConsumer(this.options, this.clientId, this.groupId);
+          this._producer = createKafkaProducer(this.options, this.clientId);
+          registerClientEventListeners(this._consumer, this._status$, () => this.scheduleReconnect());
+          registerClientEventListeners(this._producer, this._status$, () => this.scheduleReconnect());
+          this._consumer.on("consumer:group:join", (data: ConsumerGroupJoinPayload) =>
+            logPartitionAssignments(this.logger, this.groupId, data),
+          );
+          await this.attachMessageStream();
+          const patterns = [...this.messageHandlers.keys()].join(", ");
+          this.logger.log(
+            `Kafka transport ready — consumer group "${this.groupId}"${patterns ? `, patterns: ${patterns}` : ""}`,
+          );
+        },
+        (delay) => this.logger.warn(`Kafka unavailable, retry in ${delay}ms`),
+      );
+      if (this.closed) throw new Error("Kafka transport closed before connect");
     } finally {
       this.connecting = false;
     }
@@ -172,7 +221,7 @@ export class PlatformaticKafkaStrategy
     });
     this.messagesStream = stream;
     stream.on("data", (message: PlatformaticKafkaMessage) => {
-      void this.inboundMessageQueue
+      void this.getPartitionQueue(message.partition)
         .enqueue(() => this.handleMessage(message))
         .catch((err: unknown) => this.logger.error(err));
     });
@@ -225,33 +274,51 @@ export class PlatformaticKafkaStrategy
       return;
     }
 
-    const retryMs = 5000;
+    const defaultRetryMs = 5000;
+    const maxRetries = this.options.maxRetries ?? Infinity;
+    let failures = 0;
+
     while (!this.closed) {
       let nackDelay: number | null = null;
+      let lastError: unknown = null;
       const commit = () => payload.commit() as Promise<void>;
-      const nack = (delayMs = retryMs) => { nackDelay = delayMs; };
+      const nack = (delayMs = defaultRetryMs) => { nackDelay = delayMs; };
       const ctx = new PlatformaticKafkaContext([
         payload, payload.partition, payload.topic, payload.headers, commit, nack,
       ]);
+
       try {
         await this.handleEvent(payload.topic, { pattern: payload.topic, data }, ctx);
       } catch (err) {
         this.logger.error(err);
-        nackDelay = retryMs;
+        lastError = err;
+        nackDelay = defaultRetryMs;
       }
+
       if (nackDelay === null) {
         if (this.options.consumeOptions?.autocommit === false) {
           try {
             await commit();
+            return;
           } catch (err) {
             this.logger.error(err);
-            nackDelay = retryMs;
-            continue;
+            lastError = err;
+            nackDelay = defaultRetryMs;
           }
+        } else {
+          return;
         }
+      }
+
+      failures++;
+      if (failures > maxRetries) {
+        await this.sendToDlq(payload, lastError, failures);
         return;
       }
-      this.logger.warn(`Retrying message on topic "${payload.topic}" in ${nackDelay}ms`);
+      this.logger.warn(
+        `Retrying "${payload.topic}" in ${nackDelay}ms` +
+        (isFinite(maxRetries) ? ` (${failures}/${maxRetries})` : ""),
+      );
       await sleepMs(nackDelay);
     }
   }
@@ -291,6 +358,37 @@ export class PlatformaticKafkaStrategy
         await publish({ err });
       }
     });
+  }
+
+  private async sendToDlq(
+    payload: PlatformaticKafkaMessage,
+    error: unknown,
+    failures: number,
+  ): Promise<void> {
+    const dlqTopic = this.options.deadLetterTopic;
+    if (!dlqTopic) {
+      this.logger.warn(`Max retries exceeded on "${payload.topic}", dropping message (no DLQ configured)`);
+      return;
+    }
+    try {
+      const headers = new Map<string, string>([
+        ["x-dlq-original-topic", payload.topic],
+        ["x-dlq-original-partition", String(payload.partition)],
+        ["x-dlq-original-offset", String(payload.offset)],
+        ["x-dlq-failures", String(failures)],
+        ["x-dlq-error", String(error).slice(0, 500)],
+      ]);
+      for (const [k, v] of payload.headers) {
+        if (!headers.has(k)) headers.set(k, v);
+      }
+      await this.producer.send({
+        autocreateTopics: true,
+        messages: [{ topic: dlqTopic, value: payload.value, key: payload.key ?? undefined, headers }],
+      });
+      this.logger.warn(`"${payload.topic}" → DLQ "${dlqTopic}" after ${failures} failure(s)`);
+    } catch (err) {
+      this.logger.error(`Failed to send to DLQ "${dlqTopic}":`, err);
+    }
   }
 
   private sendReply(
@@ -361,6 +459,7 @@ export class PlatformaticKafkaStrategy
       try { await this.messagesStream.close(); } catch {}
       this.messagesStream = null;
     }
+    this.partitionQueues.clear();
     await closeKafkaClients(this._consumer, this._producer, this.getOptionsProp(this.options, "forceClose", false));
     this._consumer = undefined;
     this._producer = undefined;

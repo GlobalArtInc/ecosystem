@@ -20,7 +20,7 @@ import {
   DEFAULT_PLATFORMATIC_STREAM_CONSUME,
   DEFAULT_POSTFIX_CLIENT,
 } from "../constants/platformatic-kafka.constants";
-import { runWithBackoff } from "../utils/platformatic-kafka-reconnect";
+import { runWithBackoff, sleepMs } from "../utils/platformatic-kafka-reconnect";
 import {
   KafkaConsumer,
   KafkaProducer,
@@ -57,6 +57,7 @@ export class PlatformaticKafkaClient extends ClientProxy<
   private responseStream: ResponseMessagesStream | null = null;
   private clientClosed = false;
   private clientConnecting = false;
+  private currentStatus: PlatformaticKafkaStatus = PlatformaticKafkaStatus.DISCONNECTED;
   private readonly queue = new SerialQueue();
 
   get consumer(): KafkaConsumer {
@@ -73,10 +74,15 @@ export class PlatformaticKafkaClient extends ClientProxy<
     super();
     this.initializeSerializer(undefined);
     this.initializeDeserializer(undefined);
+    this._status$.subscribe((s) => { this.currentStatus = s; });
     const postfixId = resolvePostfixId(options.postfixId, DEFAULT_POSTFIX_CLIENT);
     this.producerOnlyMode = this.getOptionsProp(options, "producerOnlyMode", false);
     this.clientId = (options.clientId ?? KAFKA_DEFAULT_CLIENT) + postfixId;
     this.groupId = resolveKafkaGroupId(options.groupId, KAFKA_DEFAULT_GROUP, postfixId);
+  }
+
+  public getStatus(): PlatformaticKafkaStatus {
+    return this.currentStatus;
   }
 
   public subscribeToResponseOf(pattern: unknown): void {
@@ -86,7 +92,17 @@ export class PlatformaticKafkaClient extends ClientProxy<
 
   public async close(): Promise<void> {
     this.clientClosed = true;
-    await this.queue.idle();
+    const timeout = this.options.shutdownTimeoutMs;
+    if (timeout) {
+      await Promise.race([
+        this.queue.idle(),
+        sleepMs(timeout).then(() =>
+          this.logger.warn(`Shutdown timeout (${timeout}ms) exceeded, forcing close`),
+        ),
+      ]);
+    } else {
+      await this.queue.idle();
+    }
     await this.queue.enqueue(() => this.disposeClientTransport());
   }
 

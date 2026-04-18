@@ -33,6 +33,8 @@ export {
 
 export { PlatformaticKafkaStrategy } from "./strategy/platformatic-kafka.strategy";
 export { PlatformaticKafkaContext } from "./context/platformatic-kafka.context";
+export { PlatformaticKafkaHealthIndicator } from "./health/platformatic-kafka-health.indicator";
+export type { KafkaHealthCheckable } from "./health/platformatic-kafka-health.indicator";
 
 export type {
   PlatformaticKafkaOptions,
