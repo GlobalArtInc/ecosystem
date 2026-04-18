@@ -19,7 +19,7 @@ import {
   DEFAULT_PLATFORMATIC_STREAM_CONSUME,
   DEFAULT_POSTFIX_SERVER,
 } from "../constants/platformatic-kafka.constants";
-import { runWithBackoff, sleepMs } from "../utils/platformatic-kafka-reconnect";
+import { formatError, runWithBackoff, sleepMs } from "../utils/platformatic-kafka-reconnect";
 import { PlatformaticKafkaContext } from "../context/platformatic-kafka.context";
 import {
   KafkaConsumer,
@@ -174,7 +174,7 @@ export class PlatformaticKafkaStrategy
             `Kafka transport ready — consumer group "${this.groupId}"${patterns ? `, patterns: ${patterns}` : ""}`,
           );
         },
-        (delay) => this.logger.warn(`Kafka unavailable, retry in ${delay}ms`),
+        (delay, err) => this.logger.warn(`Kafka unavailable, retry in ${delay}ms: ${formatError(err)}`),
       );
       if (this.closed) return; // close() called during connection — disposeTransport() will clean up
     } finally {

@@ -1,4 +1,8 @@
 export {
+  brokerHostnameFromBootstrap,
+  resolveConnectionOptions,
+} from "./utils/platformatic-kafka.utils";
+export {
   DEFAULT_POSTFIX_CLIENT,
   DEFAULT_POSTFIX_SERVER,
 } from "./constants/platformatic-kafka.constants";

@@ -20,7 +20,7 @@ import {
   DEFAULT_PLATFORMATIC_STREAM_CONSUME,
   DEFAULT_POSTFIX_CLIENT,
 } from "../constants/platformatic-kafka.constants";
-import { runWithBackoff, sleepMs } from "../utils/platformatic-kafka-reconnect";
+import { formatError, runWithBackoff, sleepMs } from "../utils/platformatic-kafka-reconnect";
 import {
   KafkaConsumer,
   KafkaProducer,
@@ -180,7 +180,7 @@ export class PlatformaticKafkaClient extends ClientProxy<
           await Promise.all(pings);
         }
       },
-      (delay) => this.logger.warn(`Kafka client unavailable, retry in ${delay}ms`),
+      (delay, err) => this.logger.warn(`Kafka client unavailable, retry in ${delay}ms: ${formatError(err)}`),
     );
     if (this.clientClosed) return; // close() called during connection — disposeClientTransport() will clean up
     } finally {

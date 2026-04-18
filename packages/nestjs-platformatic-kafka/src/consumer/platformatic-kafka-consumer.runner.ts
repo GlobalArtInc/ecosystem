@@ -6,7 +6,7 @@ import {
   DEFAULT_POSTFIX_SERVER,
   KAFKA_CONSUMER_MODULE_OPTIONS_TOKEN,
 } from "../constants/platformatic-kafka.constants";
-import { runWithBackoff, sleepMs } from "../utils/platformatic-kafka-reconnect";
+import { formatError, runWithBackoff, sleepMs } from "../utils/platformatic-kafka-reconnect";
 import type {
   KafkaConsumer,
   KafkaProducer,
@@ -143,7 +143,7 @@ export class PlatformaticKafkaConsumerRunner implements OnApplicationShutdown {
             `Kafka consumer ready — consumer group "${groupId}"${topics ? `, topics: ${topics}` : ""}`,
           );
         },
-        (delay) => this.logger.warn(`Kafka unavailable, retry in ${delay}ms`),
+        (delay, err) => this.logger.warn(`Kafka unavailable, retry in ${delay}ms: ${formatError(err)}`),
       );
     } finally {
       this.connecting = false;

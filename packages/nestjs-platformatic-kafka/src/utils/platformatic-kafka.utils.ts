@@ -1,5 +1,7 @@
 import {
+  type Broker,
   Consumer,
+  type ConnectionOptions,
   type ConsumerGroupJoinPayload,
   Producer,
   stringDeserializers,
@@ -33,6 +35,65 @@ export function resolvePostfixId(
   fallback: string,
 ): string {
   return configured?.length ? configured : fallback;
+}
+
+function isNonEmptyTlsConfig(
+  value: ConnectionOptions["tls"] | ConnectionOptions["ssl"],
+): value is NonNullable<ConnectionOptions["tls"]> {
+  return (
+    value !== undefined &&
+    typeof value === "object" &&
+    Object.keys(value as object).length > 0
+  );
+}
+
+export function brokerHostnameFromBootstrap(broker: string | Broker): string | undefined {
+  if (typeof broker !== "string") {
+    return broker.host.length > 0 ? broker.host : undefined;
+  }
+  const s = broker;
+  if (s.startsWith("[")) {
+    const end = s.indexOf("]:");
+    if (end === -1) {
+      return s.length > 2 ? s.slice(1, -1) : undefined;
+    }
+    return s.slice(1, end);
+  }
+  const lastColon = s.lastIndexOf(":");
+  if (lastColon === -1) {
+    return s.length > 0 ? s : undefined;
+  }
+  const after = s.slice(lastColon + 1);
+  return /^\d+$/.test(after) ? s.slice(0, lastColon) : s;
+}
+
+export function resolveConnectionOptions(
+  connection: ConnectionOptions | undefined,
+  brokers?: string[] | Broker[],
+): ConnectionOptions | undefined {
+  if (!connection) return undefined;
+  const { ssl, tls, ...rest } = connection;
+  const effectiveTls = isNonEmptyTlsConfig(tls)
+    ? tls
+    : isNonEmptyTlsConfig(ssl)
+      ? ssl
+      : undefined;
+  if (!effectiveTls) {
+    return Object.keys(rest).length > 0 ? { ...rest } : undefined;
+  }
+  const base: ConnectionOptions = { ...rest, tls: effectiveTls };
+  if (
+    base.tlsServerName === undefined &&
+    brokers !== undefined &&
+    brokers.length > 0
+  ) {
+    const host = brokerHostnameFromBootstrap(brokers[0]);
+    return {
+      ...base,
+      tlsServerName: host !== undefined && host !== "" ? host : true,
+    };
+  }
+  return base;
 }
 
 /** Serializes async operations into a strict FIFO queue so that operations never interleave. */
@@ -109,6 +170,7 @@ export function createKafkaConsumer(
   clientId: string,
   groupId: string,
 ): KafkaConsumer {
+  const resolvedConnection = resolveConnectionOptions(options.connection, options.brokers);
   return new Consumer({
     groupId,
     clientId,
@@ -117,7 +179,7 @@ export function createKafkaConsumer(
     autocommit: 100,
     deserializers: stringDeserializers,
     autocreateTopics: true,
-    ...(options.connection ?? {}),
+    ...(resolvedConnection ?? {}),
     ...options.consumer,
   });
 }
@@ -126,13 +188,14 @@ export function createKafkaProducer(
   options: PlatformaticKafkaOptions,
   clientId: string,
 ): KafkaProducer {
+  const resolvedConnection = resolveConnectionOptions(options.connection, options.brokers);
   return new Producer({
     bootstrapBrokers: options.brokers,
     clientId,
     serializers: stringSerializers,
     autocreateTopics: true,
     ...(options.idempotentProducer ? { idempotent: true } : {}),
-    ...(options.connection ?? {}),
+    ...(resolvedConnection ?? {}),
     ...options.producer,
   });
 }
