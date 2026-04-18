@@ -4,6 +4,7 @@ export {
 } from "./constants/platformatic-kafka.constants";
 export { createPlatformaticKafkaMicroservice } from "./config/platformatic-kafka-microservice.config";
 export type { PlatformaticKafkaConnectConfig } from "./config/platformatic-kafka-microservice.config";
+export { createPlatformaticKafkaClientBroker } from "./config/platformatic-kafka-client-broker.config";
 
 export { PlatformaticKafkaConsumerModule } from "./consumer/platformatic-kafka-consumer.module";
 export type {
