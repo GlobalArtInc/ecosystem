@@ -54,6 +54,7 @@ export class PlatformaticKafkaStrategy
   private _producer: KafkaProducer | undefined;
   private messagesStream: MessagesStream | null = null;
   private closed = false;
+  private connecting = false;
   private readonly queue = new SerialQueue();
   private readonly inboundMessageQueue = new SerialQueue();
 
@@ -104,6 +105,8 @@ export class PlatformaticKafkaStrategy
   }
 
   private async connectWithBackoff(): Promise<void> {
+    this.connecting = true;
+    try {
     await runWithBackoff(
       this.options.reconnect,
       () => this.closed,
@@ -125,10 +128,13 @@ export class PlatformaticKafkaStrategy
       (delay) => this.logger.warn(`Kafka unavailable, retry in ${delay}ms`),
     );
     if (this.closed) throw new Error("Kafka transport closed before connect");
+    } finally {
+      this.connecting = false;
+    }
   }
 
   private scheduleReconnect(): void {
-    if (this.closed) return;
+    if (this.closed || this.connecting) return;
     void this.queue
       .enqueue(async () => {
         if (this.closed) return;

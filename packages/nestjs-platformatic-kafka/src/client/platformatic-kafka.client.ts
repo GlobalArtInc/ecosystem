@@ -56,6 +56,7 @@ export class PlatformaticKafkaClient extends ClientProxy<
   protected _producer: KafkaProducer | null = null;
   private responseStream: ResponseMessagesStream | null = null;
   private clientClosed = false;
+  private clientConnecting = false;
   private readonly queue = new SerialQueue();
 
   get consumer(): KafkaConsumer {
@@ -138,6 +139,8 @@ export class PlatformaticKafkaClient extends ClientProxy<
 
   private async connectWithBackoff(): Promise<void> {
     if (this.clientClosed) throw new Error("Client is closed");
+    this.clientConnecting = true;
+    try {
     await runWithBackoff(
       this.options.reconnect,
       () => this.clientClosed,
@@ -164,10 +167,13 @@ export class PlatformaticKafkaClient extends ClientProxy<
       (delay) => this.logger.warn(`Kafka client unavailable, retry in ${delay}ms`),
     );
     if (this.clientClosed) throw new Error("Kafka client closed before connect");
+    } finally {
+      this.clientConnecting = false;
+    }
   }
 
   private scheduleClientReconnect(): void {
-    if (this.clientClosed) return;
+    if (this.clientClosed || this.clientConnecting) return;
     void this.queue
       .enqueue(async () => {
         if (this.clientClosed) return;

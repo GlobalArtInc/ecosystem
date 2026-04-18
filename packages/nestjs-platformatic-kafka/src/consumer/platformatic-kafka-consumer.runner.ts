@@ -43,6 +43,7 @@ export class PlatformaticKafkaConsumerRunner implements OnApplicationShutdown {
   private _consumer: KafkaConsumer | undefined;
   private messagesStream: MessagesStream | null = null;
   private closed = false;
+  private connecting = false;
 
   constructor(
     @Inject(KAFKA_CONSUMER_MODULE_OPTIONS_TOKEN)
@@ -66,34 +67,38 @@ export class PlatformaticKafkaConsumerRunner implements OnApplicationShutdown {
   }
 
   private async connectWithBackoff(): Promise<void> {
+    this.connecting = true;
     const postfix = resolvePostfixId(this.options.postfixId, DEFAULT_POSTFIX_SERVER);
     const clientId = (this.options.clientId ?? "nestjs-consumer") + postfix;
     const groupId = resolveKafkaGroupId(this.options.groupId, "nestjs-group", postfix);
-
-    await runWithBackoff(
-      this.options.reconnect,
-      () => this.closed,
-      async () => {
-        await this.disposeConsumer();
-        this._consumer = createKafkaConsumer(this.options, clientId, groupId);
-        registerClientEventListeners(this._consumer, this._status$, () =>
-          this.scheduleReconnect(),
-        );
-        this._consumer.on("consumer:group:join", (data: ConsumerGroupJoinPayload) =>
-          logPartitionAssignments(this.logger, groupId, data),
-        );
-        await this.attachStream();
-        const topics = [...this.handlers.keys()].sort().join(", ");
-        this.logger.log(
-          `Kafka consumer ready — consumer group "${groupId}"${topics ? `, topics: ${topics}` : ""}`,
-        );
-      },
-      (delay) => this.logger.warn(`Kafka unavailable, retry in ${delay}ms`),
-    );
+    try {
+      await runWithBackoff(
+        this.options.reconnect,
+        () => this.closed,
+        async () => {
+          await this.disposeConsumer();
+          this._consumer = createKafkaConsumer(this.options, clientId, groupId);
+          registerClientEventListeners(this._consumer, this._status$, () =>
+            this.scheduleReconnect(),
+          );
+          this._consumer.on("consumer:group:join", (data: ConsumerGroupJoinPayload) =>
+            logPartitionAssignments(this.logger, groupId, data),
+          );
+          await this.attachStream();
+          const topics = [...this.handlers.keys()].sort().join(", ");
+          this.logger.log(
+            `Kafka consumer ready — consumer group "${groupId}"${topics ? `, topics: ${topics}` : ""}`,
+          );
+        },
+        (delay) => this.logger.warn(`Kafka unavailable, retry in ${delay}ms`),
+      );
+    } finally {
+      this.connecting = false;
+    }
   }
 
   private scheduleReconnect(): void {
-    if (this.closed) return;
+    if (this.closed || this.connecting) return;
     void this.queue
       .enqueue(async () => {
         if (this.closed) return;
