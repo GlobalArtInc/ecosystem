@@ -1,5 +1,6 @@
 import type {
   Broker,
+  ConnectionOptions,
   ConsumeOptions,
   Consumer,
   ConsumerOptions,
@@ -36,6 +37,7 @@ export interface PlatformaticKafkaOptions {
   groupId?: string;
   postfixId?: string;
   forceClose?: boolean;
+  connection?: ConnectionOptions;
   consumer?: Omit<
     ConsumerOptions<string, string, string, string>,
     "clientId" | "bootstrapBrokers"

@@ -1,5 +1,6 @@
 import {
   Consumer,
+  type ConnectionOptions,
   Producer,
   stringDeserializers,
   stringSerializers,
@@ -137,6 +138,12 @@ export async function ensureBootstrapMetadata(
   await client.metadata({ topics: [] });
 }
 
+function sharedConnectionFields(
+  options: PlatformaticKafkaOptions,
+): Partial<ConnectionOptions> {
+  return options.connection ?? {};
+}
+
 /**
  * Creates a Consumer pre-configured with string deserializers and sane defaults
  * (1 s max-wait, 100 ms autocommit interval). Any field in `options.consumer`
@@ -155,6 +162,7 @@ export function createKafkaConsumer(
     autocommit: 100,
     deserializers: stringDeserializers,
     autocreateTopics: true,
+    ...sharedConnectionFields(options),
     ...options.consumer,
   });
 }
@@ -172,6 +180,7 @@ export function createKafkaProducer(
     clientId,
     serializers: stringSerializers,
     autocreateTopics: true,
+    ...sharedConnectionFields(options),
     ...options.producer,
   });
 }

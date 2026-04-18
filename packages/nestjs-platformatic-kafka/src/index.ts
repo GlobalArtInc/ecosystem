@@ -42,4 +42,5 @@ export type {
   KafkaConsumer,
   KafkaProducer,
 } from "./types/platformatic-kafka.types";
+export type { ConnectionOptions, SASLOptions } from "@platformatic/kafka";
 export { PlatformaticKafkaStatus } from "./types/platformatic-kafka.types";
