@@ -18,9 +18,9 @@ export function getReconnectDelays(cfg: ReconnectConfig): {
   factor: number;
 } {
   return {
-    initial: cfg?.initialDelayMs ?? 1000,
-    max: cfg?.maxDelayMs ?? 60_000,
-    factor: cfg?.multiplier ?? 2,
+    initial: cfg?.initialDelayMs ?? 5000,
+    max: cfg?.maxDelayMs ?? 5000,
+    factor: cfg?.multiplier ?? 1,
   };
 }
 
