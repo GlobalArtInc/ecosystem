@@ -165,8 +165,8 @@ export class PlatformaticKafkaConsumerRunner implements OnApplicationShutdown {
     if (!this._consumer || !this.handlers.size) return;
     const stream = await this._consumer.consume({
       autocommit: false,
-      sessionTimeout: 10000,
-      heartbeatInterval: 500,
+      sessionTimeout: 30000,
+      heartbeatInterval: 3000,
       topics: [...this.handlers.keys()],
       ...DEFAULT_PLATFORMATIC_STREAM_CONSUME,
       ...this.options.consumeOptions,
