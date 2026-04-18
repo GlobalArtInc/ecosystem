@@ -37,6 +37,7 @@ export { PlatformaticKafkaContext } from "./context/platformatic-kafka.context";
 export type {
   PlatformaticKafkaOptions,
   PlatformaticKafkaMessage,
+  ParsedKafkaMessage,
   KafkaSubscribeOptions,
   KafkaSubscribeMetadata,
   KafkaConsumer,

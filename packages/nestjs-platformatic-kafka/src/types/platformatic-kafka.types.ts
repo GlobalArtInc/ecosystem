@@ -54,6 +54,12 @@ export interface PlatformaticKafkaOptions {
 
 export type PlatformaticKafkaMessage = Message<string, string, string, string>;
 
+export type ParsedKafkaMessage = Omit<PlatformaticKafkaMessage, "value" | "key" | "headers"> & {
+  value: object | string;
+  key: object | string | null;
+  headers: Map<string, object | string>;
+};
+
 export interface KafkaSubscribeOptions {
   /** Auto-ack on return, auto-retry on throw. Default: true. */
   autoAck?: boolean;

@@ -1,28 +1,23 @@
 import {
   Consumer,
-  type ConnectionOptions,
+  type ConsumerGroupJoinPayload,
   Producer,
   stringDeserializers,
   stringSerializers,
 } from "@platformatic/kafka";
+import type { Logger } from "@nestjs/common";
 import { Subject } from "rxjs";
-import {
+import type {
   KafkaConsumer,
   KafkaProducer,
   PlatformaticClientEvent,
   PlatformaticKafkaOptions,
   PlatformaticKafkaStatus,
 } from "../types/platformatic-kafka.types";
+import { PlatformaticKafkaStatus as Status } from "../types/platformatic-kafka.types";
 
 type KafkaClientLike = {
   on(event: PlatformaticClientEvent, handler: () => void): unknown;
-};
-
-/** Maps internal status enum values to the corresponding @platformatic/kafka event names. */
-export const EVENTS_MAP: Record<PlatformaticKafkaStatus, PlatformaticClientEvent> = {
-  [PlatformaticKafkaStatus.CONNECTED]: "client:broker:connect",
-  [PlatformaticKafkaStatus.DISCONNECTED]: "client:broker:disconnect",
-  [PlatformaticKafkaStatus.FAILED]: "client:broker:failed",
 };
 
 export function resolveKafkaGroupId(
@@ -30,37 +25,23 @@ export function resolveKafkaGroupId(
   defaultGroup: string,
   postfix: string,
 ): string {
-  const base =
-    typeof configured === "string" && configured.length > 0
-      ? configured
-      : defaultGroup;
-  return `${base}${postfix}`;
+  return `${configured?.length ? configured : defaultGroup}${postfix}`;
 }
 
 export function resolvePostfixId(
   configured: string | undefined | null,
   fallback: string,
 ): string {
-  if (typeof configured === "string" && configured.length > 0) {
-    return configured;
-  }
-  return fallback;
+  return configured?.length ? configured : fallback;
 }
 
-/**
- * Serializes async operations into a strict FIFO queue so that connect,
- * disconnect, and send calls never interleave with each other.
- */
+/** Serializes async operations into a strict FIFO queue so that operations never interleave. */
 export class SerialQueue {
   private tail: Promise<void> = Promise.resolve();
 
-  /** Appends `fn` to the queue and returns its result promise. */
   enqueue<T>(fn: () => Promise<T>): Promise<T> {
     const next = this.tail.then(() => fn());
-    this.tail = next.then(
-      () => undefined,
-      () => undefined,
-    );
+    this.tail = next.then(() => undefined, () => undefined);
     return next;
   }
 
@@ -69,86 +50,53 @@ export class SerialQueue {
   }
 }
 
-/**
- * Wires the three standard broker lifecycle events (connected / disconnected / failed)
- * onto either a Consumer or Producer instance, forwarding each to the shared status
- * subject and calling `onFailed` when the connection is lost so the caller can
- * schedule a reconnect.
- */
 export function registerClientEventListeners(
   client: KafkaClientLike,
   status$: Subject<PlatformaticKafkaStatus>,
   onFailed: () => void,
 ): void {
-  client.on(EVENTS_MAP[PlatformaticKafkaStatus.CONNECTED], () => {
-    status$.next(PlatformaticKafkaStatus.CONNECTED);
-  });
-  client.on(EVENTS_MAP[PlatformaticKafkaStatus.DISCONNECTED], () => {
-    status$.next(PlatformaticKafkaStatus.DISCONNECTED);
-  });
-  client.on(EVENTS_MAP[PlatformaticKafkaStatus.FAILED], () => {
-    status$.next(PlatformaticKafkaStatus.FAILED);
+  client.on("client:broker:connect", () => status$.next(Status.CONNECTED));
+  client.on("client:broker:disconnect", () => status$.next(Status.DISCONNECTED));
+  client.on("client:broker:failed", () => {
+    status$.next(Status.FAILED);
     onFailed();
   });
 }
 
-/**
- * Closes consumer and producer concurrently, swallowing any errors so that
- * a failed close never blocks the reconnect path.
- *
- * @param forceCloseConsumer - Passed to `Consumer.close()`. When `true` the
- *   consumer leaves the group immediately without a graceful rebalance.
- */
 export async function closeKafkaClients(
   consumer: KafkaConsumer | null | undefined,
   producer: KafkaProducer | null | undefined,
   forceCloseConsumer = false,
 ): Promise<void> {
+  const tryClose = (client: KafkaConsumer | KafkaProducer, force?: boolean): Promise<void> =>
+    Promise.resolve(client.close(force)).catch(() => undefined);
+
   const closeConsumer = async (): Promise<void> => {
     if (!consumer) return;
-    await new Promise<void>((resolve) => {
-      (globalThis as unknown as { setTimeout: (fn: () => void, ms: number) => void }).setTimeout(
-        resolve,
-        0,
-      );
-    });
-    const closeOnce = (force: boolean) => Promise.resolve(consumer.close(force));
+    await Promise.resolve(); // yield before closing to let pending callbacks flush
     if (forceCloseConsumer) {
-      await closeOnce(true).catch(() => undefined);
+      await tryClose(consumer, true);
       return;
     }
     try {
-      await closeOnce(false);
+      await Promise.resolve(consumer.close(false));
     } catch {
-      await closeOnce(true).catch(() => undefined);
+      await tryClose(consumer, true);
     }
   };
 
   await Promise.all([
     closeConsumer(),
-    producer
-      ? Promise.resolve(producer.close()).catch(() => undefined)
-      : Promise.resolve(),
+    producer ? tryClose(producer) : Promise.resolve(),
   ]);
 }
 
-export async function ensureBootstrapMetadata(
+export function ensureBootstrapMetadata(
   client: KafkaConsumer | KafkaProducer,
 ): Promise<void> {
-  await client.metadata({ topics: [] });
+  return client.metadata({ topics: [] }).then(() => undefined);
 }
 
-function sharedConnectionFields(
-  options: PlatformaticKafkaOptions,
-): Partial<ConnectionOptions> {
-  return options.connection ?? {};
-}
-
-/**
- * Creates a Consumer pre-configured with string deserializers and sane defaults
- * (1 s max-wait, 100 ms autocommit interval). Any field in `options.consumer`
- * overrides these defaults.
- */
 export function createKafkaConsumer(
   options: PlatformaticKafkaOptions,
   clientId: string,
@@ -162,15 +110,11 @@ export function createKafkaConsumer(
     autocommit: 100,
     deserializers: stringDeserializers,
     autocreateTopics: true,
-    ...sharedConnectionFields(options),
+    ...(options.connection ?? {}),
     ...options.consumer,
   });
 }
 
-/**
- * Creates a Producer pre-configured with string serializers and auto-topic
- * creation. Any field in `options.producer` overrides these defaults.
- */
 export function createKafkaProducer(
   options: PlatformaticKafkaOptions,
   clientId: string,
@@ -180,9 +124,26 @@ export function createKafkaProducer(
     clientId,
     serializers: stringSerializers,
     autocreateTopics: true,
-    ...sharedConnectionFields(options),
+    ...(options.connection ?? {}),
     ...options.producer,
   });
+}
+
+export function logPartitionAssignments(
+  logger: Logger,
+  groupId: string,
+  data: ConsumerGroupJoinPayload,
+): void {
+  const assignments = (data.assignments ?? []).filter((a) => a.partitions.length > 0);
+  if (!assignments.length) return;
+  const total = assignments.reduce((s, a) => s + a.partitions.length, 0);
+  const w = Math.max(...assignments.map((a) => a.topic.length));
+  const rows = assignments
+    .map((a) => `  ${a.topic.padEnd(w)}  →  [${a.partitions.join(", ")}]  (${a.partitions.length})`)
+    .join("\n");
+  logger.log(
+    `Consumer group "${groupId}" — assigned ${total} partition(s) across ${assignments.length} topic(s):\n${rows}`,
+  );
 }
 
 export type EmitMessageParts = {
@@ -191,95 +152,44 @@ export type EmitMessageParts = {
   headers?: Record<string, string>;
 };
 
-function hasOwnKey(o: object, k: string): boolean {
-  return Object.prototype.hasOwnProperty.call(o, k);
+function serializeKey(v: unknown): string | undefined {
+  if (v === undefined) return undefined;
+  if (v === null) return "";
+  if (typeof v === "object") return JSON.stringify(v);
+  return String(v);
 }
 
-function isEmitEnvelope(data: unknown): data is Record<string, unknown> {
-  if (typeof data !== "object" || data === null || Array.isArray(data)) {
-    return false;
-  }
-  return (
-    hasOwnKey(data, "keys") ||
-    hasOwnKey(data, "key") ||
-    hasOwnKey(data, "headers")
-  );
-}
-
-function serializeEmitJsonValue(data: unknown): string {
-  if (data === undefined) {
-    return "null";
-  }
-  return JSON.stringify(data);
-}
-
-function serializeEmitKeyPart(part: unknown): string | undefined {
-  if (part === undefined) {
-    return undefined;
-  }
-  if (part === null) {
-    return "";
-  }
-  if (typeof part === "string") {
-    return part;
-  }
-  if (typeof part === "number" || typeof part === "boolean") {
-    return String(part);
-  }
-  if (typeof part === "bigint") {
-    return String(part);
-  }
-  return JSON.stringify(part);
-}
-
-function normalizeEmitHeaders(raw: unknown): Record<string, string> | undefined {
-  if (raw === null || raw === undefined) {
-    return undefined;
-  }
-  if (typeof raw !== "object" || Array.isArray(raw)) {
-    return undefined;
-  }
+function normalizeHeaders(raw: unknown): Record<string, string> | undefined {
+  if (raw == null || typeof raw !== "object" || Array.isArray(raw)) return undefined;
   const out: Record<string, string> = {};
   for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
-    if (v === undefined) {
-      continue;
-    }
-    if (v === null) {
-      out[k] = "null";
-    } else if (typeof v === "string") {
-      out[k] = v;
-    } else if (typeof v === "number" || typeof v === "boolean") {
-      out[k] = String(v);
-    } else if (typeof v === "bigint") {
-      out[k] = String(v);
-    } else {
-      out[k] = JSON.stringify(v);
-    }
+    if (v === undefined) continue;
+    out[k] = v === null ? "null" : typeof v === "object" ? JSON.stringify(v) : String(v);
   }
   return Object.keys(out).length > 0 ? out : undefined;
 }
 
+function isEnvelope(data: unknown): data is Record<string, unknown> {
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    !Array.isArray(data) &&
+    ("keys" in data || "key" in data || "headers" in data)
+  );
+}
+
 export function buildEmitMessageParts(data: unknown): EmitMessageParts {
-  if (isEmitEnvelope(data)) {
-    const o = data;
-    let keyPart: string | undefined;
-    if (hasOwnKey(o, "keys")) {
-      keyPart = serializeEmitKeyPart(o.keys);
-    } else if (hasOwnKey(o, "key")) {
-      keyPart = serializeEmitKeyPart(o.key);
-    }
-    const valuePart = hasOwnKey(o, "value")
-      ? serializeEmitJsonValue(o.value)
-      : "null";
-    const headersPart = normalizeEmitHeaders(o.headers);
-    const parts: EmitMessageParts = { value: valuePart };
-    if (keyPart !== undefined && keyPart.length > 0) {
-      parts.key = keyPart;
-    }
-    if (headersPart !== undefined) {
-      parts.headers = headersPart;
-    }
-    return parts;
+  if (!isEnvelope(data)) {
+    return { value: data === undefined ? "null" : JSON.stringify(data) };
   }
-  return { value: serializeEmitJsonValue(data) };
+  const key = serializeKey("keys" in data ? data.keys : data.key);
+  const value = "value" in data
+    ? (data.value === undefined ? "null" : JSON.stringify(data.value))
+    : "null";
+  const headers = normalizeHeaders(data.headers);
+  return {
+    value,
+    ...(key !== undefined ? { key } : {}),
+    ...(headers ? { headers } : {}),
+  };
 }

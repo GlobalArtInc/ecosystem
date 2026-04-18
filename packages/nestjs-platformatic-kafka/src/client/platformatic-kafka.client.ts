@@ -14,20 +14,13 @@ import {
 import { KafkaHeaders } from "@nestjs/microservices/enums";
 import { InvalidKafkaClientTopicException } from "@nestjs/microservices/errors/invalid-kafka-client-topic.exception";
 import { InvalidMessageException } from "@nestjs/microservices/errors/invalid-message.exception";
-import { ConsumerGroupJoinPayload } from "@platformatic/kafka";
-import {
-  connectable,
-  defer,
-  mergeMap,
-  Observable,
-  Subject,
-  throwError,
-} from "rxjs";
+import { ConsumerGroupJoinPayload, MessageToProduce } from "@platformatic/kafka";
+import { connectable, defer, mergeMap, Observable, Subject, throwError } from "rxjs";
 import {
   DEFAULT_PLATFORMATIC_STREAM_CONSUME,
   DEFAULT_POSTFIX_CLIENT,
 } from "../constants/platformatic-kafka.constants";
-import { getReconnectDelays, sleepMs } from "../utils/platformatic-kafka-reconnect";
+import { runWithBackoff } from "../utils/platformatic-kafka-reconnect";
 import {
   KafkaConsumer,
   KafkaProducer,
@@ -66,20 +59,12 @@ export class PlatformaticKafkaClient extends ClientProxy<
   private readonly queue = new SerialQueue();
 
   get consumer(): KafkaConsumer {
-    if (!this._consumer) {
-      throw new Error(
-        'No consumer initialized. Please, call the "connect" method first.',
-      );
-    }
+    if (!this._consumer) throw new Error('No consumer initialized. Call "connect" first.');
     return this._consumer;
   }
 
   get producer(): KafkaProducer {
-    if (!this._producer) {
-      throw new Error(
-        'No producer initialized. Please, call the "connect" method first.',
-      );
-    }
+    if (!this._producer) throw new Error('No producer initialized. Call "connect" first.');
     return this._producer;
   }
 
@@ -87,17 +72,10 @@ export class PlatformaticKafkaClient extends ClientProxy<
     super();
     this.initializeSerializer(undefined);
     this.initializeDeserializer(undefined);
-    const postfixId = resolvePostfixId(
-      this.options.postfixId,
-      DEFAULT_POSTFIX_CLIENT,
-    );
-    this.producerOnlyMode = this.getOptionsProp(
-      this.options,
-      "producerOnlyMode",
-      false,
-    );
-    this.clientId = (this.options.clientId ?? KAFKA_DEFAULT_CLIENT) + postfixId;
-    this.groupId = resolveKafkaGroupId(this.options.groupId, KAFKA_DEFAULT_GROUP, postfixId);
+    const postfixId = resolvePostfixId(options.postfixId, DEFAULT_POSTFIX_CLIENT);
+    this.producerOnlyMode = this.getOptionsProp(options, "producerOnlyMode", false);
+    this.clientId = (options.clientId ?? KAFKA_DEFAULT_CLIENT) + postfixId;
+    this.groupId = resolveKafkaGroupId(options.groupId, KAFKA_DEFAULT_GROUP, postfixId);
   }
 
   public subscribeToResponseOf(pattern: unknown): void {
@@ -112,9 +90,7 @@ export class PlatformaticKafkaClient extends ClientProxy<
   }
 
   public async connect(): Promise<KafkaProducer> {
-    if (this.clientClosed) {
-      throw new Error("Client is closed");
-    }
+    if (this.clientClosed) throw new Error("Client is closed");
     await this.queue.enqueue(async () => {
       if (this._producer) return;
       await this.connectWithBackoff();
@@ -123,17 +99,11 @@ export class PlatformaticKafkaClient extends ClientProxy<
   }
 
   public async handleMessage(payload: PlatformaticKafkaMessage): Promise<void> {
-    if (isUndefined(payload.headers.get(KafkaHeaders.CORRELATION_ID))) {
-      return;
-    }
+    if (isUndefined(payload.headers.get(KafkaHeaders.CORRELATION_ID))) return;
     const { err, response, isDisposed, id } = this.deserialize(payload);
     const callback = this.routingMap.get(id);
     if (!callback) return;
-    if (err || isDisposed) {
-      callback({ err, response, isDisposed });
-      return;
-    }
-    callback({ err, response });
+    callback(err || isDisposed ? { err, response, isDisposed } : { err, response });
   }
 
   public getConsumerAssignments(): Record<string, number> {
@@ -162,61 +132,38 @@ export class PlatformaticKafkaClient extends ClientProxy<
     return [this._consumer, this._producer] as unknown as T;
   }
 
-  public on(
-    event: string | number | symbol,
-    callback: (...args: unknown[]) => void,
-  ): void {
-    void event;
-    void callback;
-    throw new Error(
-      'Method not supported, register events using the "consumer" and "producer" attributes',
-    );
+  public on(_event: string | number | symbol, _callback: (...args: unknown[]) => void): void {
+    throw new Error('Method not supported. Register events via the "consumer" and "producer" attributes.');
   }
 
   private async connectWithBackoff(): Promise<void> {
-    if (this.clientClosed) {
-      throw new Error("Client is closed");
-    }
-    const delays = getReconnectDelays(this.options.reconnect ?? {});
-    let delay = delays.initial;
-    while (!this.clientClosed) {
-      try {
+    if (this.clientClosed) throw new Error("Client is closed");
+    await runWithBackoff(
+      this.options.reconnect,
+      () => this.clientClosed,
+      async () => {
         await this.disposeClientTransport();
         if (!this.producerOnlyMode) {
           this._consumer = createKafkaConsumer(this.options, this.clientId, this.groupId);
-          registerClientEventListeners(
-            this._consumer,
-            this._status$,
-            () => this.scheduleClientReconnect(),
+          registerClientEventListeners(this._consumer, this._status$, () =>
+            this.scheduleClientReconnect(),
           );
-          this._consumer.on(
-            "consumer:group:join",
-            this.setConsumerAssignments.bind(this),
-          );
+          this._consumer.on("consumer:group:join", this.setConsumerAssignments.bind(this));
           await this.attachResponseStream();
         }
         this._producer = createKafkaProducer(this.options, this.clientId);
-        registerClientEventListeners(
-          this._producer,
-          this._status$,
-          () => this.scheduleClientReconnect(),
+        registerClientEventListeners(this._producer, this._status$, () =>
+          this.scheduleClientReconnect(),
         );
-        if (this.producerOnlyMode || this.responsePatterns.length === 0) {
-          const pings: Promise<void>[] = [ensureBootstrapMetadata(this._producer)];
-          if (this._consumer) {
-            pings.push(ensureBootstrapMetadata(this._consumer));
-          }
+        if (this.producerOnlyMode || !this.responsePatterns.length) {
+          const pings = [ensureBootstrapMetadata(this._producer)];
+          if (this._consumer) pings.push(ensureBootstrapMetadata(this._consumer));
           await Promise.all(pings);
         }
-        return;
-      } catch (err) {
-        if (this.clientClosed) throw err;
-        this.logger.warn(`Kafka client unavailable, retry in ${delay}ms`);
-        await sleepMs(delay);
-        delay = Math.min(Math.floor(delay * delays.factor), delays.max);
-      }
-    }
-    throw new Error("Kafka client closed before connect");
+      },
+      (delay) => this.logger.warn(`Kafka client unavailable, retry in ${delay}ms`),
+    );
+    if (this.clientClosed) throw new Error("Kafka client closed before connect");
   }
 
   private scheduleClientReconnect(): void {
@@ -227,13 +174,11 @@ export class PlatformaticKafkaClient extends ClientProxy<
         this.logger.warn("Kafka client connection failure, reconnecting");
         await this.connectWithBackoff();
       })
-      .catch((err: unknown) => {
-        this.logger.error(err);
-      });
+      .catch((err: unknown) => this.logger.error(err));
   }
 
   private async attachResponseStream(): Promise<void> {
-    if (!this._consumer || this.responsePatterns.length === 0) return;
+    if (!this._consumer || !this.responsePatterns.length) return;
     const stream = await this._consumer.consume({
       autocommit: true,
       sessionTimeout: 10000,
@@ -254,9 +199,7 @@ export class PlatformaticKafkaClient extends ClientProxy<
 
   private async disposeClientTransport(): Promise<void> {
     if (this.responseStream) {
-      try {
-        await this.responseStream.close();
-      } catch {}
+      try { await this.responseStream.close(); } catch {}
       this.responseStream = null;
     }
     await closeKafkaClients(this._consumer, this._producer);
@@ -264,54 +207,40 @@ export class PlatformaticKafkaClient extends ClientProxy<
     this._producer = null;
   }
 
+  private produce(messages: MessageToProduce<string, string, string, string>[]): Promise<unknown> {
+    return this.queue.enqueue(() =>
+      this.producer.send({ autocreateTopics: true, ...this.options.produceOptions, messages }),
+    );
+  }
+
   protected async dispatchBatchEvent(
     packets: ReadPacket<{ messages: unknown[] }>,
   ): Promise<void> {
-    if (packets.data.messages.length === 0) return;
-    const pattern = this.normalizePattern(packets.pattern);
-    await this.queue.enqueue(() =>
-      this.producer.send({
-        autocreateTopics: true,
-        ...this.options.produceOptions,
-        messages: packets.data.messages.map((message) => {
-          const parts = buildEmitMessageParts(message);
-          return {
-            topic: pattern,
-            value: parts.value,
-            ...(parts.key !== undefined ? { key: parts.key } : {}),
-            ...(parts.headers !== undefined ? { headers: parts.headers } : {}),
-          };
-        }),
+    if (!packets.data.messages.length) return;
+    const topic = this.normalizePattern(packets.pattern);
+    await this.produce(
+      packets.data.messages.map((message) => {
+        const { value, key, headers } = buildEmitMessageParts(message);
+        return { topic, value, ...(key !== undefined && { key }), ...(headers && { headers }) };
       }),
     );
   }
 
   protected async dispatchEvent<T = unknown>(packet: ReadPacket): Promise<T> {
-    const pattern = this.normalizePattern(packet.pattern);
-    const parts = buildEmitMessageParts(packet.data);
-    await this.queue.enqueue(() =>
-      this.producer.send({
-        autocreateTopics: true,
-        ...this.options.produceOptions,
-        messages: [
-          {
-            topic: pattern,
-            value: parts.value,
-            ...(parts.key !== undefined ? { key: parts.key } : {}),
-            ...(parts.headers !== undefined ? { headers: parts.headers } : {}),
-          },
-        ],
-      }),
-    );
+    const { value, key, headers } = buildEmitMessageParts(packet.data);
+    await this.produce([{
+      topic: this.normalizePattern(packet.pattern),
+      value,
+      ...(key !== undefined && { key }),
+      ...(headers && { headers }),
+    }]);
     return undefined as T;
   }
 
   protected getReplyTopicPartition(topic: string): string {
-    const minimumPartition = this.consumerAssignments[topic];
-    if (typeof minimumPartition === "undefined") {
-      throw new InvalidKafkaClientTopicException(topic);
-    }
-    return minimumPartition.toString();
+    const partition = this.consumerAssignments[topic];
+    if (typeof partition === "undefined") throw new InvalidKafkaClientTopicException(topic);
+    return partition.toString();
   }
 
   protected publish(
@@ -320,32 +249,29 @@ export class PlatformaticKafkaClient extends ClientProxy<
   ): () => void {
     const packet = this.assignPacketId(partialPacket);
     this.routingMap.set(packet.id, callback);
-    const cleanup = (): void => {
-      this.routingMap.delete(packet.id);
-    };
-    const errorCallback = (err: unknown): void => {
-      cleanup();
-      callback({ err });
-    };
+    const cleanup = () => { this.routingMap.delete(packet.id); };
+    const errorCallback = (err: unknown) => { cleanup(); callback({ err }); };
+
     void this.queue
       .enqueue(async () => {
         try {
           const pattern = this.normalizePattern(partialPacket.pattern);
           const replyTopic = this.getResponsePatternName(pattern);
           const replyPartition = this.getReplyTopicPartition(replyTopic);
-          const headers: Record<string, string> = {
-            [KafkaHeaders.CORRELATION_ID]: packet.id,
-            [KafkaHeaders.REPLY_TOPIC]: replyTopic,
-            [KafkaHeaders.REPLY_PARTITION]: replyPartition,
-          };
           await this.producer.send({
             autocreateTopics: true,
             ...this.options.produceOptions,
-            messages: [
-              { topic: pattern, value: JSON.stringify(packet.data), headers },
-            ],
+            messages: [{
+              topic: pattern,
+              value: JSON.stringify(packet.data),
+              headers: {
+                [KafkaHeaders.CORRELATION_ID]: packet.id,
+                [KafkaHeaders.REPLY_TOPIC]: replyTopic,
+                [KafkaHeaders.REPLY_PARTITION]: replyPartition,
+              },
+            }],
           });
-        } catch (err: unknown) {
+        } catch (err) {
           errorCallback(err);
         }
       })
@@ -358,19 +284,15 @@ export class PlatformaticKafkaClient extends ClientProxy<
   }
 
   protected setConsumerAssignments(data: ConsumerGroupJoinPayload): void {
-    const consumerAssignments: Record<string, number> = {};
-    const assignments = data.assignments ?? [];
-    for (const { topic, partitions } of assignments) {
-      if (partitions.length > 0) {
-        consumerAssignments[topic] = Math.min(...partitions);
-      }
+    const result: Record<string, number> = {};
+    for (const { topic, partitions } of data.assignments ?? []) {
+      if (partitions.length > 0) result[topic] = Math.min(...partitions);
     }
-    this.consumerAssignments = consumerAssignments;
+    this.consumerAssignments = result;
   }
 
   protected deserialize(message: PlatformaticKafkaMessage): IncomingResponse {
-    const correlation = message.headers.get(KafkaHeaders.CORRELATION_ID);
-    const id = correlation !== undefined ? correlation.toString() : "";
+    const id = message.headers.get(KafkaHeaders.CORRELATION_ID)?.toString() ?? "";
     if (!isUndefined(message.headers.get(KafkaHeaders.NEST_ERR))) {
       return { id, err: message.headers.get(KafkaHeaders.NEST_ERR), isDisposed: true };
     }

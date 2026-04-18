@@ -1,7 +1,16 @@
 import { BaseRpcContext } from "@nestjs/microservices/ctx-host/base-rpc.context";
-import type { PlatformaticKafkaMessage } from "../types/platformatic-kafka.types";
+import type { ParsedKafkaMessage, PlatformaticKafkaMessage } from "../types/platformatic-kafka.types";
 
 type PlatformaticKafkaContextArgs = [
+  message: ParsedKafkaMessage,
+  partition: number,
+  topic: string,
+  headers: PlatformaticKafkaMessage["headers"],
+  commit: () => Promise<void>,
+  nack: (delayMs?: number) => void,
+];
+
+type RawContextArgs = [
   message: PlatformaticKafkaMessage,
   partition: number,
   topic: string,
@@ -10,50 +19,38 @@ type PlatformaticKafkaContextArgs = [
   nack: (delayMs?: number) => void,
 ];
 
-/**
- * Execution context passed to every `@EventPattern` / `@MessagePattern` handler.
- * Inject it with the `@Ctx()` decorator to access the raw Kafka message metadata.
- *
- * @example
- * ```ts
- * @EventPattern('order.created')
- * handle(@Payload() data: OrderDto, @Ctx() ctx: PlatformaticKafkaContext) {
- *   console.log(ctx.getTopic(), ctx.getPartition());
- * }
- * ```
- */
+function tryParseAsObject(s: string): object | string {
+  try {
+    const parsed = JSON.parse(s);
+    return typeof parsed === "object" && parsed !== null ? parsed : s;
+  } catch {
+    return s;
+  }
+}
+
+function parseMessage(raw: PlatformaticKafkaMessage): ParsedKafkaMessage {
+  const headers = new Map<string, object | string>();
+  for (const [k, v] of raw.headers) {
+    headers.set(k, tryParseAsObject(v));
+  }
+  return {
+    ...raw,
+    value: tryParseAsObject(raw.value),
+    key: raw.key != null ? tryParseAsObject(raw.key) : raw.key,
+    headers,
+  };
+}
+
+/** Execution context for `@EventPattern` / `@MessagePattern` handlers. Inject with `@Ctx()`. */
 export class PlatformaticKafkaContext extends BaseRpcContext<PlatformaticKafkaContextArgs> {
-  constructor(args: PlatformaticKafkaContextArgs) {
-    super(args);
+  constructor([message, ...rest]: RawContextArgs) {
+    super([parseMessage(message), ...rest] as PlatformaticKafkaContextArgs);
   }
 
-  /** Returns the full raw Kafka message object. */
-  getMessage(): PlatformaticKafkaMessage {
-    return this.args[0];
-  }
-
-  /** Returns the partition number the message was consumed from. */
-  getPartition(): number {
-    return this.args[1];
-  }
-
-  /** Returns the topic name the message was consumed from. */
-  getTopic(): string {
-    return this.args[2];
-  }
-
-  /** Returns the message headers map. */
-  getHeaders(): PlatformaticKafkaMessage["headers"] {
-    return this.args[3];
-  }
-
-  /** Commits the offset for this message (manual ack). */
-  commit(): Promise<void> {
-    return this.args[4]();
-  }
-
-  /** Signals processing failure — message will be retried after `delayMs` (default 5000ms). */
-  nack(delayMs?: number): void {
-    this.args[5](delayMs);
-  }
+  getMessage(): ParsedKafkaMessage { return this.args[0]; }
+  getPartition(): number { return this.args[1]; }
+  getTopic(): string { return this.args[2]; }
+  getHeaders(): PlatformaticKafkaMessage["headers"] { return this.args[3]; }
+  commit(): Promise<void> { return this.args[4](); }
+  nack(delayMs?: number): void { this.args[5](delayMs); }
 }
