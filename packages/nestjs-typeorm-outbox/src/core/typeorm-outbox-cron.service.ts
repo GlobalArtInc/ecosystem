@@ -9,7 +9,11 @@ import {
 } from "./typeorm-outbox.di-tokens";
 import { TypeormOutboxEntity } from "./typeorm-outbox.entity";
 import { firstValueFrom } from "rxjs";
-import { ClientProxy, Transport } from "@nestjs/microservices";
+import {
+  type CustomClientOptions,
+  ClientProxy,
+  Transport,
+} from "@nestjs/microservices";
 import { CronJob } from "cron";
 import { TypeormOutboxRegisterCronModuleOptions } from "./typeorm-outbox.interfaces";
 import { DataSource } from "typeorm";
@@ -55,13 +59,39 @@ export class TypeormOutboxCronService
   private validateBrokerClient() {
     const brokerConfig = this.moduleConfig.brokerConfig;
     if (
+      brokerConfig !== null &&
+      typeof brokerConfig === "object" &&
+      "customClass" in brokerConfig
+    ) {
+      if ((brokerConfig as CustomClientOptions).customClass == null) {
+        throw new Error(
+          `[TypeormOutboxCronService] Broker config with customClass must provide a non-null customClass (e.g. PlatformaticKafkaClient)`,
+        );
+      }
+      return;
+    }
+    if (
+      brokerConfig !== null &&
+      typeof brokerConfig === "object" &&
+      "strategy" in brokerConfig
+    ) {
+      if ((brokerConfig as { strategy?: unknown }).strategy == null) {
+        throw new Error(
+          `[TypeormOutboxCronService] Custom broker config must provide a non-null strategy (e.g. createPlatformaticKafkaMicroservice)`,
+        );
+      }
+      return;
+    }
+    const transport = (brokerConfig as { transport?: Transport } | null)
+      ?.transport;
+    if (
       ![Transport.KAFKA, Transport.NATS, Transport.MQTT].includes(
-        brokerConfig?.transport as Transport,
+        transport as Transport,
       )
     ) {
-      // throw new Error(
-      //   `[TypeormOutboxCronService] Broker config must be an instance of KafkaOptions, NatsOptions, or MqttOptions`,
-      // );
+      throw new Error(
+        `[TypeormOutboxCronService] Broker config must be KafkaOptions, NatsOptions, MqttOptions, customClass (e.g. PlatformaticKafkaClient), or a custom strategy (e.g. createPlatformaticKafkaMicroservice)`,
+      );
     }
   }
 

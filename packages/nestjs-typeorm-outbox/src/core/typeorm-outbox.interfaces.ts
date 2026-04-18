@@ -1,8 +1,22 @@
-import { KafkaOptions, MqttOptions, NatsOptions } from "@nestjs/microservices";
+import {
+  type CustomClientOptions,
+  KafkaOptions,
+  MqttOptions,
+  NatsOptions,
+} from "@nestjs/microservices";
 import { InjectionToken, ModuleMetadata, Type } from "@nestjs/common";
 import { CronExpression } from "./typeorm-outbox.enums";
 
-type BrokerConfig = MqttOptions | NatsOptions | KafkaOptions;
+export type CustomMicroserviceBrokerConfig = {
+  strategy: unknown;
+};
+
+type BrokerConfig =
+  | MqttOptions
+  | NatsOptions
+  | KafkaOptions
+  | CustomMicroserviceBrokerConfig
+  | CustomClientOptions;
 
 export class TypeormOutboxRegisterCronModuleOptions {
   brokerConfig: BrokerConfig = {};
