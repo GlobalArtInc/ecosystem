@@ -55,6 +55,7 @@
       "css-select": "4.3.0"
     },
     "onlyBuiltDependencies": [
+      "@confluentinc/kafka-javascript",
       "@nestjs/core",
       "@parcel/watcher",
       "@scarf/scarf",

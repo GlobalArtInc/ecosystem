@@ -1,0 +1,75 @@
+{
+  "name": "@globalart/confluent-kafka",
+  "version": "1.0.0",
+  "description": "A Confluent Kafka module for NestJS",
+  "author": {
+    "name": "GlobalArt, Inc"
+  },
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GlobalArtInc/ecosystem.git#main",
+    "directory": "packages/nestjs-confluent-kafka"
+  },
+  "keywords": [
+    "nestjs",
+    "kafka",
+    "confluent",
+    "messaging",
+    "event-driven",
+    "microservices",
+    "distributed-systems"
+  ],
+  "scripts": {
+    "format": "prettier --write \"**/*.ts\"",
+    "test": "jest --runInBand --passWithNoTests",
+    "test:cov": "jest --coverage --passWithNoTests",
+    "build": "rm -rf ./dist && tsdown",
+    "build:watch": "tsdown --watch",
+    "prepublishOnly": "npm run build",
+    "publish:dev": "npm publish --access public --tag dev",
+    "publish:npm": "release-it --config ../../.release-it.json"
+  },
+  "dependencies": {
+    "@confluentinc/kafka-javascript": "^1.9.0",
+    "@nestjs/microservices": "^11.1.14",
+    "rxjs": "7.8.2"
+  },
+  "peerDependencies": {
+    "@confluentinc/kafka-javascript": "^1.9.0",
+    "@nestjs/common": "^10.0.0 || ^11.0.0",
+    "@nestjs/microservices": "^10.0.0 || ^11.0.0",
+    "@nestjs/core": "^10.0.0 || ^11.0.0",
+    "@nestjs/terminus": "^0.2.0 || ^10.0.0 || ^11.0.0"
+  },
+  "devDependencies": {
+    "reflect-metadata": "^0.2.2",
+    "release-it": "20.0.0",
+    "tsdown": "0.21.9",
+    "typescript": "^6.0.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
