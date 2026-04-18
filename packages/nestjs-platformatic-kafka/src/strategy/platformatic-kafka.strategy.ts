@@ -176,7 +176,7 @@ export class PlatformaticKafkaStrategy
         },
         (delay) => this.logger.warn(`Kafka unavailable, retry in ${delay}ms`),
       );
-      if (this.closed) throw new Error("Kafka transport closed before connect");
+      if (this.closed) return; // close() called during connection — disposeTransport() will clean up
     } finally {
       this.connecting = false;
     }
