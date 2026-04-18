@@ -16,14 +16,19 @@ import type {
 } from "../types/platformatic-kafka.types";
 import { PlatformaticKafkaStatus } from "../types/platformatic-kafka.types";
 import {
+  buildDlqHeaders,
   closeKafkaClients,
   createKafkaConsumer,
   createKafkaProducer,
+  getOrCreatePartitionQueue,
+  getPartitionQueueMetrics,
   logPartitionAssignments,
+  logPendingPartitionMetrics,
   registerClientEventListeners,
   resolveKafkaGroupId,
   resolvePostfixId,
   SerialQueue,
+  waitForPartitionQueues,
 } from "../utils/platformatic-kafka.utils";
 import { KafkaMessageImpl, type KafkaMessage } from "./platformatic-kafka-consumer.message";
 
@@ -78,45 +83,15 @@ export class PlatformaticKafkaConsumerRunner implements OnApplicationShutdown {
   }
 
   public getQueueMetrics(): Record<number, number> {
-    const result: Record<number, number> = {};
-    for (const [partition, queue] of this.partitionQueues) {
-      if (queue.pending > 0) result[partition] = queue.pending;
-    }
-    return result;
+    return getPartitionQueueMetrics(this.partitionQueues);
   }
 
   private logPendingMetrics(): void {
-    const metrics = this.getQueueMetrics();
-    const total = Object.values(metrics).reduce((s, n) => s + n, 0);
-    if (total > 0) {
-      this.logger.log(
-        `Waiting for ${total} pending message(s) across ${Object.keys(metrics).length} partition(s)...`,
-      );
-    }
+    logPendingPartitionMetrics(this.logger, this.partitionQueues);
   }
 
   private async waitForQueues(): Promise<void> {
-    const allIdle = Promise.all([
-      ...[...this.partitionQueues.values()].map((q) => q.idle()),
-      this.queue.idle(),
-    ]);
-    const timeout = this.options.shutdownTimeoutMs;
-    if (!timeout) { await allIdle; return; }
-    await Promise.race([
-      allIdle,
-      sleepMs(timeout).then(() =>
-        this.logger.warn(`Shutdown timeout (${timeout}ms) exceeded, forcing close`),
-      ),
-    ]);
-  }
-
-  private getPartitionQueue(partition: number): SerialQueue {
-    let q = this.partitionQueues.get(partition);
-    if (!q) {
-      q = new SerialQueue();
-      this.partitionQueues.set(partition, q);
-    }
-    return q;
+    await waitForPartitionQueues(this.logger, this.partitionQueues, this.queue, this.options.shutdownTimeoutMs);
   }
 
   private async connectWithBackoff(): Promise<void> {
@@ -165,15 +140,15 @@ export class PlatformaticKafkaConsumerRunner implements OnApplicationShutdown {
     if (!this._consumer || !this.handlers.size) return;
     const stream = await this._consumer.consume({
       autocommit: false,
-      sessionTimeout: 30000,
-      heartbeatInterval: 3000,
+      sessionTimeout: 10000,
+      heartbeatInterval: 500,
       topics: [...this.handlers.keys()],
       ...DEFAULT_PLATFORMATIC_STREAM_CONSUME,
       ...this.options.consumeOptions,
     });
     this.messagesStream = stream;
     stream.on("data", (message: PlatformaticKafkaMessage) => {
-      void this.getPartitionQueue(message.partition)
+      void getOrCreatePartitionQueue(this.partitionQueues, message.partition)
         .enqueue(() => this.processMessage(message))
         .catch((err: unknown) => this.logger.error(err));
     });
@@ -259,16 +234,7 @@ export class PlatformaticKafkaConsumerRunner implements OnApplicationShutdown {
     const producer = await this.getOrCreateDlqProducer();
     if (!producer) return;
     try {
-      const headers = new Map<string, string>([
-        ["x-dlq-original-topic", payload.topic],
-        ["x-dlq-original-partition", String(payload.partition)],
-        ["x-dlq-original-offset", String(payload.offset)],
-        ["x-dlq-failures", String(failures)],
-        ["x-dlq-error", error.slice(0, 500)],
-      ]);
-      for (const [k, v] of payload.headers) {
-        if (!headers.has(k)) headers.set(k, v);
-      }
+      const headers = buildDlqHeaders(payload, error, failures);
       await producer.send({
         autocreateTopics: true,
         messages: [{ topic: deadLetterTopic, value: payload.value, key: payload.key ?? undefined, headers }],

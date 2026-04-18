@@ -3,6 +3,7 @@ export {
   resolveConnectionOptions,
 } from "./utils/platformatic-kafka.utils";
 export {
+  DEFAULT_KAFKA_METADATA_MAX_AGE_MS,
   DEFAULT_POSTFIX_CLIENT,
   DEFAULT_POSTFIX_SERVER,
 } from "./constants/platformatic-kafka.constants";

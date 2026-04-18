@@ -38,13 +38,17 @@ export interface PlatformaticKafkaOptions {
   postfixId?: string;
   forceClose?: boolean;
   connection?: ConnectionOptions;
-  consumer?: Omit<
-    ConsumerOptions<string, string, string, string>,
-    "clientId" | "bootstrapBrokers"
+  consumer?: Partial<
+    Omit<
+      ConsumerOptions<string, string, string, string>,
+      "clientId" | "bootstrapBrokers" | "groupId"
+    >
   >;
-  producer?: Omit<
-    ProducerOptions<string, string, string, string>,
-    "clientId" | "bootstrapBrokers" | "groupId"
+  producer?: Partial<
+    Omit<
+      ProducerOptions<string, string, string, string>,
+      "clientId" | "bootstrapBrokers" | "groupId"
+    >
   >;
   consumeOptions?: Partial<ConsumeOptions<string, string, string, string>>;
   produceOptions?: ProduceOptions<string, string, string, string>;

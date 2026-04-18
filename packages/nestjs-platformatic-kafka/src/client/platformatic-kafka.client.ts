@@ -201,10 +201,13 @@ export class PlatformaticKafkaClient extends ClientProxy<
 
   private async attachResponseStream(): Promise<void> {
     if (!this._consumer || !this.responsePatterns.length) return;
+
     const stream = await this._consumer.consume({
       autocommit: true,
-      sessionTimeout: 30000,
-      heartbeatInterval: 3000,
+      sessionTimeout: 10000,
+      heartbeatInterval: 500,
+      maxWaitTime: 500,
+      rebalanceTimeout: 15000,
       topics: this.responsePatterns,
       ...DEFAULT_PLATFORMATIC_STREAM_CONSUME,
       ...this.options.consumeOptions,

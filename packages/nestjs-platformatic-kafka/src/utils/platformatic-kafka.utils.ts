@@ -13,10 +13,13 @@ import type {
   KafkaConsumer,
   KafkaProducer,
   PlatformaticClientEvent,
+  PlatformaticKafkaMessage,
   PlatformaticKafkaOptions,
   PlatformaticKafkaStatus,
 } from "../types/platformatic-kafka.types";
 import { PlatformaticKafkaStatus as Status } from "../types/platformatic-kafka.types";
+import { DEFAULT_KAFKA_METADATA_MAX_AGE_MS } from "../constants/platformatic-kafka.constants";
+import { sleepMs } from "./platformatic-kafka-reconnect";
 
 type KafkaClientLike = {
   on(event: PlatformaticClientEvent, handler: () => void): unknown;
@@ -47,7 +50,9 @@ function isNonEmptyTlsConfig(
   );
 }
 
-export function brokerHostnameFromBootstrap(broker: string | Broker): string | undefined {
+export function brokerHostnameFromBootstrap(
+  broker: string | Broker,
+): string | undefined {
   if (typeof broker !== "string") {
     return broker.host.length > 0 ? broker.host : undefined;
   }
@@ -101,14 +106,20 @@ export class SerialQueue {
   private tail: Promise<void> = Promise.resolve();
   private _pending = 0;
 
-  get pending(): number { return this._pending; }
+  get pending(): number {
+    return this._pending;
+  }
 
   enqueue<T>(fn: () => Promise<T>): Promise<T> {
     this._pending++;
     const next = this.tail.then(() => fn());
     this.tail = next.then(
-      () => { this._pending--; },
-      () => { this._pending--; },
+      () => {
+        this._pending--;
+      },
+      () => {
+        this._pending--;
+      },
     );
     return next;
   }
@@ -124,7 +135,9 @@ export function registerClientEventListeners(
   onFailed: () => void,
 ): void {
   client.on("client:broker:connect", () => status$.next(Status.CONNECTED));
-  client.on("client:broker:disconnect", () => status$.next(Status.DISCONNECTED));
+  client.on("client:broker:disconnect", () =>
+    status$.next(Status.DISCONNECTED),
+  );
   client.on("client:broker:failed", () => {
     status$.next(Status.FAILED);
     onFailed();
@@ -136,7 +149,10 @@ export async function closeKafkaClients(
   producer: KafkaProducer | null | undefined,
   forceCloseConsumer = false,
 ): Promise<void> {
-  const tryClose = (client: KafkaConsumer | KafkaProducer, force?: boolean): Promise<void> =>
+  const tryClose = (
+    client: KafkaConsumer | KafkaProducer,
+    force?: boolean,
+  ): Promise<void> =>
     Promise.resolve(client.close(force)).catch(() => undefined);
 
   const closeConsumer = async (): Promise<void> => {
@@ -170,7 +186,11 @@ export function createKafkaConsumer(
   clientId: string,
   groupId: string,
 ): KafkaConsumer {
-  const resolvedConnection = resolveConnectionOptions(options.connection, options.brokers);
+  const resolvedConnection = resolveConnectionOptions(
+    options.connection,
+    options.brokers,
+  );
+
   return new Consumer({
     groupId,
     clientId,
@@ -184,6 +204,8 @@ export function createKafkaConsumer(
     retries: 5,
     ...(resolvedConnection ?? {}),
     ...options.consumer,
+    metadataMaxAge:
+      options.consumer?.metadataMaxAge ?? DEFAULT_KAFKA_METADATA_MAX_AGE_MS,
   });
 }
 
@@ -191,7 +213,10 @@ export function createKafkaProducer(
   options: PlatformaticKafkaOptions,
   clientId: string,
 ): KafkaProducer {
-  const resolvedConnection = resolveConnectionOptions(options.connection, options.brokers);
+  const resolvedConnection = resolveConnectionOptions(
+    options.connection,
+    options.brokers,
+  );
   return new Producer({
     bootstrapBrokers: options.brokers,
     clientId,
@@ -203,6 +228,8 @@ export function createKafkaProducer(
     ...(options.idempotentProducer ? { idempotent: true } : {}),
     ...(resolvedConnection ?? {}),
     ...options.producer,
+    metadataMaxAge:
+      options.producer?.metadataMaxAge ?? DEFAULT_KAFKA_METADATA_MAX_AGE_MS,
   });
 }
 
@@ -216,7 +243,10 @@ function formatPartitions(partitions: number[]): string {
       end = sorted[i];
     } else {
       ranges.push(start === end ? `${start}` : `${start}-${end}`);
-      if (i < sorted.length) { start = sorted[i]; end = sorted[i]; }
+      if (i < sorted.length) {
+        start = sorted[i];
+        end = sorted[i];
+      }
     }
   }
   return ranges.join(", ");
@@ -231,11 +261,15 @@ export function logPartitionAssignments(
   groupId: string,
   data: ConsumerGroupJoinPayload,
 ): void {
-  const assignments = (data.assignments ?? []).filter((a) => a.partitions.length > 0);
+  const assignments = (data.assignments ?? []).filter(
+    (a) => a.partitions.length > 0,
+  );
   if (!assignments.length) return;
   const total = assignments.reduce((s, a) => s + a.partitions.length, 0);
   const topicW = Math.max(...assignments.map((a) => a.topic.length));
-  const rangeW = Math.max(...assignments.map((a) => formatPartitions(a.partitions).length));
+  const rangeW = Math.max(
+    ...assignments.map((a) => formatPartitions(a.partitions).length),
+  );
   const rows = assignments
     .map((a) => {
       const range = formatPartitions(a.partitions).padEnd(rangeW);
@@ -261,11 +295,17 @@ function serializeKey(v: unknown): string | undefined {
 }
 
 function normalizeHeaders(raw: unknown): Record<string, string> | undefined {
-  if (raw == null || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+  if (raw == null || typeof raw !== "object" || Array.isArray(raw))
+    return undefined;
   const out: Record<string, string> = {};
   for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
     if (v === undefined) continue;
-    out[k] = v === null ? "null" : typeof v === "object" ? JSON.stringify(v) : String(v);
+    out[k] =
+      v === null
+        ? "null"
+        : typeof v === "object"
+          ? JSON.stringify(v)
+          : String(v);
   }
   return Object.keys(out).length > 0 ? out : undefined;
 }
@@ -279,14 +319,89 @@ function isEnvelope(data: unknown): data is Record<string, unknown> {
   );
 }
 
+export function getOrCreatePartitionQueue(
+  queues: Map<number, SerialQueue>,
+  partition: number,
+): SerialQueue {
+  let q = queues.get(partition);
+  if (!q) {
+    q = new SerialQueue();
+    queues.set(partition, q);
+  }
+  return q;
+}
+
+export function getPartitionQueueMetrics(
+  queues: Map<number, SerialQueue>,
+): Record<number, number> {
+  const result: Record<number, number> = {};
+  for (const [partition, queue] of queues) {
+    if (queue.pending > 0) result[partition] = queue.pending;
+  }
+  return result;
+}
+
+export function logPendingPartitionMetrics(
+  logger: Logger,
+  queues: Map<number, SerialQueue>,
+): void {
+  const metrics = getPartitionQueueMetrics(queues);
+  const total = Object.values(metrics).reduce((s, n) => s + n, 0);
+  if (total > 0) {
+    logger.log(
+      `Waiting for ${total} pending message(s) across ${Object.keys(metrics).length} partition(s)...`,
+    );
+  }
+}
+
+export async function waitForPartitionQueues(
+  logger: Logger,
+  queues: Map<number, SerialQueue>,
+  mainQueue: SerialQueue,
+  shutdownTimeoutMs: number | undefined,
+): Promise<void> {
+  const allIdle = Promise.all([
+    ...[...queues.values()].map((q) => q.idle()),
+    mainQueue.idle(),
+  ]);
+  if (!shutdownTimeoutMs) { await allIdle; return; }
+  await Promise.race([
+    allIdle,
+    sleepMs(shutdownTimeoutMs).then(() =>
+      logger.warn(`Shutdown timeout (${shutdownTimeoutMs}ms) exceeded, forcing close`),
+    ),
+  ]);
+}
+
+export function buildDlqHeaders(
+  payload: PlatformaticKafkaMessage,
+  error: unknown,
+  failures: number,
+): Map<string, string> {
+  const headers = new Map<string, string>([
+    ["x-dlq-original-topic", payload.topic],
+    ["x-dlq-original-partition", String(payload.partition)],
+    ["x-dlq-original-offset", String(payload.offset)],
+    ["x-dlq-failures", String(failures)],
+    ["x-dlq-error", String(error).slice(0, 500)],
+  ]);
+  for (const [k, v] of payload.headers) {
+    if (!headers.has(k)) headers.set(k, v);
+  }
+  return headers;
+}
+
 export function buildEmitMessageParts(data: unknown): EmitMessageParts {
   if (!isEnvelope(data)) {
     return { value: data === undefined ? "null" : JSON.stringify(data) };
   }
   const key = serializeKey("keys" in data ? data.keys : data.key);
-  const value = "value" in data
-    ? (data.value === undefined ? "null" : JSON.stringify(data.value))
-    : "null";
+  const value =
+    "value" in data
+      ? data.value === undefined
+        ? "null"
+        : JSON.stringify(data.value)
+      : "null";
   const headers = normalizeHeaders(data.headers);
   return {
     value,

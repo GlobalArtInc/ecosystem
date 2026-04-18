@@ -48,6 +48,9 @@
     "css-select": "6.0.0"
   },
   "pnpm": {
+    "patchedDependencies": {
+      "@platformatic/kafka@1.33.0": "patches/@platformatic__kafka@1.33.0.patch"
+    },
     "overrides": {
       "css-select": "4.3.0"
     },
