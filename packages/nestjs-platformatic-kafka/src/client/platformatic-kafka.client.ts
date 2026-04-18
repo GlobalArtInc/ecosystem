@@ -182,7 +182,7 @@ export class PlatformaticKafkaClient extends ClientProxy<
       },
       (delay) => this.logger.warn(`Kafka client unavailable, retry in ${delay}ms`),
     );
-    if (this.clientClosed) throw new Error("Kafka client closed before connect");
+    if (this.clientClosed) return; // close() called during connection — disposeClientTransport() will clean up
     } finally {
       this.clientConnecting = false;
     }
