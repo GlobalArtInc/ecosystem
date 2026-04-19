@@ -4,7 +4,7 @@ sidebar_position: 10
 
 # @globalart/platformatic-kafka
 
-A NestJS microservice transport built on top of [`@platformatic/kafka`](https://github.com/platformatic/kafka).
+A NestJS microservice transport on top of [`@platformatic/kafka`](https://github.com/platformatic/kafka): a server strategy for consuming messages and a `ClientProxy` for publishing, with exponential-backoff reconnection, per-partition processing queues on the server, and an optional DLQ.
 
 ## Installation
 
@@ -12,38 +12,45 @@ A NestJS microservice transport built on top of [`@platformatic/kafka`](https://
 npm install @globalart/platformatic-kafka @platformatic/kafka
 ```
 
-## Overview
+For the health indicator, also install `@nestjs/terminus`.
 
-The `@globalart/platformatic-kafka` package provides a NestJS microservice transport using the high-performance `@platformatic/kafka` client. It exposes a transport strategy for consuming messages and a client proxy for producing them, with built-in exponential-backoff reconnection.
+## Features
 
-## Key Features
+- **Strategy** — `PlatformaticKafkaStrategy` as a `CustomTransportStrategy` for `connectMicroservice`
+- **Client** — `PlatformaticKafkaClient` (`ClientProxy`): `emit`, `emitBatch`, request–reply via `send` when subscribed to replies
+- **Reconnection** — shared backoff for strategy and client on broker failures
+- **Producer-only mode** — `producerOnlyMode` skips creating a consumer on the client
+- **Batch publish** — `emitBatch` uses a single `send` round-trip
+- **DLQ and retries** — strategy-level `maxRetries` / `deadLetterTopic`; after handler errors and `nack`, messages can go to the DLQ when retries are exhausted
+- **Manual commit** — if `consumeOptions` sets `autocommit: false`, call `commit()` from the context after successful handling
+- **Types** — options and messages align with `@platformatic/kafka` types
 
-- **Transport strategy** — drop-in `CustomTransportStrategy` for `app.connectMicroservice()`
-- **Client proxy** — `PlatformaticKafkaClient` for publishing events and messages
-- **Auto-reconnect** — exponential backoff on broker failures, for both strategy and client
-- **Producer-only mode** — skip consumer setup when you only need to produce
-- **Batch emit** — send multiple messages in a single broker round-trip
-- **Type-safe** — full TypeScript support
+## Quick start: server
 
-## Quick Start
-
-### Register the transport in `main.ts`
+### `main.ts`
 
 ```typescript
-import { NestFactory } from '@nestjs/core';
-import { PlatformaticKafkaStrategy } from '@globalart/platformatic-kafka';
-import { AppModule } from './app.module';
+import { NestFactory } from "@nestjs/core";
+import { Transport } from "@nestjs/microservices";
+import {
+  createPlatformaticKafkaMicroservice,
+  PlatformaticKafkaStrategy,
+} from "@globalart/platformatic-kafka";
+import { AppModule } from "./app.module";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.connectMicroservice({
-    strategy: new PlatformaticKafkaStrategy({
-      brokers: ['localhost:9092'],
-      clientId: 'my-service',
-      groupId: 'my-group',
+  app.connectMicroservice(
+    createPlatformaticKafkaMicroservice({
+      transport: Transport.KAFKA,
+      options: {
+        brokers: ["localhost:9092"],
+        clientId: "orders-service",
+        groupId: "orders-consumers",
+      },
     }),
-  });
+  );
 
   await app.startAllMicroservices();
   await app.listen(3000);
@@ -51,101 +58,209 @@ async function bootstrap() {
 bootstrap();
 ```
 
-### Handle events in a controller
+Equivalent without the factory:
 
 ```typescript
-import { Controller } from '@nestjs/common';
-import { EventPattern, Payload, Ctx } from '@nestjs/microservices';
-import { PlatformaticKafkaContext } from '@globalart/platformatic-kafka';
+app.connectMicroservice({
+  strategy: new PlatformaticKafkaStrategy({
+    brokers: ["localhost:9092"],
+    clientId: "orders-service",
+    groupId: "orders-consumers",
+  }),
+});
+```
+
+### Event handler
+
+The topic matches the `@EventPattern` string. Payloads are parsed as JSON; invalid JSON on an event topic is skipped with a log warning.
+
+```typescript
+import { Controller } from "@nestjs/common";
+import { EventPattern, Payload, Ctx } from "@nestjs/microservices";
+import {
+  PlatformaticKafkaContext,
+  KafkaTopic,
+  KafkaPartition,
+  KafkaAck,
+  KafkaNack,
+} from "@globalart/platformatic-kafka";
 
 @Controller()
-export class AppController {
-  @EventPattern('orders.created')
-  async handleOrder(
+export class OrdersController {
+  @EventPattern("orders.created")
+  async onOrderCreated(
     @Payload() data: unknown,
     @Ctx() ctx: PlatformaticKafkaContext,
+    @KafkaTopic() topic: string,
+    @KafkaPartition() partition: number,
   ) {
-    const [message, partition, topic] = ctx.getArgs();
-    console.log(topic, partition, data);
+    void topic;
+    void partition;
   }
 }
 ```
 
-### Register the client in a module
+`PlatformaticKafkaContext`:
+
+- `getMessage()` — parsed message (`value` / `key` / `headers` with JSON parsing where applicable)
+- `getTopic()`, `getPartition()`, `getHeaders()`
+- `commit()` — commit the offset (relevant when `consumeOptions.autocommit === false`)
+- `nack(delayMs?)` — defer reprocessing (default delay 5000 ms)
+
+The `KafkaKey`, `KafkaHeader`, `KafkaHeaders`, `KafkaAck`, and `KafkaNack` parameter decorators read the same data from the RPC context.
+
+### Request–reply (`@MessagePattern`)
+
+Supported, but in-flight replies can be lost during consumer group rebalances due to `@platformatic/kafka` limitations. Prefer `@EventPattern` for event streams.
+
+## Client
+
+### Module with named clients
 
 ```typescript
-import { Module } from '@nestjs/common';
-import { PlatformaticKafkaClient } from '@globalart/platformatic-kafka';
+import { Module } from "@nestjs/common";
+import { PlatformaticKafkaClientsModule } from "@globalart/platformatic-kafka";
 
 @Module({
-  providers: [
-    {
-      provide: 'KAFKA_CLIENT',
-      useValue: new PlatformaticKafkaClient({
-        brokers: ['localhost:9092'],
-        clientId: 'my-service',
-        groupId: 'my-group',
-      }),
-    },
+  imports: [
+    PlatformaticKafkaClientsModule.register([
+      {
+        name: "ORDERS_KAFKA",
+        options: {
+          brokers: ["localhost:9092"],
+          clientId: "orders-api",
+          groupId: "orders-api",
+          producerOnlyMode: true,
+        },
+      },
+    ]),
   ],
-  exports: ['KAFKA_CLIENT'],
+  exports: [PlatformaticKafkaClientsModule],
 })
 export class KafkaModule {}
 ```
 
-### Emit events from a service
+Async registration: `PlatformaticKafkaClientsModule.registerAsync` with `useFactory` and `inject`.
+
+### Using `ClientsModule`
 
 ```typescript
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { PlatformaticKafkaClient } from '@globalart/platformatic-kafka';
+import { ClientsModule } from "@nestjs/microservices";
+import { createPlatformaticKafkaClientBroker } from "@globalart/platformatic-kafka";
+
+ClientsModule.register([
+  {
+    name: "KAFKA",
+    ...createPlatformaticKafkaClientBroker({
+      brokers: ["localhost:9092"],
+      clientId: "bff",
+      producerOnlyMode: true,
+    }),
+  },
+]);
+```
+
+### Service
+
+```typescript
+import { Inject, Injectable, OnModuleInit } from "@nestjs/common";
+import { ClientProxy } from "@nestjs/microservices";
+import { firstValueFrom } from "rxjs";
 
 @Injectable()
-export class OrdersService implements OnModuleInit {
-  constructor(
-    @Inject('KAFKA_CLIENT') private readonly client: PlatformaticKafkaClient,
-  ) {}
+export class OrdersApiService implements OnModuleInit {
+  constructor(@Inject("KAFKA") private readonly kafka: ClientProxy) {}
 
   async onModuleInit() {
-    await this.client.connect();
+    await this.kafka.connect();
   }
 
-  async createOrder(order: unknown) {
-    this.client.emit('orders.created', order);
+  publishCreated(order: unknown) {
+    this.kafka.emit("orders.created", order);
   }
 
-  async createOrders(orders: unknown[]) {
-    this.client.emitBatch('orders.created', { messages: orders });
+  async publishCreatedBatch(orders: unknown[]) {
+    await firstValueFrom(
+      this.kafka.emit("orders.created", { messages: orders } as never),
+    );
   }
 }
 ```
 
-## Configuration
+On `PlatformaticKafkaClient` directly you also have `emitBatch(pattern, { messages })`, `getStatus()`, `consumer` / `producer` getters after `connect()`, and `unwrap()` for low-level access to `@platformatic/kafka` instances.
 
-### PlatformaticKafkaOptions
+For request–reply, call `subscribeToResponseOf("topic")` on the client before `send` so the consumer subscribes to `${pattern}.reply`.
 
-| Option            | Type                   | Default           | Description                                                                 |
-| ----------------- | ---------------------- | ----------------- | --------------------------------------------------------------------------- |
-| `brokers`         | `string[] \| Broker[]` | —                 | **Required.** List of broker addresses                                      |
-| `clientId`        | `string`               | `nestjs-consumer` | Kafka client ID                                                             |
-| `groupId`         | `string`               | `nestjs-group`    | Kafka consumer group ID                                                     |
-| `postfixId`       | `string`               | `-server`/`-client` | Suffix appended to `clientId` and `groupId`                               |
-| `forceClose`      | `boolean`              | `false`           | Force-close connections on shutdown                                         |
-| `consumer`        | `ConsumerOptions`      | —                 | `@platformatic/kafka` consumer options (without `clientId`/`bootstrapBrokers`) |
-| `producer`        | `ProducerOptions`      | —                 | `@platformatic/kafka` producer options (without `clientId`/`bootstrapBrokers`/`groupId`) |
-| `consumeOptions`  | `ConsumeOptions`       | —                 | Options passed to `consumer.consume()`                                      |
-| `produceOptions`  | `ProduceOptions`       | —                 | Options passed to `producer.send()`                                         |
-| `producerOnlyMode`| `boolean`              | `false`           | Skip consumer setup (client only)                                           |
-| `reconnect`       | `ReconnectConfig`      | —                 | Exponential backoff configuration                                           |
+## `PlatformaticKafkaOptions`
 
-### ReconnectConfig
+| Field | Type | Default | Description |
+| --- | --- | --- | --- |
+| `brokers` | `string[] \| Broker[]` | — | **Required.** Bootstrap brokers |
+| `clientId` | `string` | Nest default (`KAFKA_DEFAULT_CLIENT`) | Kafka client id |
+| `groupId` | `string` | Nest default (`KAFKA_DEFAULT_GROUP`) | Consumer group id |
+| `postfixId` | `string` | server `"-server"`, client `"-client"` | Suffix appended to `clientId` and resolved `groupId` |
+| `forceClose` | `boolean` | `false` | Force-close on dispose (mainly for the strategy) |
+| `connection` | `ConnectionOptions` | — | TLS, SASL, and other broker connection settings |
+| `consumer` | partial `ConsumerOptions` | — | Excluding `clientId`, `bootstrapBrokers`, `groupId` |
+| `producer` | partial `ProducerOptions` | — | Excluding `clientId`, `bootstrapBrokers`, `groupId` |
+| `consumeOptions` | partial `ConsumeOptions` | — | Merged over internal stream defaults (`committed` / `latest` mode, session timeouts, etc.) |
+| `produceOptions` | `ProduceOptions` | — | Default arguments for `producer.send` |
+| `producerOnlyMode` | `boolean` | `false` | Producer only (no consumer on the client) |
+| `reconnect` | `ReconnectConfig` | see below | Reconnection backoff |
+| `maxRetries` | `number` | unlimited | Retry cap on handler failure / `nack` for events |
+| `deadLetterTopic` | `string` | — | DLQ topic after `maxRetries` is exceeded |
+| `shutdownTimeoutMs` | `number` | no timeout | Wait for partition queues (strategy) or send queue (client) before closing |
+| `idempotentProducer` | `boolean` | `false` | Enables idempotent producer in `@platformatic/kafka` |
 
-| Option           | Type     | Default | Description                          |
-| ---------------- | -------- | ------- | ------------------------------------ |
-| `initialDelayMs` | `number` | `1000`  | Initial retry delay in milliseconds  |
-| `maxDelayMs`     | `number` | `30000` | Maximum retry delay in milliseconds  |
-| `multiplier`     | `number` | `2`     | Backoff multiplier per retry         |
+### `ReconnectConfig`
 
-## Notes
+| Field | Default |
+| --- | --- |
+| `initialDelayMs` | `1000` |
+| `maxDelayMs` | `30000` |
+| `multiplier` | `2` |
 
-- Prefer `@EventPattern` over `@MessagePattern`. Bidirectional (request/reply) communication is supported but messages can be lost during rebalancing due to a limitation of `@platformatic/kafka`.
-- Topics are auto-created by default when producing.
+## Health (Terminus)
+
+```typescript
+import { Controller, Get } from "@nestjs/common";
+import { HealthCheck, HealthCheckService, TerminusModule } from "@nestjs/terminus";
+import {
+  PlatformaticKafkaHealthIndicator,
+  PlatformaticKafkaStrategy,
+} from "@globalart/platformatic-kafka";
+
+@Controller("health")
+export class HealthController {
+  constructor(
+    private health: HealthCheckService,
+    private kafkaHealth: PlatformaticKafkaHealthIndicator,
+    private kafka: PlatformaticKafkaStrategy,
+  ) {}
+
+  @Get()
+  @HealthCheck()
+  check() {
+    return this.health.check([
+      () => this.kafkaHealth.isHealthy("kafka", this.kafka),
+    ]);
+  }
+}
+```
+
+The module that provides the indicator must have access to the strategy or any object implementing `getStatus(): PlatformaticKafkaStatus`.
+
+## Other exports
+
+- `brokerHostnameFromBootstrap` — host from a broker string or `Broker` object
+- `DEFAULT_POSTFIX_SERVER`, `DEFAULT_POSTFIX_CLIENT`, `DEFAULT_KAFKA_METADATA_MAX_AGE_MS`
+- Types: `PlatformaticKafkaMessage`, `ParsedKafkaMessage`, `KafkaSubscribeOptions`, `KafkaSubscribeMetadata`, `ConnectionOptions`, `SASLOptions` (re-exported from `@platformatic/kafka`)
+- `PlatformaticKafkaStatus` — `connected` \| `disconnected` \| `failed`
+- `@KafkaSubscribe(topic, options?)` attaches `KafkaSubscribeOptions` metadata; wiring handlers to the transport is done with Nest microservices `@EventPattern` / `@MessagePattern`
+
+## Behavior and limitations
+
+- Topics may be auto-created on produce (`autocreateTopics: true` on `send` calls).
+- Event payloads are serialized as a JSON string in `value`.
+- The strategy processes messages with per-partition queues; use `getQueueMetrics()` on `PlatformaticKafkaStrategy` for queue depth.
+- Client `close()` waits for the internal `SerialQueue` to drain; with `shutdownTimeoutMs`, that wait is bounded.
