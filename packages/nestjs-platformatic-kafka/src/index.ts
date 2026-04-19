@@ -1,7 +1,4 @@
-export {
-  brokerHostnameFromBootstrap,
-  resolveConnectionOptions,
-} from "./utils/platformatic-kafka.utils";
+export { brokerHostnameFromBootstrap } from "./utils/platformatic-kafka.utils";
 export {
   DEFAULT_KAFKA_METADATA_MAX_AGE_MS,
   DEFAULT_POSTFIX_CLIENT,
@@ -10,13 +7,6 @@ export {
 export { createPlatformaticKafkaMicroservice } from "./config/platformatic-kafka-microservice.config";
 export type { PlatformaticKafkaConnectConfig } from "./config/platformatic-kafka-microservice.config";
 export { createPlatformaticKafkaClientBroker } from "./config/platformatic-kafka-client-broker.config";
-
-export { PlatformaticKafkaConsumerModule } from "./consumer/platformatic-kafka-consumer.module";
-export type {
-  KafkaConsumerModuleAsyncOptions,
-  KafkaConsumerModuleOptions,
-} from "./consumer/platformatic-kafka-consumer.module";
-export type { KafkaMessage } from "./consumer/platformatic-kafka-consumer.message";
 
 export { PlatformaticKafkaClientsModule } from "./client/platformatic-kafka-clients.module";
 export type {

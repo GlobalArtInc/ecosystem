@@ -57,6 +57,8 @@ export class PlatformaticKafkaClient extends ClientProxy<
   private responseStream: ResponseMessagesStream | null = null;
   private clientClosed = false;
   private clientConnecting = false;
+  private _clientCloseResolve: (() => void) | undefined;
+  private readonly _clientCloseSignal: Promise<void>;
   private currentStatus: PlatformaticKafkaStatus = PlatformaticKafkaStatus.DISCONNECTED;
   private readonly queue = new SerialQueue();
 
@@ -72,6 +74,7 @@ export class PlatformaticKafkaClient extends ClientProxy<
 
   constructor(protected readonly options: PlatformaticKafkaOptions) {
     super();
+    this._clientCloseSignal = new Promise<void>(resolve => { this._clientCloseResolve = resolve; });
     this.initializeSerializer(undefined);
     this.initializeDeserializer(undefined);
     this._status$.subscribe((s) => { this.currentStatus = s; });
@@ -92,6 +95,7 @@ export class PlatformaticKafkaClient extends ClientProxy<
 
   public async close(): Promise<void> {
     this.clientClosed = true;
+    this._clientCloseResolve?.();
     const timeout = this.options.shutdownTimeoutMs;
     if (timeout) {
       await Promise.race([
@@ -181,6 +185,7 @@ export class PlatformaticKafkaClient extends ClientProxy<
         }
       },
       (delay, err) => this.logger.warn(`Kafka client unavailable, retry in ${delay}ms: ${formatError(err)}`),
+      this._clientCloseSignal,
     );
     if (this.clientClosed) return; // close() called during connection — disposeClientTransport() will clean up
     } finally {

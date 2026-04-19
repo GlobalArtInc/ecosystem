@@ -92,10 +92,9 @@ export function resolveConnectionOptions(
     brokers !== undefined &&
     brokers.length > 0
   ) {
-    const host = brokerHostnameFromBootstrap(brokers[0]);
     return {
       ...base,
-      tlsServerName: host !== undefined && host !== "" ? host : true,
+      tlsServerName: true,
     };
   }
   return base;
@@ -144,6 +143,8 @@ export function registerClientEventListeners(
   });
 }
 
+const CLOSE_TIMEOUT_MS = 5000;
+
 export async function closeKafkaClients(
   consumer: KafkaConsumer | null | undefined,
   producer: KafkaProducer | null | undefined,
@@ -155,23 +156,26 @@ export async function closeKafkaClients(
   ): Promise<void> =>
     Promise.resolve(client.close(force)).catch(() => undefined);
 
+  const withTimeout = (p: Promise<void>): Promise<void> =>
+    Promise.race([p, sleepMs(CLOSE_TIMEOUT_MS)]);
+
   const closeConsumer = async (): Promise<void> => {
     if (!consumer) return;
-    await Promise.resolve(); // yield before closing to let pending callbacks flush
+    await Promise.resolve();
     if (forceCloseConsumer) {
-      await tryClose(consumer, true);
+      await withTimeout(tryClose(consumer, true));
       return;
     }
-    try {
-      await Promise.resolve(consumer.close(false));
-    } catch {
-      await tryClose(consumer, true);
-    }
+    await withTimeout(
+      Promise.resolve(consumer.close(false)).catch(() =>
+        tryClose(consumer, true),
+      ),
+    );
   };
 
   await Promise.all([
     closeConsumer(),
-    producer ? tryClose(producer) : Promise.resolve(),
+    producer ? withTimeout(tryClose(producer)) : Promise.resolve(),
   ]);
 }
 
@@ -201,7 +205,7 @@ export function createKafkaConsumer(
     autocreateTopics: true,
     timeout: 30000,
     connectTimeout: 10000,
-    retries: 5,
+    retries: 0,
     ...(resolvedConnection ?? {}),
     ...options.consumer,
     metadataMaxAge:
@@ -364,11 +368,16 @@ export async function waitForPartitionQueues(
     ...[...queues.values()].map((q) => q.idle()),
     mainQueue.idle(),
   ]);
-  if (!shutdownTimeoutMs) { await allIdle; return; }
+  if (!shutdownTimeoutMs) {
+    await allIdle;
+    return;
+  }
   await Promise.race([
     allIdle,
     sleepMs(shutdownTimeoutMs).then(() =>
-      logger.warn(`Shutdown timeout (${shutdownTimeoutMs}ms) exceeded, forcing close`),
+      logger.warn(
+        `Shutdown timeout (${shutdownTimeoutMs}ms) exceeded, forcing close`,
+      ),
     ),
   ]);
 }

@@ -45,6 +45,7 @@ export async function runWithBackoff(
   isClosed: () => boolean,
   attempt: () => Promise<void>,
   onWait: (delay: number, err: unknown) => void,
+  closeSignal?: Promise<void>,
 ): Promise<void> {
   const { initial, max, factor } = getReconnectDelays(reconnect ?? {});
   let delay = initial;
@@ -53,10 +54,10 @@ export async function runWithBackoff(
       await attempt();
       return;
     } catch (err) {
-      if (isClosed()) throw err;
+      if (isClosed()) return;
       const jittered = jitter(delay);
       onWait(jittered, err);
-      await sleepMs(jittered);
+      await (closeSignal ? Promise.race([sleepMs(jittered), closeSignal]) : sleepMs(jittered));
       delay = Math.min(Math.floor(delay * factor), max);
     }
   }

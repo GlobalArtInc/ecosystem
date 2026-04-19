@@ -63,6 +63,8 @@ export class PlatformaticKafkaStrategy
   private currentStatus: PlatformaticKafkaStatus = PlatformaticKafkaStatus.DISCONNECTED;
   private readonly queue = new SerialQueue();
   private readonly partitionQueues = new Map<number, SerialQueue>();
+  private _closeResolve: (() => void) | undefined;
+  private readonly _closeSignal: Promise<void>;
 
   get consumer(): KafkaConsumer {
     if (!this._consumer) throw new Error("No consumer initialized");
@@ -76,6 +78,7 @@ export class PlatformaticKafkaStrategy
 
   constructor(private readonly options: PlatformaticKafkaOptions) {
     super();
+    this._closeSignal = new Promise<void>(resolve => { this._closeResolve = resolve; });
     this.setOnProcessingStartHook((_, __, done) => done());
     this._status$.subscribe((s) => { this.currentStatus = s; });
     const postfixId = resolvePostfixId(options.postfixId, DEFAULT_POSTFIX_SERVER);
@@ -100,9 +103,17 @@ export class PlatformaticKafkaStrategy
   public async close(): Promise<void> {
     this.logger.log("Closing Kafka connection...");
     this.closed = true;
-    this.logPendingMetrics();
+    this._closeResolve?.();
+    await this.stopMessageStream();
     await this.waitForQueues();
     await this.queue.enqueue(() => this.disposeTransport());
+  }
+
+  private async stopMessageStream(): Promise<void> {
+    if (!this.messagesStream) return;
+    const stream = this.messagesStream;
+    this.messagesStream = null;
+    try { await stream.close(); } catch {}
   }
 
   public getQueueMetrics(): Record<number, number> {
@@ -150,6 +161,7 @@ export class PlatformaticKafkaStrategy
           );
         },
         (delay, err) => this.logger.warn(`Kafka unavailable, retry in ${delay}ms: ${formatError(err)}`),
+        this._closeSignal,
       );
       if (this.closed) return; // close() called during connection — disposeTransport() will clean up
     } finally {
@@ -186,7 +198,6 @@ export class PlatformaticKafkaStrategy
         'Bidirectional communication is not fully supported by "@platformatic/kafka". Messages can be lost during rebalancing. Prefer "@EventPattern" over "@MessagePattern".',
       );
     }
-    
     const stream = await this._consumer.consume({
       autocommit: true,
       sessionTimeout: 10000,
@@ -196,15 +207,22 @@ export class PlatformaticKafkaStrategy
       ...this.options.consumeOptions,
     });
     this.messagesStream = stream;
-    stream.on("data", (message: PlatformaticKafkaMessage) => {
-      void getOrCreatePartitionQueue(this.partitionQueues, message.partition)
-        .enqueue(() => this.handleMessage(message))
-        .catch((err: unknown) => this.logger.error(err));
-    });
-    stream.on("error", (error: Error) => {
-      this.logger.warn(`Kafka stream error, reconnecting: ${formatError(error)}`);
-      this.scheduleReconnect();
-    });
+    void this.runMessageLoop(stream);
+  }
+
+  private async runMessageLoop(stream: MessagesStream): Promise<void> {
+    try {
+      for await (const message of stream) {
+        void getOrCreatePartitionQueue(this.partitionQueues, message.partition)
+          .enqueue(() => this.handleMessage(message))
+          .catch((err: unknown) => this.logger.error(err));
+      }
+    } catch (error) {
+      if (!this.closed) {
+        this.logger.warn(`Kafka stream error, reconnecting: ${formatError(error)}`);
+        this.scheduleReconnect();
+      }
+    }
   }
 
   public override async handleEvent(
@@ -295,7 +313,7 @@ export class PlatformaticKafkaStrategy
         `Retrying "${payload.topic}" in ${nackDelay}ms` +
         (isFinite(maxRetries) ? ` (${failures}/${maxRetries})` : ""),
       );
-      await sleepMs(nackDelay);
+      await Promise.race([sleepMs(nackDelay), this._closeSignal]);
     }
   }
 
@@ -422,10 +440,7 @@ export class PlatformaticKafkaStrategy
   }
 
   private async disposeTransport(): Promise<void> {
-    if (this.messagesStream) {
-      try { await this.messagesStream.close(); } catch {}
-      this.messagesStream = null;
-    }
+    await this.stopMessageStream();
     this.partitionQueues.clear();
     await closeKafkaClients(this._consumer, this._producer, this.getOptionsProp(this.options, "forceClose", false));
     this._consumer = undefined;
