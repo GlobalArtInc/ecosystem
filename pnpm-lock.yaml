@@ -7,11 +7,6 @@ settings:
 overrides:
   css-select: 4.3.0
 
-patchedDependencies:
-  '@platformatic/kafka@1.33.0':
-    hash: 354e17c6b157824dc09049e44daebabfe35cf97925c2574d16e14fb8a3f6c7c4
-    path: patches/@platformatic__kafka@1.33.0.patch
-
 importers:
 
   .:
@@ -219,7 +214,7 @@ importers:
         version: 11.1.14(@nestjs/common@11.1.17(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.14)
       '@platformatic/kafka':
         specifier: 1.33.0
-        version: 1.33.0(patch_hash=354e17c6b157824dc09049e44daebabfe35cf97925c2574d16e14fb8a3f6c7c4)
+        version: 1.33.0
       axios:
         specifier: ^1.13.5
         version: 1.13.5
@@ -532,15 +527,15 @@ importers:
       '@as-integrations/express5':
         specifier: ^1.1.2
         version: 1.1.2(@apollo/server@5.4.0(graphql@16.12.0))(express@5.2.1)
-      '@globalart/confluent-kafka':
-        specifier: workspace:*
-        version: link:../../../packages/nestjs-confluent-kafka
       '@globalart/nestjs-logger':
         specifier: workspace:*
         version: link:../../../packages/nestjs-logger
       '@globalart/nestjs-typeorm-outbox':
         specifier: workspace:*
         version: link:../../../packages/nestjs-typeorm-outbox
+      '@globalart/platformatic-kafka':
+        specifier: workspace:*
+        version: link:../../../packages/nestjs-platformatic-kafka
       '@nestjs/apollo':
         specifier: ^13.2.1
         version: 13.2.4(@apollo/server@5.4.0(graphql@16.12.0))(@as-integrations/express5@1.1.2(@apollo/server@5.4.0(graphql@16.12.0))(express@5.2.1))(@nestjs/common@11.1.17(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.14)(@nestjs/graphql@13.2.4(@nestjs/common@11.1.17(class-transformer@0.5.1)(class-validator@0.14.3)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.14)(class-transformer@0.5.1)(class-validator@0.14.3)(graphql@16.12.0)(reflect-metadata@0.2.2))(graphql@16.12.0)
@@ -1841,7 +1836,7 @@ importers:
         version: 6.5.0(@nestjs/common@11.1.17(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.14)(reflect-metadata@0.2.2)
       '@platformatic/kafka':
         specifier: ^1.33.0
-        version: 1.33.0(patch_hash=354e17c6b157824dc09049e44daebabfe35cf97925c2574d16e14fb8a3f6c7c4)
+        version: 1.33.0
       rxjs:
         specifier: 7.8.2
         version: 7.8.2
@@ -17608,7 +17603,7 @@ snapshots:
       '@nestjs/platform-socket.io': 11.1.14(@nestjs/common@11.1.17(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/websockets@11.1.10)(rxjs@7.8.2)
       '@nestjs/terminus': 11.1.1(@grpc/grpc-js@1.14.3)(@grpc/proto-loader@0.8.0)(@nestjs/common@11.1.17(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.14)(@nestjs/microservices@11.1.14)(@nestjs/typeorm@11.0.0(@nestjs/common@11.1.17(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.14)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.28(ioredis@5.10.1)(pg@8.18.0)(redis@5.11.0)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@25.6.0)(typescript@6.0.2))))(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.28(ioredis@5.10.1)(pg@8.18.0)(redis@5.11.0)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.15.11)(@types/node@25.6.0)(typescript@6.0.2)))
       '@nestjs/throttler': 6.5.0(@nestjs/common@11.1.17(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.14)(reflect-metadata@0.2.2)
-      '@platformatic/kafka': 1.33.0(patch_hash=354e17c6b157824dc09049e44daebabfe35cf97925c2574d16e14fb8a3f6c7c4)
+      '@platformatic/kafka': 1.33.0
       rxjs: 7.8.2
     transitivePeerDependencies:
       - '@grpc/grpc-js'
@@ -19676,7 +19671,7 @@ snapshots:
 
   '@platformatic/dynamic-buffer@0.3.1': {}
 
-  '@platformatic/kafka@1.33.0(patch_hash=354e17c6b157824dc09049e44daebabfe35cf97925c2574d16e14fb8a3f6c7c4)':
+  '@platformatic/kafka@1.33.0':
     dependencies:
       '@platformatic/dynamic-buffer': 0.3.1
       '@platformatic/wasm-utils': 0.2.1
