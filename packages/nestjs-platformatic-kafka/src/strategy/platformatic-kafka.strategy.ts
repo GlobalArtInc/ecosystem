@@ -199,12 +199,12 @@ export class PlatformaticKafkaStrategy
       );
     }
     const stream = await this._consumer.consume({
-      autocommit: true,
       sessionTimeout: 10000,
       heartbeatInterval: 500,
       topics: registeredPatterns,
       ...DEFAULT_PLATFORMATIC_STREAM_CONSUME,
       ...this.options.consumeOptions,
+      autocommit: false,
     });
     this.messagesStream = stream;
     void this.runMessageLoop(stream);
@@ -290,23 +290,20 @@ export class PlatformaticKafkaStrategy
       }
 
       if (nackDelay === null) {
-        if (this.options.consumeOptions?.autocommit === false) {
-          try {
-            await commit();
-            return;
-          } catch (err) {
-            this.logger.error(err);
-            lastError = err;
-            nackDelay = defaultRetryMs;
-          }
-        } else {
+        try {
+          await commit();
           return;
+        } catch (err) {
+          this.logger.error(err);
+          lastError = err;
+          nackDelay = defaultRetryMs;
         }
       }
 
       failures++;
       if (failures > maxRetries) {
         await this.sendToDlq(payload, lastError, failures);
+        try { await commit(); } catch (err) { this.logger.error(err); }
         return;
       }
       this.logger.warn(
