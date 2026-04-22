@@ -36,7 +36,7 @@
     "publish:npm": "release-it --config ../../.release-it.json"
   },
   "dependencies": {
-    "@angular-devkit/core": "21.2.7",
+    "@angular-devkit/core": "21.2.8",
     "@angular-devkit/schematics": "21.2.7",
     "comment-json": "5.0.0",
     "jsonc-parser": "3.3.1"
