@@ -1,11 +1,11 @@
 import {
   DynamicModule,
   FactoryProvider,
+  Injectable,
   Logger,
   Module,
   OnApplicationShutdown,
 } from '@nestjs/common';
-import { ModuleRef } from '@nestjs/core';
 import { createClient, createCluster, createSentinel } from 'redis';
 import { RedisModuleAsyncOptions } from './interfaces';
 import {
@@ -20,18 +20,24 @@ type RedisInstance =
   | ReturnType<typeof createCluster>
   | ReturnType<typeof createSentinel>;
 
-@Module({})
-export class RedisModule
-  extends ConfigurableModuleClass
-  implements OnApplicationShutdown
-{
-  private static readonly logger = new Logger('RedisModule');
+const REDIS_LIFECYCLE_SERVICE = Symbol('REDIS_LIFECYCLE_SERVICE');
 
-  protected connectionName?: string;
+@Injectable()
+class RedisLifecycleService implements OnApplicationShutdown {
+  constructor(private readonly client: RedisInstance) {}
 
-  constructor(private readonly moduleRef: ModuleRef) {
-    super();
+  async onApplicationShutdown() {
+    try {
+      await this.client?.quit();
+    } catch {
+      // client may not have been initialized (e.g. connect failed)
+    }
   }
+}
+
+@Module({})
+export class RedisModule extends ConfigurableModuleClass {
+  private static readonly logger = new Logger('RedisModule');
 
   public static forRoot(
     options: RedisModuleForRootOptions = {},
@@ -40,12 +46,11 @@ export class RedisModule
 
     return {
       global: options?.isGlobal ?? false,
-      module: class extends RedisModule {
-        override connectionName = options?.connectionName;
-      },
+      module: RedisModule,
       providers: [
         ...(baseModule.providers || []),
         this.getRedisClientProvider(options?.connectionName),
+        this.getLifecycleServiceProvider(options?.connectionName),
       ],
       exports: [RedisToken(options?.connectionName)],
     };
@@ -56,15 +61,22 @@ export class RedisModule
 
     return {
       global: options.isGlobal ?? false,
-      module: class extends RedisModule {
-        override connectionName = options.connectionName;
-      },
+      module: RedisModule,
       imports: options.imports || [],
       providers: [
         ...(baseModule.providers || []),
         this.getRedisClientProvider(options.connectionName),
+        this.getLifecycleServiceProvider(options.connectionName),
       ],
       exports: [RedisToken(options.connectionName)],
+    };
+  }
+
+  private static getLifecycleServiceProvider(connectionName?: string): FactoryProvider {
+    return {
+      provide: REDIS_LIFECYCLE_SERVICE,
+      useFactory: (client: RedisInstance) => new RedisLifecycleService(client),
+      inject: [RedisToken(connectionName)],
     };
   }
 
@@ -132,23 +144,13 @@ export class RedisModule
         const client = getClient();
         addListeners(client, connectionName);
         RedisModule.log(`Connecting to Redis...`, connectionName);
-        await client.connect();
-        RedisModule.log(`Redis client connected`, connectionName);
+        client.connect().catch((err: Error) => {
+          RedisModule.err(`Failed to connect: ${err.message}`, connectionName);
+        });
         return client;
       },
       inject: [MODULE_OPTIONS_TOKEN],
     };
-  }
-
-  async onApplicationShutdown() {
-    try {
-      RedisModule.log(`Closing Redis connection...`, this.connectionName);
-      const client = this.moduleRef.get<RedisInstance>(RedisToken(this.connectionName), { strict: false });
-      await client?.quit();
-      RedisModule.log(`Redis connection closed`, this.connectionName);
-    } catch {
-      // client may not have been initialized (e.g. connect failed)
-    }
   }
 
   private static log(

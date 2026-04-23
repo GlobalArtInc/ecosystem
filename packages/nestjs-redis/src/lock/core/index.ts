@@ -48,4 +48,4 @@ export { Redlock, type RedlockInstance } from './redlock.js';
 export type { RedlockOptions } from './types.js';
 
 // Common error classes
-export { RedisConnectionError, InvalidParameterError } from './errors.js';
+export { RedisConnectionError, InvalidParameterError, LockNotAcquiredError } from './errors.js';

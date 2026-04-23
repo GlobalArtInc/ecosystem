@@ -262,12 +262,10 @@ export class PlatformaticKafkaStrategy
   private async handleEventMessage(payload: PlatformaticKafkaMessage): Promise<void> {
     let data: unknown;
     try {
-      data = JSON.parse(payload.value);
+      data = payload.value != null ? JSON.parse(payload.value as string) : null;
     } catch {
-      this.logger.warn(`Skipping message on topic "${payload.topic}": invalid JSON`);
-      return;
+      data = payload.value;
     }
-
     const defaultRetryMs = 5000;
     const maxRetries = this.options.maxRetries ?? Infinity;
     let failures = 0;

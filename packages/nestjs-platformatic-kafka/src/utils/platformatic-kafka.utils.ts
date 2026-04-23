@@ -4,8 +4,10 @@ import {
   type ConnectionOptions,
   type ConsumerGroupJoinPayload,
   Producer,
-  stringDeserializers,
   stringSerializers,
+  stringSerializer,
+  jsonSerializer,
+  stringDeserializer,
 } from "@platformatic/kafka";
 import type { Logger } from "@nestjs/common";
 import { Subject } from "rxjs";
@@ -201,7 +203,12 @@ export function createKafkaConsumer(
     bootstrapBrokers: options.brokers,
     maxWaitTime: 1000,
     autocommit: 100,
-    deserializers: stringDeserializers,
+    deserializers: {
+      headerKey: stringDeserializer,
+      headerValue: stringDeserializer,
+      key: stringDeserializer,
+      value: stringDeserializer,
+    },
     autocreateTopics: true,
     timeout: 30000,
     connectTimeout: 10000,
@@ -224,7 +231,12 @@ export function createKafkaProducer(
   return new Producer({
     bootstrapBrokers: options.brokers,
     clientId,
-    serializers: stringSerializers,
+    serializers: {
+      headerKey: stringSerializer,
+      headerValue: stringSerializer,
+      key: jsonSerializer,
+      value: jsonSerializer,
+    },
     autocreateTopics: true,
     timeout: 30000,
     connectTimeout: 10000,

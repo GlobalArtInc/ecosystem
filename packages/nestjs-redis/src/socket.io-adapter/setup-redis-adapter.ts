@@ -1,60 +1,33 @@
 import type { INestApplication } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { UnknownElementException } from '@nestjs/core/errors/exceptions';
-import {
-  RedisAdapterAlreadySetUpException,
-  RedisClientNotFoundException,
-} from './exceptions';
-import { RedisIoAdapter } from './redis-io.adapter';
+import { RedisToken } from '../client/redis-client.di-tokens.js';
+import { RedisAdapterAlreadySetUpException, RedisClientNotFoundException } from './exceptions.js';
+import { RedisIoAdapter } from './redis-io.adapter.js';
 
-const appSet = new Set<INestApplication>();
+const initializedApps = new WeakSet<INestApplication>();
 
-/**
- * Sets up the Redis adapter for a NestJS application.
- *
- * @param app - The NestJS application instance
- * @param redisToken - Optional Redis client token for named connections
- * @returns A promise that resolves when the adapter is set up
- * @throws RedisClientNotFoundException if the Redis client is not found
- */
 export async function setupRedisAdapter(
   app: INestApplication,
-  redisToken?: string,
+  connectionName?: string,
 ): Promise<void> {
-  if (appSet.has(app)) {
+  if (initializedApps.has(app)) {
     throw new RedisAdapterAlreadySetUpException();
   }
 
-  appSet.add(app);
-  const redisIoAdapter = new RedisIoAdapter(app);
+  const token = RedisToken(connectionName);
+  const adapter = new RedisIoAdapter(app);
 
   try {
     const moduleRef = app.get(ModuleRef);
-    const redisClient = moduleRef.get(RedisToken(redisToken), {
-      strict: false,
-    });
-    await redisIoAdapter.connectToRedis(redisClient);
-    app.useWebSocketAdapter(redisIoAdapter);
-  } catch (error) {
-    if (error instanceof UnknownElementException) {
-      throw new RedisClientNotFoundException(redisToken);
+    const redisClient = moduleRef.get(token, { strict: false });
+    await adapter.connectToRedis(redisClient);
+    app.useWebSocketAdapter(adapter);
+    initializedApps.add(app);
+  } catch (err) {
+    if (err instanceof UnknownElementException) {
+      throw new RedisClientNotFoundException(connectionName);
     }
-
-    throw error;
+    throw err;
   }
-}
-
-/**
- * Creates a Redis client injection token.
- *
- * @param connectionName - Optional connection name
- * @returns Injection token for the Redis client
- * @publicApi
- */
-function RedisToken(connectionName?: string): string {
-  if (connectionName) {
-    return `REDIS_CLIENT_${connectionName.toUpperCase()}`;
-  }
-
-  return 'REDIS_CLIENT';
 }
