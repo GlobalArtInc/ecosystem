@@ -6,7 +6,7 @@ import {
   Producer,
   stringSerializers,
   stringSerializer,
-  jsonSerializer,
+  // jsonSerializer,
   stringDeserializer,
 } from "@platformatic/kafka";
 import type { Logger } from "@nestjs/common";
@@ -22,6 +22,7 @@ import type {
 import { PlatformaticKafkaStatus as Status } from "../types/platformatic-kafka.types";
 import { DEFAULT_KAFKA_METADATA_MAX_AGE_MS } from "../constants/platformatic-kafka.constants";
 import { sleepMs } from "./platformatic-kafka-reconnect";
+import { deserializeJson, serializeJson } from "./json.utils";
 
 type KafkaClientLike = {
   on(event: PlatformaticClientEvent, handler: () => void): unknown;
@@ -206,8 +207,8 @@ export function createKafkaConsumer(
     deserializers: {
       headerKey: stringDeserializer,
       headerValue: stringDeserializer,
-      key: stringDeserializer,
-      value: stringDeserializer,
+      key: deserializeJson,
+      value: deserializeJson,
     },
     autocreateTopics: true,
     timeout: 30000,
@@ -234,8 +235,8 @@ export function createKafkaProducer(
     serializers: {
       headerKey: stringSerializer,
       headerValue: stringSerializer,
-      key: jsonSerializer,
-      value: jsonSerializer,
+      key: serializeJson,
+      value: serializeJson,
     },
     autocreateTopics: true,
     timeout: 30000,

@@ -55,6 +55,7 @@
   "dependencies": {
     "@nestjs/microservices": "^11.1.14",
     "@platformatic/kafka": "^1.33.0",
+    "simdjson": "^0.9.2",
     "rxjs": "7.8.2"
   },
   "peerDependencies": {
