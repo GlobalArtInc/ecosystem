@@ -1,6 +1,6 @@
 {
   "name": "@globalart/platformatic-kafka",
-  "version": "1.3.2",
+  "version": "1.4.0",
   "description": "A Kafka modules for NestJS",
   "author": {
     "name": "GlobalArt, Inc"
