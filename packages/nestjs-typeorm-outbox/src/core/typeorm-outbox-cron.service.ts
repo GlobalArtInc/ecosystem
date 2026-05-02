@@ -65,7 +65,7 @@ export class TypeormOutboxCronService
     ) {
       if ((brokerConfig as CustomClientOptions).customClass == null) {
         throw new Error(
-          `[TypeormOutboxCronService] Broker config with customClass must provide a non-null customClass (e.g. PlatformaticKafkaClient)`,
+          `[TypeormOutboxCronService] Broker config with customClass must provide a non-null customClass (e.g. KafkaClient)`,
         );
       }
       return;
@@ -77,7 +77,7 @@ export class TypeormOutboxCronService
     ) {
       if ((brokerConfig as { strategy?: unknown }).strategy == null) {
         throw new Error(
-          `[TypeormOutboxCronService] Custom broker config must provide a non-null strategy (e.g. createPlatformaticKafkaMicroservice)`,
+          `[TypeormOutboxCronService] Custom broker config must provide a non-null strategy (e.g. createKafkaMicroservice)`,
         );
       }
       return;
@@ -90,7 +90,7 @@ export class TypeormOutboxCronService
       )
     ) {
       throw new Error(
-        `[TypeormOutboxCronService] Broker config must be KafkaOptions, NatsOptions, MqttOptions, customClass (e.g. PlatformaticKafkaClient), or a custom strategy (e.g. createPlatformaticKafkaMicroservice)`,
+        `[TypeormOutboxCronService] Broker config must be KafkaOptions, NatsOptions, MqttOptions, customClass (e.g. KafkaClient), or a custom strategy (e.g. createKafkaMicroservice)`,
       );
     }
   }
