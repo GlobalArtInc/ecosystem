@@ -507,20 +507,11 @@ export class KafkaStrategy
     });
   }
 
-  private async runWithProcessingHook(
+  private runWithProcessingHook(
     context: KafkaContext,
     phase: () => Promise<void>,
-  ): Promise<void> {
-    type Hook = (
-      id: Transport,
-      ctx: KafkaContext,
-      done: () => Promise<void>,
-    ) => Promise<void>;
-    await (this.onProcessingStartHook as unknown as Hook)(
-      this.transportId,
-      context,
-      phase,
-    );
+  ): void {
+    this.onProcessingStartHook(this.transportId, context, phase);
   }
 
   private async disposeTransport(): Promise<void> {

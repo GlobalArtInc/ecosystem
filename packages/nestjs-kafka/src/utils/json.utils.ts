@@ -1,20 +1,16 @@
 import * as simdjson from "simdjson";
 
-export function serializeJson(data: unknown): Buffer | null {
-  if (data == null) return null;
+export function serializeJson(data: unknown): Buffer | undefined {
+  if (data == null) return undefined;
   return Buffer.from(typeof data === "string" ? data : JSON.stringify(data));
 }
 
-export function deserializeJson<T = any>(
-  data?: string | Buffer,
-): T | undefined {
+export function deserializeJson<T = unknown>(data?: string | Buffer): T | undefined {
+  if (data == null) return undefined;
+  const str = Buffer.isBuffer(data) ? data.toString() : data;
   try {
-    if (!Buffer.isBuffer(data)) {
-      return undefined;
-    }
-
-    return simdjson.parse(data.toString()) as T;
+    return simdjson.parse(str) as T;
   } catch {
-    return data as unknown as T;
+    return str as unknown as T;
   }
 }

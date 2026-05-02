@@ -6,7 +6,7 @@ export function createKafkaClientBroker(
   options: KafkaOptions,
 ): CustomClientOptions {
   return {
-    customClass: KafkaClient,
+    customClass: KafkaClient as CustomClientOptions["customClass"],
     options,
-  } as CustomClientOptions;
+  };
 }

@@ -161,33 +161,33 @@ export class KafkaClient extends ClientProxy<
     if (this.clientClosed) throw new Error("Client is closed");
     this.clientConnecting = true;
     try {
-    await runWithBackoff(
-      this.options.reconnect,
-      () => this.clientClosed,
-      async () => {
-        await this.disposeClientTransport();
-        if (!this.producerOnlyMode) {
-          this._consumer = createKafkaConsumer(this.options, this.clientId, this.groupId);
-          registerClientEventListeners(this._consumer, this._status$, () =>
+      await runWithBackoff(
+        this.options.reconnect,
+        () => this.clientClosed,
+        async () => {
+          await this.disposeClientTransport();
+          if (!this.producerOnlyMode) {
+            this._consumer = createKafkaConsumer(this.options, this.clientId, this.groupId);
+            registerClientEventListeners(this._consumer, this._status$, () =>
+              this.scheduleClientReconnect(),
+            );
+            this._consumer.on("consumer:group:join", this.setConsumerAssignments.bind(this));
+            await this.attachResponseStream();
+          }
+          this._producer = createKafkaProducer(this.options, this.clientId);
+          registerClientEventListeners(this._producer, this._status$, () =>
             this.scheduleClientReconnect(),
           );
-          this._consumer.on("consumer:group:join", this.setConsumerAssignments.bind(this));
-          await this.attachResponseStream();
-        }
-        this._producer = createKafkaProducer(this.options, this.clientId);
-        registerClientEventListeners(this._producer, this._status$, () =>
-          this.scheduleClientReconnect(),
-        );
-        if (this.producerOnlyMode || !this.responsePatterns.length) {
-          const pings = [ensureBootstrapMetadata(this._producer)];
-          if (this._consumer) pings.push(ensureBootstrapMetadata(this._consumer));
-          await Promise.all(pings);
-        }
-      },
-      (delay, err) => this.logger.warn(`Kafka client unavailable, retry in ${delay}ms: ${formatError(err)}`),
-      this._clientCloseSignal,
-    );
-    if (this.clientClosed) return; // close() called during connection — disposeClientTransport() will clean up
+          if (this.producerOnlyMode || !this.responsePatterns.length) {
+            const pings = [ensureBootstrapMetadata(this._producer)];
+            if (this._consumer) pings.push(ensureBootstrapMetadata(this._consumer));
+            await Promise.all(pings);
+          }
+        },
+        (delay, err) => this.logger.warn(`Kafka client unavailable, retry in ${delay}ms: ${formatError(err)}`),
+        this._clientCloseSignal,
+      );
+      if (this.clientClosed) return; // close() called during connection — disposeClientTransport() will clean up
     } finally {
       this.clientConnecting = false;
     }

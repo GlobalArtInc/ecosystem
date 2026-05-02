@@ -4,9 +4,7 @@ import {
   type ConnectionOptions,
   type ConsumerGroupJoinPayload,
   Producer,
-  stringSerializers,
   stringSerializer,
-  // jsonSerializer,
   stringDeserializer,
 } from "@platformatic/kafka";
 import type { Logger } from "@nestjs/common";
@@ -26,6 +24,7 @@ import { deserializeJson, serializeJson } from "./json.utils";
 
 type KafkaClientLike = {
   on(event: KafkaClientEvent, handler: () => void): unknown;
+  on(event: "error", handler: (err: Error) => void): unknown;
 };
 
 export function resolveKafkaGroupId(
@@ -49,7 +48,7 @@ function isNonEmptyTlsConfig(
   return (
     value !== undefined &&
     typeof value === "object" &&
-    Object.keys(value as object).length > 0
+    Object.keys(value).length > 0
   );
 }
 
@@ -141,6 +140,10 @@ export function registerClientEventListeners(
     status$.next(Status.DISCONNECTED),
   );
   client.on("client:broker:failed", () => {
+    status$.next(Status.FAILED);
+    onFailed();
+  });
+  client.on("error", () => {
     status$.next(Status.FAILED);
     onFailed();
   });
