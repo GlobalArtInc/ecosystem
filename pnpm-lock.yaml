@@ -1906,9 +1906,6 @@ importers:
       cron:
         specifier: ^4.4.0
         version: 4.4.0
-      kafkajs:
-        specifier: ^2.2.4
-        version: 2.2.4
       lodash:
         specifier: ^4.17.23
         version: 4.17.23
@@ -25425,7 +25422,8 @@ snapshots:
 
   jwt-simple@0.3.1: {}
 
-  kafkajs@2.2.4: {}
+  kafkajs@2.2.4:
+    optional: true
 
   kebab-case@1.0.2: {}
 
