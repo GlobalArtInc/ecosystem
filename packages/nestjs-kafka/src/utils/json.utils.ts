@@ -1,9 +1,8 @@
 import * as simdjson from "simdjson";
 
 export function serializeJson(data: unknown): Buffer | null {
-  if (data === undefined || data === null) return null;
-  if (typeof data === "string") return Buffer.from(data);
-  return Buffer.from(JSON.stringify(data));
+  if (data == null) return null;
+  return Buffer.from(typeof data === "string" ? data : JSON.stringify(data));
 }
 
 export function deserializeJson<T = any>(
