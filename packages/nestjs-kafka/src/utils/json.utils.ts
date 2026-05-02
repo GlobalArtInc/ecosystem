@@ -1,6 +1,7 @@
 import * as simdjson from "simdjson";
 
-export function serializeJson(data: unknown): Buffer {
+export function serializeJson(data: unknown): Buffer | null {
+  if (data === undefined || data === null) return null;
   return Buffer.from(JSON.stringify(data));
 }
 
