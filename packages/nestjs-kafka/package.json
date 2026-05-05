@@ -1,6 +1,6 @@
 {
   "name": "@globalart/nestjs-kafka",
-  "version": "1.4.7",
+  "version": "1.4.8",
   "description": "A Kafka modules for NestJS",
   "author": {
     "name": "GlobalArt, Inc"
