@@ -27,6 +27,7 @@ type KafkaClientLike = {
   on(event: "error", handler: (err: Error) => void): unknown;
 };
 
+/** @internal */
 export function resolveKafkaGroupId(
   configured: string | undefined | null,
   defaultGroup: string,
@@ -35,6 +36,7 @@ export function resolveKafkaGroupId(
   return `${configured?.length ? configured : defaultGroup}${postfix}`;
 }
 
+/** @internal */
 export function resolvePostfixId(
   configured: string | undefined | null,
   fallback: string,
@@ -52,6 +54,7 @@ function isNonEmptyTlsConfig(
   );
 }
 
+/** Extracts the hostname from a bootstrap broker address string or Broker object. */
 export function brokerHostnameFromBootstrap(
   broker: string | Broker,
 ): string | undefined {
@@ -74,6 +77,7 @@ export function brokerHostnameFromBootstrap(
   return /^\d+$/.test(after) ? s.slice(0, lastColon) : s;
 }
 
+/** @internal */
 export function resolveConnectionOptions(
   connection: ConnectionOptions | undefined,
   brokers?: string[] | Broker[],
@@ -130,6 +134,7 @@ export class SerialQueue {
   }
 }
 
+/** @internal */
 export function registerClientEventListeners(
   client: KafkaClientLike,
   status$: Subject<KafkaStatus>,
@@ -185,12 +190,14 @@ export async function closeKafkaClients(
   ]);
 }
 
+/** @internal */
 export function ensureBootstrapMetadata(
   client: KafkaConsumer | KafkaProducer,
 ): Promise<void> {
   return client.metadata({ topics: [] }).then(() => undefined);
 }
 
+/** @internal */
 export function createKafkaConsumer(
   options: KafkaOptions,
   clientId: string,
@@ -224,6 +231,7 @@ export function createKafkaConsumer(
   });
 }
 
+/** @internal */
 export function createKafkaProducer(
   options: KafkaOptions,
   clientId: string,
@@ -276,6 +284,7 @@ function plural(n: number, word: string): string {
   return `${n} ${word}${n === 1 ? "" : "s"}`;
 }
 
+/** @internal */
 export function logPartitionAssignments(
   logger: Logger,
   groupId: string,
@@ -301,6 +310,7 @@ export function logPartitionAssignments(
   );
 }
 
+/** @internal */
 export type EmitMessageParts = {
   value: string;
   key?: string;
@@ -339,6 +349,7 @@ function isEnvelope(data: unknown): data is Record<string, unknown> {
   );
 }
 
+/** @internal */
 export function getOrCreatePartitionQueue(
   queues: Map<number, SerialQueue>,
   partition: number,
@@ -351,6 +362,7 @@ export function getOrCreatePartitionQueue(
   return q;
 }
 
+/** @internal */
 export function getPartitionQueueMetrics(
   queues: Map<number, SerialQueue>,
 ): Record<number, number> {
@@ -361,6 +373,7 @@ export function getPartitionQueueMetrics(
   return result;
 }
 
+/** @internal */
 export function logPendingPartitionMetrics(
   logger: Logger,
   queues: Map<number, SerialQueue>,
@@ -398,6 +411,7 @@ export async function waitForPartitionQueues(
   ]);
 }
 
+/** @internal */
 export function buildDlqHeaders(
   payload: KafkaMessage,
   error: unknown,
@@ -416,6 +430,7 @@ export function buildDlqHeaders(
   return headers;
 }
 
+/** @internal */
 export function buildEmitMessageParts(data: unknown): EmitMessageParts {
   if (!isEnvelope(data)) {
     return { value: data === undefined ? "null" : JSON.stringify(data) };

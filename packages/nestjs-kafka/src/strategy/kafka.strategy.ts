@@ -18,7 +18,7 @@ import {
   MessageToProduce,
   ProduceResult,
 } from "@platformatic/kafka";
-import { firstValueFrom, isObservable, Observable, ReplaySubject } from "rxjs";
+import { firstValueFrom, isObservable, Observable, ReplaySubject, Subscription } from "rxjs";
 import {
   DEFAULT_KAFKA_STREAM_CONSUME,
   DEFAULT_POSTFIX_SERVER,
@@ -344,8 +344,10 @@ export class KafkaStrategy
         try {
           await commit();
         } catch (err) {
-          this.logger.error(err);
-          this.scheduleReconnect();
+          if (!(err as { closed?: boolean }).closed) {
+            this.logger.error(err);
+            this.scheduleReconnect();
+          }
         }
         return;
       }
@@ -356,7 +358,9 @@ export class KafkaStrategy
         try {
           await commit();
         } catch (err) {
-          this.logger.error(err);
+          if (!(err as { closed?: boolean }).closed) {
+            this.logger.error(err);
+          }
         }
         return;
       }
@@ -456,6 +460,7 @@ export class KafkaStrategy
       [KafkaHeaders.CORRELATION_ID, correlationId],
     ]);
     if (message.err) {
+      // @ts-ignore
       const errStr = serializeJson(message.err).toString();
       headers.set(KafkaHeaders.NEST_ERR, errStr);
     }
@@ -485,7 +490,8 @@ export class KafkaStrategy
   ): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       let resolved = false;
-      response$.subscribe({
+      let sub: Subscription;
+      sub = response$.subscribe({
         next: (val) => {
           replay$.next(val);
           if (!resolved) {
@@ -496,6 +502,7 @@ export class KafkaStrategy
         error: (err) => {
           if (err instanceof KafkaRetriableException && !resolved) {
             resolved = true;
+            sub.unsubscribe();
             reject(err);
           } else {
             resolve();

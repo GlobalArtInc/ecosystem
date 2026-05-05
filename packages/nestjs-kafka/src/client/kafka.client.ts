@@ -228,6 +228,13 @@ export class KafkaClient extends ClientProxy<
   }
 
   private async disposeClientTransport(): Promise<void> {
+    if (this.routingMap.size > 0) {
+      const err = new Error("Kafka client reconnecting");
+      for (const callback of this.routingMap.values()) {
+        callback({ err, isDisposed: true });
+      }
+      this.routingMap.clear();
+    }
     if (this.responseStream) {
       try { await this.responseStream.close(); } catch {}
       this.responseStream = null;
