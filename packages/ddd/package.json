@@ -61,6 +61,6 @@
   },
   "devDependencies": {
     "release-it": "20.0.1",
-    "tsdown": "0.21.10"
+    "tsdown": "0.22.0"
   }
 }
