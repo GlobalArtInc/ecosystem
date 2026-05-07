@@ -56,6 +56,15 @@ import { deserializeJson, serializeJson } from "../utils/json.utils";
 
 type MessagesStream = Awaited<ReturnType<KafkaConsumer["consume"]>>;
 
+function isCommitSuppressedError(err: unknown): boolean {
+  if ((err as { closed?: boolean })?.closed) return true;
+  const errors = (err as AggregateError)?.errors;
+  if (Array.isArray(errors)) {
+    return errors.some((e) => (e as { rebalanceInProgress?: boolean })?.rebalanceInProgress);
+  }
+  return (err as { rebalanceInProgress?: boolean })?.rebalanceInProgress === true;
+}
+
 export class KafkaStrategy
   extends Server<never, KafkaStatus>
   implements CustomTransportStrategy
@@ -344,7 +353,7 @@ export class KafkaStrategy
         try {
           await commit();
         } catch (err) {
-          if (!(err as { closed?: boolean }).closed) {
+          if (!isCommitSuppressedError(err)) {
             this.logger.error(err);
             this.scheduleReconnect();
           }
@@ -358,7 +367,7 @@ export class KafkaStrategy
         try {
           await commit();
         } catch (err) {
-          if (!(err as { closed?: boolean }).closed) {
+          if (!isCommitSuppressedError(err)) {
             this.logger.error(err);
           }
         }
