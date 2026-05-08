@@ -213,7 +213,12 @@ export class KafkaStrategy
       try {
         await this.handleEvent(topic, { pattern: topic, data }, ctx);
       } catch (err) {
-        this.logger.error(err);
+        const errMessage = err instanceof Error ? err.message : JSON.stringify(err, null, 2);
+        const errStack = err instanceof Error ? err.stack : undefined;
+        this.logger.error(
+          `Handler error on topic="${topic}" partition=${partition} offset=${message.offset}: ${errMessage}`,
+          errStack,
+        );
         lastError = err;
         nackDelay = DEFAULT_RETRY_DELAY_MS;
       }
