@@ -15,7 +15,7 @@ function normalizeHeaders(headers?: KafkaJS.IHeaders): KafkaJS.IHeaders {
   if (!headers) return result;
   for (const [k, v] of Object.entries(headers)) {
     const raw = Array.isArray(v) ? v[0] : v;
-    if (raw !== undefined) result[k] = Buffer.isBuffer(raw) ? raw.toString("utf8") : raw;
+    if (raw) result[k] = Buffer.isBuffer(raw) ? raw.toString("utf8") : raw;
   }
   return result;
 }

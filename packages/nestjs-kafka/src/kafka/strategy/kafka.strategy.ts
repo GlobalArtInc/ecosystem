@@ -21,6 +21,7 @@ import {
 } from "rxjs";
 import { KafkaContext, headersToMap } from "../context/kafka.context";
 import { deserializeJson, serializeJson } from "../utils/json.utils";
+import { hasSslConfig, toConsumerRdKafkaConfig, toGlobalRdKafkaConfig, toProducerRdKafkaConfig } from "../utils/rdkafka-config";
 import { sleepMs } from "../utils/kafka-reconnect";
 import {
   applyPostfix,
@@ -59,15 +60,17 @@ export class KafkaStrategy
       const { clientId, groupId } = applyPostfix(this.options, DEFAULT_POSTFIX_SERVER);
       const kafka = this.createKafka(clientId);
       this.consumer = kafka.consumer({
+        ...toConsumerRdKafkaConfig(this.options.consumerRdKafka),
         kafkaJS: {
           groupId,
           autoCommit: false,
           ...(this.options.consumer ?? {}),
         },
       });
-      this.producer = kafka.producer(
-        this.options.producer ? { kafkaJS: this.options.producer } : {},
-      );
+      this.producer = kafka.producer({
+        ...toProducerRdKafkaConfig(this.options.producerRdKafka),
+        ...(this.options.producer ? { kafkaJS: this.options.producer } : {}),
+      });
 
       await this.consumer.connect();
       await this.producer.connect();
@@ -120,22 +123,14 @@ export class KafkaStrategy
   }
 
   private createKafka(clientId: string | undefined): KafkaJS.Kafka {
-    const { ssl } = this.options;
-    const sslIsObject = ssl !== undefined && typeof ssl === "object";
+    const { ssl, rdKafka } = this.options;
+    const sslEnabled = ssl ?? hasSslConfig(rdKafka);
     return new KafkaJS.Kafka({
-      ...(sslIsObject && {
-        ...(ssl.caLocation !== undefined && { "ssl.ca.location": ssl.caLocation }),
-        ...(ssl.caPem !== undefined && { "ssl.ca.pem": ssl.caPem }),
-        ...(ssl.certLocation !== undefined && { "ssl.certificate.location": ssl.certLocation }),
-        ...(ssl.certPem !== undefined && { "ssl.certificate.pem": ssl.certPem }),
-        ...(ssl.keyLocation !== undefined && { "ssl.key.location": ssl.keyLocation }),
-        ...(ssl.keyPem !== undefined && { "ssl.key.pem": ssl.keyPem }),
-        ...(ssl.keyPassword !== undefined && { "ssl.key.password": ssl.keyPassword }),
-      }),
+      ...toGlobalRdKafkaConfig(rdKafka),
       kafkaJS: {
         brokers: this.options.brokers,
         ...(clientId !== undefined && { clientId }),
-        ...(ssl !== undefined && { ssl: sslIsObject ? true : ssl }),
+        ...(sslEnabled && { ssl: true }),
         ...(this.options.sasl !== undefined && { sasl: this.options.sasl }),
       },
     });
