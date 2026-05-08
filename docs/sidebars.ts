@@ -12,7 +12,6 @@ const sidebars: SidebarsConfig = {
         "packages/nestjs-swagger",
         "packages/nestjs-typeorm-pagination",
         "packages/nestjs-microservices",
-        "packages/nestjs-platformatic-kafka",
         "packages/nestjs-logger",
         "packages/nestjs-etcd",
         "packages/nestjs-grpc",

@@ -14,12 +14,12 @@ A NestJS microservice transport built on top of `@platformatic/kafka`.
 ## Installation
 
 ```bash
-npm install @globalart/nestjs-kafka @platformatic/kafka
+npm install @globalart/nestjs-kafka @confluentinc/kafka-javascript
 ```
 
 ## Documentation
 
-For complete documentation, examples, and API reference, please visit the [official documentation](https://globalart.js.org/packages/nestjs-platformatic-kafka).
+For complete documentation, examples, and API reference, please visit the [official documentation](https://globalart.js.org/packages/nestjs-kafka).
 
 ## License
 
