@@ -32,7 +32,11 @@ export class KafkaContext extends BaseRpcContext<KafkaContextArgs> {
     commit: () => Promise<void>,
     nack: (delayMs?: number) => void,
   ) {
-    super([message, partition, topic, headersToMap(headers), commit, nack]);
+    const normalizedMessage = {
+      ...message,
+      key: Buffer.isBuffer(message.key) ? message.key.toString("utf8") : message.key,
+    } as KafkaJS.KafkaMessage;
+    super([normalizedMessage, partition, topic, headersToMap(headers), commit, nack]);
   }
 
   getMessage(): KafkaJS.KafkaMessage {
