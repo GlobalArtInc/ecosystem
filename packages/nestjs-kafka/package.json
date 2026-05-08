@@ -1,6 +1,6 @@
 {
   "name": "@globalart/nestjs-kafka",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "A Kafka modules for NestJS",
   "author": {
     "name": "GlobalArt, Inc"
@@ -82,6 +82,8 @@
     "access": "public"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["@confluentinc/kafka-javascript"]
+    "onlyBuiltDependencies": [
+      "@confluentinc/kafka-javascript"
+    ]
   }
 }
