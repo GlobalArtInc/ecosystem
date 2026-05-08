@@ -80,5 +80,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["@confluentinc/kafka-javascript"]
   }
 }
