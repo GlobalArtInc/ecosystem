@@ -6,32 +6,30 @@ import { KafkaContext } from "../context/kafka.context";
 const getCtx = (ctx: ExecutionContext): KafkaContext =>
   ctx.switchToRpc().getContext<KafkaContext>();
 
-/** Injects the raw Kafka message key (string or parsed JSON object). */
 export const KafkaKey = createParamDecorator(
-  (_: unknown, ctx: ExecutionContext) => getCtx(ctx).getMessage().key ?? undefined,
+  (_: unknown, ctx: ExecutionContext) => {
+    const msg = getCtx(ctx).getMessage();
+    return msg.key != null ? msg.key.toString("utf8") : undefined;
+  },
 );
 
-/** Injects the full headers map (`Map<string, string>`). */
-export const KafkaHeaders = createParamDecorator(
+export const KafkaMessageHeaders = createParamDecorator(
   (_: unknown, ctx: ExecutionContext) => getCtx(ctx).getHeaders(),
 );
 
-/** Injects a single header value by name. */
 export const KafkaHeader = createParamDecorator(
-  (name: string, ctx: ExecutionContext): string | undefined => getCtx(ctx).getHeaders().get(name),
+  (name: string, ctx: ExecutionContext): string | undefined =>
+    getCtx(ctx).getHeaders().get(name),
 );
 
-/** Injects the topic name. */
 export const KafkaTopic = createParamDecorator(
   (_: unknown, ctx: ExecutionContext): string => getCtx(ctx).getTopic(),
 );
 
-/** Injects the partition number. */
 export const KafkaPartition = createParamDecorator(
   (_: unknown, ctx: ExecutionContext): number => getCtx(ctx).getPartition(),
 );
 
-/** Injects the manual ack function — call to commit the offset. */
 export const KafkaAck = createParamDecorator(
   (_: unknown, ctx: ExecutionContext): (() => Promise<void>) => {
     const c = getCtx(ctx);
@@ -39,7 +37,6 @@ export const KafkaAck = createParamDecorator(
   },
 );
 
-/** Injects the nack function — call to signal failure and trigger retry after `delayMs`. */
 export const KafkaNack = createParamDecorator(
   (_: unknown, ctx: ExecutionContext): ((delayMs?: number) => void) => {
     const c = getCtx(ctx);
@@ -47,6 +44,7 @@ export const KafkaNack = createParamDecorator(
   },
 );
 
-/** Marks a method as a Kafka topic consumer. The method receives a single `KafkaMessage<T>` argument. */
-export const KafkaSubscribe = (topic: string, options?: KafkaSubscribeOptions): MethodDecorator =>
-  SetMetadata(KAFKA_SUBSCRIBE_METADATA, { topic, options });
+export const KafkaSubscribe = (
+  topic: string,
+  options?: KafkaSubscribeOptions,
+): MethodDecorator => SetMetadata(KAFKA_SUBSCRIBE_METADATA, { topic, options });

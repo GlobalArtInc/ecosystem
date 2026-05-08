@@ -1,44 +1,54 @@
-export { brokerHostnameFromBootstrap } from "./utils/kafka.utils";
-export {
-  DEFAULT_KAFKA_METADATA_MAX_AGE_MS,
-  DEFAULT_POSTFIX_CLIENT,
-  DEFAULT_POSTFIX_SERVER,
-} from "./constants/kafka.constants";
-export { createKafkaMicroservice } from "./config/kafka-microservice.config";
-export type { KafkaConnectConfig } from "./config/kafka-microservice.config";
-export { createKafkaClientBroker } from "./config/kafka-client-broker.config";
+// Module
+export { KafkaModule } from "./kafka/kafka.module";
 
-export { KafkaClientsModule } from "./client/kafka-clients.module";
+// Strategy transport
+export { KafkaStrategy } from "./kafka/strategy/kafka.strategy";
+export { KafkaContext } from "./kafka/context/kafka.context";
+export { KafkaHealthIndicator } from "./kafka/health/kafka-health.indicator";
+export type { KafkaHealthCheckable } from "./kafka/health/kafka-health.indicator";
+
+// Client
+export { KafkaClient } from "./kafka/client/kafka.client";
+export { KafkaClientsModule } from "./kafka/client/kafka-clients.module";
 export type {
   KafkaClientOptions,
   KafkaClientAsyncOptions,
-} from "./client/kafka-clients.module";
-export { KafkaClient } from "./client/kafka.client";
+} from "./kafka/client/kafka-clients.module";
 
+// Config helpers
+export { createKafkaMicroservice } from "./kafka/config/kafka-microservice.config";
+export type { KafkaConnectConfig } from "./kafka/config/kafka-microservice.config";
+export { createKafkaClientBroker } from "./kafka/config/kafka-client-broker.config";
+
+// Decorators
 export {
   KafkaSubscribe,
   KafkaKey,
-  KafkaHeaders,
+  KafkaMessageHeaders,
   KafkaHeader,
   KafkaTopic,
   KafkaPartition,
   KafkaAck,
   KafkaNack,
-} from "./decorators/kafka.decorators";
+} from "./kafka/decorators/kafka.decorators";
 
-export { KafkaStrategy } from "./strategy/kafka.strategy";
-export { KafkaContext } from "./context/kafka.context";
-export { KafkaHealthIndicator } from "./health/kafka-health.indicator";
-export type { KafkaHealthCheckable } from "./health/kafka-health.indicator";
-
+// Types
+export {
+  KafkaStatus,
+} from "./kafka/types/kafka.types";
 export type {
   KafkaOptions,
   KafkaMessage,
+  KafkaConsumer,
+  KafkaProducer,
+  KafkaHeaders,
   ParsedKafkaMessage,
   KafkaSubscribeOptions,
   KafkaSubscribeMetadata,
-  KafkaConsumer,
-  KafkaProducer,
-} from "./types/kafka.types";
-export type { ConnectionOptions, SASLOptions } from "@platformatic/kafka";
-export { KafkaStatus } from "./types/kafka.types";
+} from "./kafka/types/kafka.types";
+
+// Module interfaces
+export type {
+  KafkaConnectionOptions,
+  KafkaConnectionAsyncOptions,
+} from "./kafka/interfaces/kafka-connection-options";

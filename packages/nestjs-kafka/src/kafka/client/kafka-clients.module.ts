@@ -1,4 +1,10 @@
-import { DynamicModule, FactoryProvider, InjectionToken, Module, ModuleMetadata, Type } from '@nestjs/common';
+import {
+  DynamicModule,
+  FactoryProvider,
+  InjectionToken,
+  Module,
+  ModuleMetadata,
+} from "@nestjs/common";
 import { KafkaClient } from "./kafka.client";
 import type { KafkaOptions } from "../types/kafka.types";
 
@@ -7,7 +13,7 @@ export interface KafkaClientOptions {
   options: KafkaOptions;
 }
 
-export interface KafkaClientAsyncOptions extends Pick<ModuleMetadata, 'imports'> {
+export interface KafkaClientAsyncOptions extends Pick<ModuleMetadata, "imports"> {
   name: InjectionToken;
   useFactory: (...args: unknown[]) => KafkaOptions | Promise<KafkaOptions>;
   inject?: InjectionToken[];
