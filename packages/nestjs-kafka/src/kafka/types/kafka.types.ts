@@ -11,13 +11,23 @@ export enum KafkaStatus {
   FAILED = "failed",
 }
 
+export interface KafkaSslOptions {
+  caLocation?: string;
+  caPem?: string;
+  certLocation?: string;
+  certPem?: string;
+  keyLocation?: string;
+  keyPem?: string;
+  keyPassword?: string;
+}
+
 export interface KafkaOptions {
   brokers: string[];
   clientId?: string;
   groupId: string;
   /** Suffix appended to clientId and groupId. Defaults to "-server" in KafkaStrategy and "-client" in KafkaClient. */
   postfixId?: string;
-  ssl?: boolean;
+  ssl?: boolean | KafkaSslOptions;
   sasl?: KafkaJS.SASLOptions;
   consumer?: Partial<KafkaJS.ConsumerConfig>;
   producer?: Partial<KafkaJS.ProducerConfig>;

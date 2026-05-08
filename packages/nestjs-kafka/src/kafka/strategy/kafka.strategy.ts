@@ -120,11 +120,22 @@ export class KafkaStrategy
   }
 
   private createKafka(clientId: string | undefined): KafkaJS.Kafka {
+    const { ssl } = this.options;
+    const sslIsObject = ssl !== undefined && typeof ssl === "object";
     return new KafkaJS.Kafka({
+      ...(sslIsObject && {
+        ...(ssl.caLocation !== undefined && { "ssl.ca.location": ssl.caLocation }),
+        ...(ssl.caPem !== undefined && { "ssl.ca.pem": ssl.caPem }),
+        ...(ssl.certLocation !== undefined && { "ssl.certificate.location": ssl.certLocation }),
+        ...(ssl.certPem !== undefined && { "ssl.certificate.pem": ssl.certPem }),
+        ...(ssl.keyLocation !== undefined && { "ssl.key.location": ssl.keyLocation }),
+        ...(ssl.keyPem !== undefined && { "ssl.key.pem": ssl.keyPem }),
+        ...(ssl.keyPassword !== undefined && { "ssl.key.password": ssl.keyPassword }),
+      }),
       kafkaJS: {
         brokers: this.options.brokers,
         ...(clientId !== undefined && { clientId }),
-        ...(this.options.ssl !== undefined && { ssl: this.options.ssl }),
+        ...(ssl !== undefined && { ssl: sslIsObject ? true : ssl }),
         ...(this.options.sasl !== undefined && { sasl: this.options.sasl }),
       },
     });
