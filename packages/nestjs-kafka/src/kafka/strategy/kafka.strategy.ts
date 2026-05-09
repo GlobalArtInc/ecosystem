@@ -289,7 +289,7 @@ export class KafkaStrategy
     try {
       const value = deserializeJson(message.value);
       const response$ = this.transformToObservable(
-        handler(value, ctx) as Promise<unknown> | Observable<unknown> | unknown,
+        handler(value, ctx),
       );
       const replay$ = new ReplaySubject<unknown>();
       await this.combineStreamsAndThrowIfRetriable(response$, replay$);

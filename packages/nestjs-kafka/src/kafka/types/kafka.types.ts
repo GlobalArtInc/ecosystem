@@ -4,7 +4,10 @@ import type { KafkaConsumerRdKafkaConfig, KafkaProducerRdKafkaConfig, KafkaRdKaf
 export type KafkaConsumer = KafkaJS.Consumer;
 export type KafkaProducer = KafkaJS.Producer;
 export type KafkaMessage = KafkaJS.KafkaMessage;
-export type KafkaHeaders = KafkaJS.IHeaders;
+export type KafkaHeaders = Map<string, string>;
+export type KafkaAck = () => Promise<void>;
+export type KafkaNack = (delayMs?: number) => void;
+export type KafkaKey = Record<string, unknown> | string | null;
 
 export type { KafkaRdKafkaConfig, KafkaConsumerRdKafkaConfig, KafkaProducerRdKafkaConfig };
 

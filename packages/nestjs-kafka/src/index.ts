@@ -23,13 +23,13 @@ export { createKafkaClientBroker } from "./kafka/config/kafka-client-broker.conf
 // Decorators
 export {
   KafkaSubscribe,
-  KafkaKey,
+  KafkaMessageKey,
   KafkaMessageHeaders,
-  KafkaHeader,
-  KafkaTopic,
-  KafkaPartition,
-  KafkaAck,
-  KafkaNack,
+  KafkaMessageHeader,
+  KafkaMessageTopic,
+  KafkaMessagePartition,
+  KafkaMessageAck,
+  KafkaMessageNack,
 } from "./kafka/decorators/kafka.decorators";
 
 // Types
@@ -40,8 +40,11 @@ export type {
   KafkaOptions,
   KafkaMessage,
   KafkaConsumer,
-  KafkaProducer,
   KafkaHeaders,
+  KafkaKey,
+  KafkaAck,
+  KafkaNack,
+  KafkaProducer,
   ParsedKafkaMessage,
   KafkaSubscribeOptions,
   KafkaSubscribeMetadata,

@@ -1,14 +1,26 @@
 import { BaseRpcContext } from "@nestjs/microservices/ctx-host/base-rpc.context";
 import type { KafkaJS } from "@confluentinc/kafka-javascript";
+import { KafkaAck, KafkaHeaders, KafkaKey, KafkaNack } from "../types/kafka.types";
 
 type KafkaContextArgs = [
   message: KafkaJS.KafkaMessage,
   partition: number,
   topic: string,
-  headers: Map<string, string>,
-  commit: () => Promise<void>,
-  nack: (delayMs?: number) => void,
+  key: KafkaKey,
+  headers: KafkaHeaders,
+  commit: KafkaAck,
+  nack: KafkaNack,
 ];
+
+function parseKey(key: KafkaJS.KafkaMessage["key"]): KafkaKey | null {
+  if (key == null) return null;
+  const raw = key.toString("utf8");
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return raw;
+  }
+}
 
 function normalizeHeaders(headers?: KafkaJS.IHeaders): KafkaJS.IHeaders {
   const result: KafkaJS.IHeaders = {};
@@ -36,10 +48,11 @@ export class KafkaContext extends BaseRpcContext<KafkaContextArgs> {
     const normalizedHeaders = normalizeHeaders(headers);
     const normalizedMessage = {
       ...message,
-      key: Buffer.isBuffer(message.key) ? message.key.toString("utf8") : message.key,
+      key: parseKey(message.key),
       headers: normalizedHeaders,
     } as KafkaJS.KafkaMessage;
-    super([normalizedMessage, partition, topic, new Map(Object.entries(normalizedHeaders) as [string, string][]), commit, nack]);
+    const keys = parseKey(message.key);
+    super([normalizedMessage, partition, topic, keys, new Map(Object.entries(normalizedHeaders) as [string, string][]), commit, nack]);
   }
 
   getMessage(): KafkaJS.KafkaMessage {
@@ -54,15 +67,19 @@ export class KafkaContext extends BaseRpcContext<KafkaContextArgs> {
     return this.args[2];
   }
 
-  getHeaders(): Map<string, string> {
+  getKeys(): KafkaKey {
     return this.args[3];
   }
 
+  getHeaders(): KafkaHeaders {
+    return this.args[4];
+  }
+
   commit(): Promise<void> {
-    return this.args[4]();
+    return this.args[5]();
   }
 
   nack(delayMs?: number): void {
-    this.args[5](delayMs);
+    this.args[6](delayMs);
   }
 }
