@@ -6,6 +6,19 @@ sidebar_position: 3
 
 NestJS microservice transport and client for Apache Kafka, built on top of [`@confluentinc/kafka-javascript`](https://github.com/confluentinc/confluent-kafka-javascript) (librdkafka).
 
+## Prerequisites
+
+This package uses [`@confluentinc/kafka-javascript`](https://github.com/confluentinc/confluent-kafka-javascript), which requires **librdkafka** to be installed on the system.
+
+### Ubuntu / Debian
+
+```bash
+sudo mkdir -p /etc/apt/keyrings
+wget -qO - https://packages.confluent.io/deb/7.8/archive.key | gpg --dearmor | sudo tee /etc/apt/keyrings/confluent.gpg > /dev/null
+sudo apt-get update
+sudo apt install librdkafka-dev
+```
+
 ## Installation
 
 ```bash npm2yarn

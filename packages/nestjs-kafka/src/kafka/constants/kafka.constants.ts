@@ -1,4 +1,3 @@
-export const KAFKA_SUBSCRIBE_METADATA = "kafka:subscribe";
 export const DEFAULT_POSTFIX_SERVER = "-server";
 export const DEFAULT_POSTFIX_CLIENT = "-client";
 export const DEFAULT_RETRY_DELAY_MS = 5000;

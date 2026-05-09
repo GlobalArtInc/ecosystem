@@ -1,6 +1,4 @@
-import { createParamDecorator, ExecutionContext, SetMetadata } from "@nestjs/common";
-import { KAFKA_SUBSCRIBE_METADATA } from "../constants/kafka.constants";
-import type { KafkaKey, KafkaSubscribeOptions } from "../types/kafka.types";
+import { createParamDecorator, ExecutionContext } from "@nestjs/common";
 import { KafkaContext } from "../context/kafka.context";
 
 const getCtx = (ctx: ExecutionContext): KafkaContext =>
@@ -41,7 +39,3 @@ export const KafkaMessageNack = createParamDecorator(
   },
 );
 
-export const KafkaSubscribe = (
-  topic: string,
-  options?: KafkaSubscribeOptions,
-): MethodDecorator => SetMetadata(KAFKA_SUBSCRIBE_METADATA, { topic, options });

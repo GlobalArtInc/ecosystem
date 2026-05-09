@@ -22,7 +22,6 @@ export { createKafkaClientBroker } from "./kafka/config/kafka-client-broker.conf
 
 // Decorators
 export {
-  KafkaSubscribe,
   KafkaMessageKey,
   KafkaMessageHeaders,
   KafkaMessageHeader,
@@ -46,8 +45,6 @@ export type {
   KafkaNack,
   KafkaProducer,
   ParsedKafkaMessage,
-  KafkaSubscribeOptions,
-  KafkaSubscribeMetadata,
 } from "./kafka/types/kafka.types";
 
 // Module interfaces

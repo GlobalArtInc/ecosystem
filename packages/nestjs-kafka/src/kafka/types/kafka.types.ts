@@ -43,14 +43,3 @@ export interface ParsedKafkaMessage {
   timestamp: string;
   headers: Map<string, string>;
 }
-
-export interface KafkaSubscribeOptions {
-  retryDelay?: number;
-  maxRetries?: number;
-  deadLetterTopic?: string;
-}
-
-export interface KafkaSubscribeMetadata {
-  topic: string;
-  options?: KafkaSubscribeOptions;
-}
