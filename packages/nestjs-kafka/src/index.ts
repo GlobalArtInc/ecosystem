@@ -39,12 +39,25 @@ export {
   KafkaMessageAck,
   KafkaMessageNack,
 } from "./decorators/kafka.decorators";
+export {
+  InjectKafkaProducer,
+  InjectKafkaConsumer,
+  InjectKafkaAdmin,
+  InjectKafkaConfig,
+  InjectSchemaRegistry,
+} from "./decorators/kafka-inject.decorators";
 
 // Types
 export {
   KafkaStatus,
 } from "./types/kafka.types";
 export type {
+  KafkaRetryStrategy,
+  FixedRetryStrategy,
+  ExponentialRetryStrategy,
+} from "./types/kafka.types";
+export type {
+  KafkaEmitPayload,
   KafkaOptions,
   KafkaMessage,
   KafkaConsumer,

@@ -20,17 +20,17 @@ import {
 } from "rxjs";
 import { KafkaContext, headersToMap } from "../context/kafka.context";
 import { serializeJson } from "../utils/json.utils";
-import type { KafkaDeserializer, KafkaSerializer } from "../serde/kafka-serde.interface";
+import type { KafkaDeserializer, KafkaSerializer, SerdePayload } from "../serde/kafka-serde.interface";
 import { JsonKafkaDeserializer, JsonKafkaSerializer } from "../serde/json.serde";
 import { hasSslConfig, toConsumerRdKafkaConfig, toGlobalRdKafkaConfig, toProducerRdKafkaConfig } from "../utils/rdkafka-config";
 import { sleepMs } from "../utils/kafka-reconnect";
+import { computeRetryDelay, getMaxRetries } from "../utils/retry.utils";
 import {
   applyPostfix,
   DEFAULT_POSTFIX_SERVER,
-  DEFAULT_RETRY_DELAY_MS,
   RDKAFKA_TRANSPORT,
 } from "../constants/kafka.constants";
-import type { KafkaOptions, KafkaStatus } from "../types/kafka.types";
+import type { KafkaOptions, KafkaStatus, NackState } from "../types/kafka.types";
 import { KafkaStatus as Status } from "../types/kafka.types";
 
 /** NestJS custom transport strategy backed by rdkafka via KafkaJS. */
@@ -61,7 +61,7 @@ export class KafkaStrategy
     return this.kafkaSerializer.serialize(topic, data, headers);
   }
 
-  private kafkaDeserialize(topic: string, payload: Buffer | null | undefined, headers?: KafkaJS.IHeaders): Promise<unknown> {
+  private kafkaDeserialize(topic: string, payload: SerdePayload, headers?: KafkaJS.IHeaders): Promise<unknown> {
     return this.kafkaDeserializer.deserialize(topic, payload, headers);
   }
 
@@ -223,25 +223,21 @@ export class KafkaStrategy
     commit: () => Promise<void>,
     heartbeat: () => Promise<void>,
   ): Promise<void> {
-    const maxRetries = this.options.maxRetries ?? Infinity;
+    const strategy = this.options.retryStrategy ?? { type: "fixed" as const };
+    const maxRetries = getMaxRetries(strategy);
+
     let failures = 0;
     let lastError: unknown = null;
 
     while (!this.closed) {
-      let nackDelay: number | null = null;
-      const nack = (delayMs = DEFAULT_RETRY_DELAY_MS) => {
-        nackDelay = delayMs;
+      // null = ack (success), number = explicit delay, 'auto' = compute from strategy
+      let nackState: NackState = null;
+      const nack = (delayMs?: number) => {
+        nackState = delayMs ?? "auto";
       };
 
-      const ctx = new KafkaContext(
-        message,
-        partition,
-        topic,
-        headers,
-        commit,
-        nack,
-      );
-      const data = await this.kafkaDeserialize(topic, message.value as Buffer | null | undefined, headers);
+      const ctx = new KafkaContext(message, partition, topic, headers, commit, nack);
+      const data = await this.kafkaDeserialize(topic, message.value, headers);
 
       try {
         await this.handleEvent(topic, { pattern: topic, data }, ctx);
@@ -253,10 +249,10 @@ export class KafkaStrategy
           errStack,
         );
         lastError = err;
-        nackDelay = DEFAULT_RETRY_DELAY_MS;
+        nackState = "auto";
       }
 
-      if (nackDelay === null) {
+      if (nackState === null) {
         try {
           await commit();
         } catch (err) {
@@ -274,12 +270,16 @@ export class KafkaStrategy
         return;
       }
 
+      const delayMs = nackState === "auto"
+        ? computeRetryDelay(strategy, failures)
+        : nackState;
+
       this.logger.warn(
-        `Retrying "${topic}" in ${nackDelay}ms` +
+        `Retrying "${topic}" in ${delayMs}ms` +
           (isFinite(maxRetries) ? ` (${failures}/${maxRetries})` : ""),
       );
 
-      await this.sleepWithHeartbeat(nackDelay, heartbeat);
+      await this.sleepWithHeartbeat(delayMs, heartbeat);
     }
   }
 
@@ -320,7 +320,7 @@ export class KafkaStrategy
     }
 
     try {
-      const value = await this.kafkaDeserialize(topic, message.value as Buffer | null | undefined, headers);
+      const value = await this.kafkaDeserialize(topic, message.value, headers);
       const response$ = this.transformToObservable(
         handler(value, ctx),
       );

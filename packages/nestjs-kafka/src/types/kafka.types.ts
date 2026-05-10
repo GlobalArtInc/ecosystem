@@ -26,6 +26,33 @@ export enum KafkaStatus {
   FAILED = "failed",
 }
 
+/** Retry with a constant delay between attempts. */
+export interface FixedRetryStrategy {
+  type: "fixed";
+  /** Delay between retries in ms. Defaults to 5000. */
+  delayMs?: number;
+  /** Maximum number of retries before sending to DLQ. Defaults to Infinity. */
+  maxRetries?: number;
+}
+
+/** Retry with exponentially increasing delays, with an optional jitter. */
+export interface ExponentialRetryStrategy {
+  type: "exponential";
+  /** Initial delay in ms. Defaults to 1000. */
+  initialDelayMs?: number;
+  /** Multiplier applied to the delay on each attempt. Defaults to 2. */
+  multiplier?: number;
+  /** Upper bound for the computed delay in ms. Defaults to 30000. */
+  maxDelayMs?: number;
+  /** When true, applies full jitter (uniform random between 0 and computed delay). */
+  jitter?: boolean;
+  /** Maximum number of retries before sending to DLQ. Defaults to Infinity. */
+  maxRetries?: number;
+}
+
+/** Configures how failed messages are retried before going to the DLQ. */
+export type KafkaRetryStrategy = FixedRetryStrategy | ExponentialRetryStrategy;
+
 /** Options passed to the KafkaJS-based strategy and client. */
 export interface KafkaOptions {
   brokers: string[];
@@ -41,7 +68,8 @@ export interface KafkaOptions {
   producerRdKafka?: KafkaProducerRdKafkaConfig;
   rdKafka?: KafkaRdKafkaConfig;
   producerOnlyMode?: boolean;
-  maxRetries?: number;
+  /** Retry strategy for failed messages. Defaults to fixed 5000 ms delay with infinite retries. */
+  retryStrategy?: KafkaRetryStrategy;
   deadLetterTopic?: string;
   shutdownTimeoutMs?: number;
   /** When true, consumer runs in eachBatch mode instead of eachMessage. */
@@ -52,6 +80,20 @@ export interface KafkaOptions {
   deserializer?: KafkaDeserializer;
 }
 
+/**
+ * Structured payload for `emit()` calls.
+ * When `value` is an array each element is sent as a separate Kafka message
+ * while `key` and `headers` are shared across all of them.
+ */
+export interface KafkaEmitPayload<T = unknown> {
+  /** Message key, shared by all produced messages. */
+  key?: Buffer | string | null;
+  /** Single value or array of values — one Kafka message per element. */
+  value: T | T[];
+  /** Headers attached to every produced message. */
+  headers?: KafkaJS.IHeaders;
+}
+
 /** A Kafka message with its key and value already deserialised. */
 export interface ParsedKafkaMessage {
   key: unknown;
@@ -60,3 +102,5 @@ export interface ParsedKafkaMessage {
   timestamp: string;
   headers: Map<string, string>;
 }
+
+export type NackState = null | number | "auto";

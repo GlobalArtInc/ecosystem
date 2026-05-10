@@ -12,7 +12,7 @@ import { InvalidKafkaClientTopicException } from "@nestjs/microservices/errors/i
 import { InvalidMessageException } from "@nestjs/microservices/errors/invalid-message.exception";
 import { KafkaJS } from "@confluentinc/kafka-javascript";
 import { Observable, Subject, connectable, defer, mergeMap, throwError } from "rxjs";
-import type { KafkaOptions, KafkaStatus } from "../types/kafka.types";
+import type { KafkaEmitPayload, KafkaOptions, KafkaStatus } from "../types/kafka.types";
 import { KafkaStatus as Status } from "../types/kafka.types";
 import { headersToMap } from "../context/kafka.context";
 import { hasSslConfig, toConsumerRdKafkaConfig, toGlobalRdKafkaConfig, toProducerRdKafkaConfig } from "../utils/rdkafka-config";
@@ -134,10 +134,25 @@ export class KafkaClient extends ClientProxy<Record<never, never>, KafkaStatus> 
   protected async dispatchEvent<T = unknown>(packet: ReadPacket): Promise<T> {
     await this.connect();
     const topic = this.normalizePattern(packet.pattern);
-    await this.producer.send({
-      topic,
-      messages: [{ value: await this.kafkaSerializer.serialize(topic, packet.data) }],
-    });
+    const data = packet.data;
+
+    if (typeof data === "object" && "value" in data) {
+      const { key = null, value, headers } = data;
+      const values = Array.isArray(value) ? value : [value];
+      const messages = await Promise.all(
+        values.map(async (value) => ({
+          key,
+          value: await this.kafkaSerializer.serialize(topic, value, headers),
+          headers,
+        })),
+      );
+      await this.producer.send({ topic, messages });
+    } else {
+      await this.producer.send({
+        topic,
+        messages: [{ value: await this.kafkaSerializer.serialize(topic, data) }],
+      });
+    }
     return undefined as T;
   }
 
