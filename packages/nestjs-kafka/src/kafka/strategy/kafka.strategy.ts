@@ -4,7 +4,6 @@ import {
   KafkaHeaders,
   KafkaRetriableException,
   Server,
-  Transport,
   WritePacket,
 } from "@nestjs/microservices";
 import {
@@ -27,6 +26,7 @@ import {
   applyPostfix,
   DEFAULT_POSTFIX_SERVER,
   DEFAULT_RETRY_DELAY_MS,
+  RDKAFKA_TRANSPORT,
 } from "../constants/kafka.constants";
 import type { KafkaOptions, KafkaStatus } from "../types/kafka.types";
 import { KafkaStatus as Status } from "../types/kafka.types";
@@ -35,7 +35,7 @@ export class KafkaStrategy
   extends Server<never, KafkaStatus>
   implements CustomTransportStrategy
 {
-  readonly transportId = Transport.KAFKA;
+  readonly transportId = RDKAFKA_TRANSPORT;
   protected readonly logger = new Logger(KafkaStrategy.name);
 
   private consumer: KafkaJS.Consumer | undefined;

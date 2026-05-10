@@ -3,9 +3,12 @@ export { KafkaModule } from "./kafka/kafka.module";
 
 // Strategy transport
 export { KafkaStrategy } from "./kafka/strategy/kafka.strategy";
+export { RDKAFKA_TRANSPORT } from "./kafka/constants/kafka.constants";
 export { KafkaContext } from "./kafka/context/kafka.context";
 export { KafkaHealthIndicator } from "./kafka/health/kafka-health.indicator";
 export type { KafkaHealthCheckable } from "./kafka/health/kafka-health.indicator";
+export { KafkaMetricsService } from "./kafka/providers/kafka.metrics";
+export type { KafkaMetrics } from "./kafka/providers/kafka.metrics";
 
 // Client
 export { KafkaClient } from "./kafka/client/kafka.client";

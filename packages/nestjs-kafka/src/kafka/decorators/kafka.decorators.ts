@@ -5,7 +5,7 @@ const getCtx = (ctx: ExecutionContext): KafkaContext =>
   ctx.switchToRpc().getContext<KafkaContext>();
 
 export const KafkaMessageKey = createParamDecorator(
-  (_: unknown, ctx: ExecutionContext) => getCtx(ctx).getKeys(),
+  (_: unknown, ctx: ExecutionContext) => getCtx(ctx).getKey(),
 )
 
 export const KafkaMessageHeaders = createParamDecorator(

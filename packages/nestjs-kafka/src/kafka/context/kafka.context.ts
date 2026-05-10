@@ -46,13 +46,13 @@ export class KafkaContext extends BaseRpcContext<KafkaContextArgs> {
     nack: (delayMs?: number) => void,
   ) {
     const normalizedHeaders = normalizeHeaders(headers);
+    const key = parseKey(message.key);
     const normalizedMessage = {
       ...message,
-      key: parseKey(message.key),
+      key,
       headers: normalizedHeaders,
     } as KafkaJS.KafkaMessage;
-    const keys = parseKey(message.key);
-    super([normalizedMessage, partition, topic, keys, new Map(Object.entries(normalizedHeaders) as [string, string][]), commit, nack]);
+    super([normalizedMessage, partition, topic, key, new Map(Object.entries(normalizedHeaders) as [string, string][]), commit, nack]);
   }
 
   getMessage(): KafkaJS.KafkaMessage {
@@ -67,7 +67,7 @@ export class KafkaContext extends BaseRpcContext<KafkaContextArgs> {
     return this.args[2];
   }
 
-  getKeys(): KafkaKey {
+  getKey(): KafkaKey {
     return this.args[3];
   }
 

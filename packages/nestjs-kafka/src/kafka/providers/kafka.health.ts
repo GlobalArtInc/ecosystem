@@ -1,10 +1,9 @@
 import { KafkaJS } from "@confluentinc/kafka-javascript";
-// import { HealthIndicatorService } from "@nestjs/terminus";
-import { debugLog } from "../utils/kafka.utils";
+import { HealthIndicatorService } from "@nestjs/terminus";
 
 export class KafkaHealthIndicator {
   constructor(
-    private readonly healthIndicatorService?: any, //HealthIndicatorService
+    private readonly healthIndicatorService?: HealthIndicatorService,
     private readonly adminClient?: KafkaJS.Admin
   ) {}
 
@@ -26,7 +25,6 @@ export class KafkaHealthIndicator {
       await this.adminClient.fetchTopicMetadata();
       return indicator.up();
     } catch (error) {
-      debugLog(`Kafka health check failed: ${error}`);
       return indicator.down();
     }
   }

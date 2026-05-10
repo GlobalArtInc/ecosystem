@@ -67,7 +67,7 @@ export function getKafkaConnectionProviderList(
     { provide: KAFKA_SCHEMA_REGISTRY_TOKEN, useValue: schemaRegistry },
     {
       provide: KafkaMetricsService,
-      useValue: new KafkaMetricsService(adminClient, options, consumer),
+      useValue: new KafkaMetricsService(adminClient, options.consumer?.conf?.["group.id"] as string | undefined),
     },
   ];
 
@@ -96,16 +96,12 @@ export function getAsyncKafkaConnectionProvider(
       useFactory: (
         adminClient?: KafkaJS.Admin,
         config?: KafkaConnectionOptions,
-        consumer?: KafkaJS.Consumer,
-        ...args
       ) => {
-        return new KafkaMetricsService(adminClient, config, consumer);
+        return new KafkaMetricsService(adminClient, config?.consumer?.conf?.["group.id"] as string | undefined);
       },
       inject: [
         { token: KAFKA_ADMIN_CLIENT_TOKEN, optional: true },
         { token: KAFKA_CONFIGURATION_TOKEN, optional: true },
-        { token: KAFKA_CONSUMER_TOKEN, optional: true },
-        ...(options.inject ?? []),
       ],
     },
     {
@@ -113,14 +109,12 @@ export function getAsyncKafkaConnectionProvider(
       useFactory: (
         healthIndicatorService?: any, //HealthIndicatorService
         adminClient?: KafkaJS.Admin,
-        ...args
       ) => {
         return new KafkaHealthIndicator(healthIndicatorService, adminClient);
       },
       inject: [
         { token: "HealthIndicatorService", optional: true },
         { token: KAFKA_ADMIN_CLIENT_TOKEN, optional: true },
-        ...(options.inject ?? []),
       ],
     },
     {

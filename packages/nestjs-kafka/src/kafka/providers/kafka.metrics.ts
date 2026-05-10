@@ -1,5 +1,4 @@
 import { KafkaJS } from "@confluentinc/kafka-javascript";
-import { KafkaConnectionOptions } from "../interfaces/kafka-connection-options";
 
 type KafkaTopicMetrics = Record<string, KafkaPartitionMetrics>;
 
@@ -14,47 +13,33 @@ export interface KafkaMetrics {
 export class KafkaMetricsService {
   constructor(
     private readonly admin?: KafkaJS.Admin,
-
-    private readonly config?: KafkaConnectionOptions,
-    private readonly consumer?: KafkaJS.Consumer
+    private readonly groupId?: string,
   ) {}
 
   async getMetrics(): Promise<KafkaTopicMetrics> {
     this.checkPrerequisites();
 
     const topicMetrics: KafkaTopicMetrics = {};
-    const consumerGroupId = this.config?.consumer?.conf?.["group.id"] as string | undefined;
 
-    if (consumerGroupId) {
-      try {
-        const topics =
-          this.consumer?.assignment()?.map((topic) => topic.topic) ?? [];
+    try {
+      const consumerOffsets = await this.admin!.fetchOffsets({
+        groupId: this.groupId!,
+      });
+      this.populateConsumerOffsetForTopic(consumerOffsets, topicMetrics);
 
-        //Fetch consumer offsets for the consumer group
-        const consumerOffsets = await this.admin!.fetchOffsets({
-          groupId: consumerGroupId,
-        });
-        this.populateConsumerOffsetForTopic(consumerOffsets, topicMetrics);
+      const topics = consumerOffsets.map((o) => o.topic);
 
-        for (const topic of topics) {
-          if (!topicMetrics[topic]) {
-            topicMetrics[topic] = {};
-          }
-
-          //Fetch producer offsets
-          const producerOffset = await this.admin!.fetchTopicOffsets(topic);
-
-          this.populateProducerOffsetForTopic(
-            topic,
-            producerOffset,
-            topicMetrics
-          );
-
-          this.evaluateLag(topicMetrics);
+      for (const topic of topics) {
+        if (!topicMetrics[topic]) {
+          topicMetrics[topic] = {};
         }
-      } catch (e) {
-        console.error("failed to collect metrics: %s", e);
+        const producerOffset = await this.admin!.fetchTopicOffsets(topic);
+        this.populateProducerOffsetForTopic(topic, producerOffset, topicMetrics);
       }
+
+      this.evaluateLag(topicMetrics);
+    } catch (e) {
+      console.error("failed to collect metrics: %s", e);
     }
 
     return topicMetrics;
@@ -112,21 +97,14 @@ export class KafkaMetricsService {
   }
 
   private checkPrerequisites(): void {
-    const consumerGroupId = this.config?.consumer?.conf["group.id"];
-
-    if (!consumerGroupId) {
+    if (!this.groupId) {
       throw new Error(
-        "Consumer group id not provided. Did you forget to provide 'group.id' in consumer configuration?"
+        "Consumer group id not provided."
       );
     }
     if (!this.admin) {
       throw new Error(
         "Admin client not provided. Did you forget to provide 'adminClient' configuration in KafkaModule?"
-      );
-    }
-    if (!this.consumer) {
-      throw new Error(
-        "Consumer not provided. Did you forget to provide 'consumer' configuration in KafkaModule?"
       );
     }
   }

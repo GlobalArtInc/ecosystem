@@ -1,3 +1,5 @@
+export const RDKAFKA_TRANSPORT: unique symbol = Symbol("RDKAFKA");
+
 export const DEFAULT_POSTFIX_SERVER = "-server";
 export const DEFAULT_POSTFIX_CLIENT = "-client";
 export const DEFAULT_RETRY_DELAY_MS = 5000;

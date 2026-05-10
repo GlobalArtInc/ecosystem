@@ -18,31 +18,34 @@ export default class KafkaLifecycleManager
     private readonly producer: KafkaJS.Producer,
     private readonly consumer: KafkaJS.Consumer,
     private readonly admin: KafkaJS.Admin
-  ) {}
+  ) {
+    this.consumerAutoConnect = this.config?.consumer?.autoConnect || true;
+    this.producerAutoConnect = this.config?.producer?.autoConnect || true;
+    this.adminClientAutoConnect = this.config?.adminClient?.autoConnect || true;
+  }
+  private consumerAutoConnect: boolean;
+  private producerAutoConnect: boolean;
+  private adminClientAutoConnect: boolean;
 
   async onApplicationShutdown() {
-    if ((this.config?.consumer?.autoConnect ?? true) && this.consumer) {
+    if (this.consumerAutoConnect && this.consumer) {
       try {
-        debugLog("Consumer disconnecting");
         await this.consumer.disconnect();
-        debugLog("Consumer disconnected successfully.");
       } catch (e) {
         console.error("failed to disconnect consumer: %s", e);
       }
     }
 
-    if ((this.config?.producer?.autoConnect ?? true) && this.producer) {
+    if (this.producerAutoConnect && this.producer) {
       try {
-        debugLog("Producer disconnecting");
         await this.producer.flush();
         await this.producer.disconnect();
-        debugLog("Producer disconnected successfully.");
       } catch (e) {
         console.error("failed to disconnect producer: %s", e);
       }
     }
 
-    if ((this.config.adminClient?.autoConnect ?? true) && this.admin) {
+    if (this.adminClientAutoConnect && this.admin) {
       try {
         debugLog("Admin client disconnecting");
         await this.admin.disconnect();
@@ -54,22 +57,14 @@ export default class KafkaLifecycleManager
   }
 
   async onModuleInit() {
-    if ((this.config?.consumer?.autoConnect ?? true) && this.consumer) {
-      debugLog("Consumer connecting");
+    if (this.consumerAutoConnect && this.consumer) {
       await this.consumer.connect();
-      debugLog("Consumer connected successfully.");
     }
-
-    if ((this.config?.producer?.autoConnect ?? true) && this.producer) {
-      debugLog("Producer connecting");
+    if (this.producerAutoConnect && this.producer) {
       await this.producer.connect();
-      debugLog("Producer connected successfully.");
     }
-
-    if ((this.config?.adminClient?.autoConnect ?? true) && this.admin) {
-      debugLog("Admin client connecting");
+    if (this.adminClientAutoConnect && this.admin) {
       await this.admin.connect();
-      debugLog("Admin client connected successfully.");
     }
   }
 }
