@@ -82,14 +82,16 @@ export interface KafkaOptions {
 
 /**
  * Structured payload for `emit()` calls.
- * When `value` is an array each element is sent as a separate Kafka message
- * while `key` and `headers` are shared across all of them.
+ * Use `value` to send one message or `values` to fan-out into multiple messages
+ * that all share the same `key` and `headers`.
  */
 export interface KafkaEmitPayload<T = unknown> {
   /** Message key, shared by all produced messages. */
   key?: Buffer | string | null;
-  /** Single value or array of values — one Kafka message per element. */
-  value: T | T[];
+  /** Single message value. */
+  value?: T;
+  /** Multiple message values — one Kafka message is produced per element. */
+  values?: T[];
   /** Headers attached to every produced message. */
   headers?: KafkaJS.IHeaders;
 }

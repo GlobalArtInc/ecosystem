@@ -12,7 +12,7 @@ import { InvalidKafkaClientTopicException } from "@nestjs/microservices/errors/i
 import { InvalidMessageException } from "@nestjs/microservices/errors/invalid-message.exception";
 import { KafkaJS } from "@confluentinc/kafka-javascript";
 import { Observable, Subject, connectable, defer, mergeMap, throwError } from "rxjs";
-import type { KafkaEmitPayload, KafkaOptions, KafkaStatus } from "../types/kafka.types";
+import type { KafkaEmitPayload, KafkaMessage, KafkaOptions, KafkaStatus } from "../types/kafka.types";
 import { KafkaStatus as Status } from "../types/kafka.types";
 import { headersToMap } from "../context/kafka.context";
 import { hasSslConfig, toConsumerRdKafkaConfig, toGlobalRdKafkaConfig, toProducerRdKafkaConfig } from "../utils/rdkafka-config";
@@ -136,11 +136,10 @@ export class KafkaClient extends ClientProxy<Record<never, never>, KafkaStatus> 
     const topic = this.normalizePattern(packet.pattern);
     const data = packet.data;
 
-    if (typeof data === "object" && "value" in data) {
-      const { key = null, value, headers } = data;
-      const values = Array.isArray(value) ? value : [value];
+    if (data?.values?.length) {
+      const { key = null, values, headers } = data;
       const messages = await Promise.all(
-        values.map(async (value) => ({
+        values.map(async (value: KafkaMessage) => ({
           key,
           value: await this.kafkaSerializer.serialize(topic, value, headers),
           headers,
@@ -148,9 +147,12 @@ export class KafkaClient extends ClientProxy<Record<never, never>, KafkaStatus> 
       );
       await this.producer.send({ topic, messages });
     } else {
+      const { key = null, value, headers } = data?.value
+        ? data
+        : { value: data, key: null, headers: undefined };
       await this.producer.send({
         topic,
-        messages: [{ value: await this.kafkaSerializer.serialize(topic, data) }],
+        messages: [{ key, value: await this.kafkaSerializer.serialize(topic, value, headers), headers }],
       });
     }
     return undefined as T;
