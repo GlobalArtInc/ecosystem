@@ -31,6 +31,7 @@ import {
 import type { KafkaOptions, KafkaStatus } from "../types/kafka.types";
 import { KafkaStatus as Status } from "../types/kafka.types";
 
+/** NestJS custom transport strategy backed by rdkafka via KafkaJS. */
 export class KafkaStrategy
   extends Server<never, KafkaStatus>
   implements CustomTransportStrategy

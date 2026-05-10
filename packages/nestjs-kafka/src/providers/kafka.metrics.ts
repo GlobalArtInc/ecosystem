@@ -4,12 +4,14 @@ type KafkaTopicMetrics = Record<string, KafkaPartitionMetrics>;
 
 type KafkaPartitionMetrics = Record<string, KafkaMetrics>;
 
+/** Per-partition consumer lag and offset information. */
 export interface KafkaMetrics {
   lag?: number;
   consumerOffset?: number;
   producerOffset?: number;
 }
 
+/** Service for collecting consumer lag and offset metrics via the Kafka admin client. */
 export class KafkaMetricsService {
   constructor(
     private readonly admin?: KafkaJS.Admin,

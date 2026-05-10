@@ -4,6 +4,7 @@ import { KafkaConsumerOptions } from "./kafka-consumer-options";
 import { KafkaProducerOptions } from "./kafka-producer-options";
 import { KafkaSchemaRegistryClientOptions } from "./kafka-schema-registry-options";
 
+/** Options for establishing a Kafka connection in KafkaModule. */
 export interface KafkaConnectionOptions {
   consumer?: KafkaConsumerOptions;
   producer?: KafkaProducerOptions;
@@ -12,6 +13,7 @@ export interface KafkaConnectionOptions {
   global?: boolean;
 }
 
+/** Async variant of {@link KafkaConnectionOptions} for factory-based configuration. */
 export interface KafkaConnectionAsyncOptions
   extends Pick<ModuleMetadata, "imports"> {
   useFactory: (

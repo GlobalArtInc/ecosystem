@@ -32,10 +32,12 @@ function normalizeHeaders(headers?: KafkaJS.IHeaders): KafkaJS.IHeaders {
   return result;
 }
 
+/** Converts rdkafka IHeaders to a normalised string Map. */
 export function headersToMap(headers?: KafkaJS.IHeaders): Map<string, string> {
   return new Map(Object.entries(normalizeHeaders(headers)) as [string, string][]);
 }
 
+/** RPC execution context that exposes typed Kafka message fields. */
 export class KafkaContext extends BaseRpcContext<KafkaContextArgs> {
   constructor(
     message: KafkaJS.KafkaMessage,

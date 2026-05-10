@@ -1,6 +1,7 @@
 import { KafkaJS } from "@confluentinc/kafka-javascript";
 import { HealthIndicatorService } from "@nestjs/terminus";
 
+/** Health indicator that checks connectivity via the Kafka admin client. */
 export class KafkaHealthIndicator {
   constructor(
     private readonly healthIndicatorService?: HealthIndicatorService,

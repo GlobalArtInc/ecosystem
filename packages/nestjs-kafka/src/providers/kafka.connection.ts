@@ -1,7 +1,6 @@
 import { KafkaJS } from "@confluentinc/kafka-javascript";
 import { SchemaRegistryClient } from "@confluentinc/schemaregistry";
 import { DynamicModule, Provider } from "@nestjs/common";
-//import { HealthIndicatorService } from "@nestjs/terminus";
 import { KafkaAdminClientOptions } from "../interfaces/kafka-admin-client-options";
 import {
   KafkaConnectionAsyncOptions,
@@ -12,28 +11,33 @@ import { KafkaProducerOptions } from "../interfaces/kafka-producer-options";
 import { KafkaSchemaRegistryClientOptions } from "../interfaces/kafka-schema-registry-options";
 import { KafkaHealthIndicator } from "./kafka.health";
 import { KafkaMetricsService } from "./kafka.metrics";
+import { HealthIndicatorService } from "@nestjs/terminus";
 
+/** Injection token for the Kafka admin client. */
 export const KAFKA_ADMIN_CLIENT_TOKEN = "KAFKA_ADMIN_CLIENT";
+/** Injection token for the Kafka producer. */
 export const KAFKA_PRODUCER_TOKEN = "KAFKA_PRODUCER";
+/** Injection token for the Kafka consumer. */
 export const KAFKA_CONSUMER_TOKEN = "KAFKA_CONSUMER";
+/** Injection token for the Kafka connection configuration. */
 export const KAFKA_CONFIGURATION_TOKEN = "KAFKA_CONFIGURATION";
+/** Injection token for the Schema Registry client. */
 export const KAFKA_SCHEMA_REGISTRY_TOKEN = SchemaRegistryClient;
+/** Injection token for the Kafka health indicator. */
 export const KAFKA_HEALTH_INDICATOR_TOKEN = KafkaHealthIndicator;
+/** Injection token for the Kafka metrics service. */
 export const KAFKA_METRICS_TOKEN = KafkaMetricsService;
 
 function createConsumer(
   consumerOptions: KafkaConsumerOptions
 ): KafkaJS.Consumer {
-  const consumer = new KafkaJS.Kafka({}).consumer(consumerOptions.conf);
-
-  return consumer;
+  return new KafkaJS.Kafka({}).consumer(consumerOptions.conf);
 }
 
 function createProducer(
   producerOptions: KafkaProducerOptions
 ): KafkaJS.Producer {
-  const producer = new KafkaJS.Kafka({}).producer(producerOptions.conf);
-  return producer;
+  return new KafkaJS.Kafka({}).producer(producerOptions.conf);
 }
 
 function createAdminClient(options: KafkaAdminClientOptions): KafkaJS.Admin {
@@ -46,6 +50,7 @@ function createSchemaRegistry(
   return new SchemaRegistryClient(options.conf);
 }
 
+/** Builds the list of NestJS providers for a synchronous Kafka connection. */
 export function getKafkaConnectionProviderList(
   options: KafkaConnectionOptions,
   pluginModules: DynamicModule[]
@@ -67,13 +72,13 @@ export function getKafkaConnectionProviderList(
     { provide: KAFKA_SCHEMA_REGISTRY_TOKEN, useValue: schemaRegistry },
     {
       provide: KafkaMetricsService,
-      useValue: new KafkaMetricsService(adminClient, options.consumer?.conf?.["group.id"] as string | undefined),
+      useValue: new KafkaMetricsService(adminClient, options.consumer?.conf?.["group.id"]),
     },
   ];
 
   providers.push({
     provide: KAFKA_HEALTH_INDICATOR_TOKEN,
-    useFactory: (healthIndicatorService?: any /*HealthIndicatorService*/) => {
+    useFactory: (healthIndicatorService?: HealthIndicatorService) => {
       return new KafkaHealthIndicator(healthIndicatorService, adminClient);
     },
     inject: [{ token: "HealthIndicatorService", optional: true }],
@@ -82,6 +87,7 @@ export function getKafkaConnectionProviderList(
   return providers;
 }
 
+/** Builds the list of NestJS providers for an asynchronous Kafka connection. */
 export function getAsyncKafkaConnectionProvider(
   options: KafkaConnectionAsyncOptions
 ): Provider[] {
@@ -107,7 +113,7 @@ export function getAsyncKafkaConnectionProvider(
     {
       provide: KAFKA_HEALTH_INDICATOR_TOKEN,
       useFactory: (
-        healthIndicatorService?: any, //HealthIndicatorService
+        healthIndicatorService?: HealthIndicatorService,
         adminClient?: KafkaJS.Admin,
       ) => {
         return new KafkaHealthIndicator(healthIndicatorService, adminClient);

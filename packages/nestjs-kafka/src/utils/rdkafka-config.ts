@@ -1,3 +1,4 @@
+/** Global rdkafka connection configuration options. */
 export interface KafkaRdKafkaConfig {
   // Networking
   socketTimeoutMs?: number;
@@ -82,6 +83,7 @@ export interface KafkaRdKafkaConfig {
   saslOauthbearerAssertionClaimSub?: string;
 }
 
+/** Consumer-specific rdkafka configuration options. */
 export interface KafkaConsumerRdKafkaConfig {
   groupInstanceId?: string;
   partitionAssignmentStrategy?: string;
@@ -107,6 +109,7 @@ export interface KafkaConsumerRdKafkaConfig {
   autoOffsetReset?: "smallest" | "earliest" | "beginning" | "largest" | "latest" | "end" | "error";
 }
 
+/** Producer-specific rdkafka configuration options. */
 export interface KafkaProducerRdKafkaConfig {
   transactionalId?: string;
   transactionTimeoutMs?: number;
@@ -247,23 +250,27 @@ function convertConfig<T extends object>(config: T, map: Record<keyof T, string>
   const result: Record<string, unknown> = {};
   for (const key of Object.keys(map) as (keyof T)[]) {
     const value = config[key];
-    if (value !== undefined) result[map[key]] = value;
+    if (value) result[map[key]] = value;
   }
   return result;
 }
 
+/** Converts {@link KafkaRdKafkaConfig} to a flat rdkafka global config object. */
 export function toGlobalRdKafkaConfig(config?: KafkaRdKafkaConfig): Record<string, unknown> {
   return config ? convertConfig(config, GLOBAL_MAP) : {};
 }
 
+/** Converts {@link KafkaConsumerRdKafkaConfig} to a flat rdkafka consumer config object. */
 export function toConsumerRdKafkaConfig(config?: KafkaConsumerRdKafkaConfig): Record<string, unknown> {
   return config ? convertConfig(config, CONSUMER_MAP) : {};
 }
 
+/** Converts {@link KafkaProducerRdKafkaConfig} to a flat rdkafka producer config object. */
 export function toProducerRdKafkaConfig(config?: KafkaProducerRdKafkaConfig): Record<string, unknown> {
   return config ? convertConfig(config, PRODUCER_MAP) : {};
 }
 
+/** Returns true if any SSL-related keys are present in the global rdkafka config. */
 export function hasSslConfig(config?: KafkaRdKafkaConfig): boolean {
   if (!config) return false;
   return Object.keys(toGlobalRdKafkaConfig(config)).some((k) => k.startsWith("ssl."));

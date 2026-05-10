@@ -8,11 +8,13 @@ import {
 import { KafkaClient } from "./kafka.client";
 import type { KafkaOptions } from "../types/kafka.types";
 
+/** Options for registering a named Kafka client synchronously. */
 export interface KafkaClientOptions {
   name: InjectionToken;
   options: KafkaOptions;
 }
 
+/** Options for registering a named Kafka client asynchronously via a factory. */
 export interface KafkaClientAsyncOptions extends Pick<ModuleMetadata, "imports"> {
   name: InjectionToken;
   useFactory: (...args: unknown[]) => KafkaOptions | Promise<KafkaOptions>;
@@ -21,6 +23,7 @@ export interface KafkaClientAsyncOptions extends Pick<ModuleMetadata, "imports">
 }
 
 @Module({})
+/** NestJS module for registering one or more named {@link KafkaClient} instances. */
 export class KafkaClientsModule {
   static register(clients: KafkaClientOptions[]): DynamicModule {
     const providers = clients.map<FactoryProvider>((client) => ({

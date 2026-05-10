@@ -18,6 +18,7 @@ import { headersToMap } from "../context/kafka.context";
 import { deserializeJson, serializeJson } from "../utils/json.utils";
 import { hasSslConfig, toConsumerRdKafkaConfig, toGlobalRdKafkaConfig, toProducerRdKafkaConfig } from "../utils/rdkafka-config";
 
+/** NestJS ClientProxy implementation for sending messages and events over Kafka. */
 export class KafkaClient extends ClientProxy<Record<never, never>, KafkaStatus> {
   protected readonly logger = new Logger(KafkaClient.name);
   protected responsePatterns: string[] = [];

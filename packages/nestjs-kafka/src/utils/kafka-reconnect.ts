@@ -1,3 +1,4 @@
+/** Formats an error (including nested causes and AggregateError) to a readable string. */
 export function formatError(err: unknown, depth = 0): string {
   if (depth > 3) return String(err);
   if (err instanceof AggregateError && err.errors?.length) {
@@ -10,6 +11,7 @@ export function formatError(err: unknown, depth = 0): string {
   return String(err);
 }
 
+/** Returns a promise that resolves after the given number of milliseconds. */
 export function sleepMs(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }

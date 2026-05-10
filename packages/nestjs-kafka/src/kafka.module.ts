@@ -40,6 +40,7 @@ const getKafkaLifecycleMangerProvider = (): Provider => {
   };
 };
 
+/** NestJS dynamic module that provides Kafka connection, producer, consumer, and admin client. */
 export class KafkaModule {
   /**
    * Creates the connection to the kafka instance.
