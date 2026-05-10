@@ -1,6 +1,11 @@
 // Module
 export { KafkaModule } from "./kafka.module";
 
+// Serde
+export type { KafkaSerializer, KafkaDeserializer } from "./serde/kafka-serde.interface";
+export { JsonKafkaSerializer, JsonKafkaDeserializer } from "./serde/json.serde";
+export { ProtobufKafkaSerializer, ProtobufKafkaDeserializer } from "./serde/protobuf.serde";
+
 // Strategy transport
 export { KafkaStrategy } from "./strategy/kafka.strategy";
 export { RDKAFKA_TRANSPORT } from "./constants/kafka.constants";
@@ -9,6 +14,7 @@ export { KafkaHealthIndicator } from "./health/kafka-health.indicator";
 export type { KafkaHealthCheckable } from "./health/kafka-health.indicator";
 export { KafkaMetricsService } from "./providers/kafka.metrics";
 export type { KafkaMetrics } from "./providers/kafka.metrics";
+export { KafkaAdminService } from "./providers/kafka.admin";
 
 // Client
 export { KafkaClient } from "./client/kafka.client";

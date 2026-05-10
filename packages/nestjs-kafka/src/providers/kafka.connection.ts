@@ -9,6 +9,7 @@ import {
 import { KafkaConsumerOptions } from "../interfaces/kafka-consumer-options";
 import { KafkaProducerOptions } from "../interfaces/kafka-producer-options";
 import { KafkaSchemaRegistryClientOptions } from "../interfaces/kafka-schema-registry-options";
+import { KafkaAdminService } from "./kafka.admin";
 import { KafkaHealthIndicator } from "./kafka.health";
 import { KafkaMetricsService } from "./kafka.metrics";
 import { HealthIndicatorService } from "@nestjs/terminus";
@@ -74,6 +75,10 @@ export function getKafkaConnectionProviderList(
       provide: KafkaMetricsService,
       useValue: new KafkaMetricsService(adminClient, options.consumer?.conf?.["group.id"]),
     },
+    {
+      provide: KafkaAdminService,
+      useValue: new KafkaAdminService(adminClient),
+    },
   ];
 
   providers.push({
@@ -109,6 +114,11 @@ export function getAsyncKafkaConnectionProvider(
         { token: KAFKA_ADMIN_CLIENT_TOKEN, optional: true },
         { token: KAFKA_CONFIGURATION_TOKEN, optional: true },
       ],
+    },
+    {
+      provide: KafkaAdminService,
+      useFactory: (adminClient?: KafkaJS.Admin) => new KafkaAdminService(adminClient),
+      inject: [{ token: KAFKA_ADMIN_CLIENT_TOKEN, optional: true }],
     },
     {
       provide: KAFKA_HEALTH_INDICATOR_TOKEN,

@@ -1,5 +1,6 @@
 import type { KafkaJS } from "@confluentinc/kafka-javascript";
 import type { KafkaConsumerRdKafkaConfig, KafkaProducerRdKafkaConfig, KafkaRdKafkaConfig } from "../utils/rdkafka-config";
+import type { KafkaDeserializer, KafkaSerializer } from "../serde/kafka-serde.interface";
 
 /** KafkaJS consumer instance. */
 export type KafkaConsumer = KafkaJS.Consumer;
@@ -43,6 +44,12 @@ export interface KafkaOptions {
   maxRetries?: number;
   deadLetterTopic?: string;
   shutdownTimeoutMs?: number;
+  /** When true, consumer runs in eachBatch mode instead of eachMessage. */
+  batchMode?: boolean;
+  /** Custom serializer for outgoing message values. Defaults to JSON. */
+  serializer?: KafkaSerializer;
+  /** Custom deserializer for incoming message values. Defaults to JSON. */
+  deserializer?: KafkaDeserializer;
 }
 
 /** A Kafka message with its key and value already deserialised. */

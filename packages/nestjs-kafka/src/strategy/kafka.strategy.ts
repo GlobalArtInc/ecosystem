@@ -19,7 +19,9 @@ import {
   Subscription,
 } from "rxjs";
 import { KafkaContext, headersToMap } from "../context/kafka.context";
-import { deserializeJson, serializeJson } from "../utils/json.utils";
+import { serializeJson } from "../utils/json.utils";
+import type { KafkaDeserializer, KafkaSerializer } from "../serde/kafka-serde.interface";
+import { JsonKafkaDeserializer, JsonKafkaSerializer } from "../serde/json.serde";
 import { hasSslConfig, toConsumerRdKafkaConfig, toGlobalRdKafkaConfig, toProducerRdKafkaConfig } from "../utils/rdkafka-config";
 import { sleepMs } from "../utils/kafka-reconnect";
 import {
@@ -43,12 +45,24 @@ export class KafkaStrategy
   private producer: KafkaJS.Producer | undefined;
   private closed = false;
   private currentStatus: KafkaStatus = Status.DISCONNECTED;
+  private readonly kafkaSerializer: KafkaSerializer;
+  private readonly kafkaDeserializer: KafkaDeserializer;
 
   constructor(private readonly options: KafkaOptions) {
     super();
+    this.kafkaSerializer = options.serializer ?? new JsonKafkaSerializer();
+    this.kafkaDeserializer = options.deserializer ?? new JsonKafkaDeserializer();
     this._status$.subscribe((s) => {
       this.currentStatus = s;
     });
+  }
+
+  private kafkaSerialize(topic: string, data: unknown, headers?: KafkaJS.IHeaders): Promise<Buffer> {
+    return this.kafkaSerializer.serialize(topic, data, headers);
+  }
+
+  private kafkaDeserialize(topic: string, payload: Buffer | null | undefined, headers?: KafkaJS.IHeaders): Promise<unknown> {
+    return this.kafkaDeserializer.deserialize(topic, payload, headers);
   }
 
   public getStatus(): KafkaStatus {
@@ -80,9 +94,27 @@ export class KafkaStrategy
       const topics = [...this.messageHandlers.keys()];
       if (topics.length > 0) {
         await this.consumer.subscribe({ topics });
-        void this.consumer.run({
-          eachMessage: async (payload) => this.processMessage(payload),
-        });
+        if (this.options.batchMode) {
+          await this.consumer.run({
+            eachBatch: async ({ batch, resolveOffset, heartbeat, pause }) => {
+              for (const message of batch.messages) {
+                await this.processMessage({
+                  message,
+                  heartbeat,
+                  partition: batch.partition,
+                  topic: batch.topic,
+                  pause,
+                });
+                resolveOffset(message.offset);
+                await heartbeat();
+              }
+            },
+          });
+        } else {
+          await this.consumer.run({
+            eachMessage: async (payload) => this.processMessage(payload),
+          });
+        }
       }
 
       callback();
@@ -209,7 +241,7 @@ export class KafkaStrategy
         commit,
         nack,
       );
-      const data = deserializeJson(message.value);
+      const data = await this.kafkaDeserialize(topic, message.value as Buffer | null | undefined, headers);
 
       try {
         await this.handleEvent(topic, { pattern: topic, data }, ctx);
@@ -288,7 +320,7 @@ export class KafkaStrategy
     }
 
     try {
-      const value = deserializeJson(message.value);
+      const value = await this.kafkaDeserialize(topic, message.value as Buffer | null | undefined, headers);
       const response$ = this.transformToObservable(
         handler(value, ctx),
       );
@@ -327,7 +359,7 @@ export class KafkaStrategy
       };
       if (headers) {
         for (const [k, v] of Object.entries(headers)) {
-          if (!(k in dlqHeaders) && v !== undefined) dlqHeaders[k] = v;
+          if (!(k in dlqHeaders) && v) dlqHeaders[k] = v;
         }
       }
       await this.producer!.send({
@@ -340,7 +372,7 @@ export class KafkaStrategy
     }
   }
 
-  private sendReply(
+  private async sendReply(
     message: WritePacket,
     replyTopic: string,
     replyPartition: string | undefined,
@@ -356,7 +388,7 @@ export class KafkaStrategy
       headers[KafkaHeaders.NEST_IS_DISPOSED] = "1";
     }
     const msg: KafkaJS.Message = {
-      value: serializeJson(message.response ?? null),
+      value: await this.kafkaSerialize(replyTopic, message.response ?? null, headers),
       headers,
     };
     if (replyPartition != null) {
