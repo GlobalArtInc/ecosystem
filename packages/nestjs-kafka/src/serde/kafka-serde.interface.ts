@@ -6,7 +6,7 @@ export type SerdePayload = Buffer | null | undefined;
 export interface KafkaSerializer {
   serialize(
     topic: string,
-    data: unknown,
+    payload: unknown,
     headers?: KafkaJS.IHeaders,
   ): Promise<Buffer>;
 }

@@ -99,6 +99,7 @@ export class KafkaClient extends ClientProxy<
       if (this.responsePatterns.length > 0) {
         await this._consumer.subscribe({ topics: this.responsePatterns });
         await this._consumer.run({
+          ...(this.options.consumerRun ?? {}),
           eachMessage: async ({ topic, message }) =>
             this.handleResponseMessage(topic, message),
         });

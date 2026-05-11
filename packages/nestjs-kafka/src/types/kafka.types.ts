@@ -88,6 +88,8 @@ export interface KafkaOptions {
   shutdownTimeoutMs?: number;
   /** When true, consumer runs in eachBatch mode instead of eachMessage. */
   batchMode?: boolean;
+  /** Options forwarded to consumer.run() — excludes eachMessage/eachBatch which are managed internally. */
+  consumerRun?: Omit<KafkaJS.ConsumerRunConfig, 'eachMessage' | 'eachBatch'>;
   /** Custom serializer for outgoing message values. Defaults to JSON. */
   serializer?: KafkaSerializer;
   /** Custom deserializer for incoming message values. Defaults to JSON. */

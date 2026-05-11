@@ -123,6 +123,7 @@ export class KafkaStrategy
         await this.consumer.subscribe({ topics });
         if (this.options.batchMode) {
           await this.consumer.run({
+            ...(this.options.consumerRun ?? {}),
             eachBatch: async ({ batch, resolveOffset, heartbeat, pause }) => {
               for (const message of batch.messages) {
                 await this.processMessage({
@@ -139,6 +140,7 @@ export class KafkaStrategy
           });
         } else {
           await this.consumer.run({
+            ...(this.options.consumerRun ?? {}),
             eachMessage: async (payload) => this.processMessage(payload),
           });
         }
