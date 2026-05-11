@@ -18,7 +18,6 @@ import {
   getKafkaConnectionProviderList,
 } from "./providers/kafka.connection";
 import KafkaLifecycleManager from "./providers/kafka.lifecycle";
-import { debugLog } from "./utils/kafka.utils";
 
 const getKafkaLifecycleMangerProvider = (): Provider => {
   return {
@@ -89,7 +88,6 @@ export class KafkaModule {
       const { TerminusModule } = require("@nestjs/terminus");
       return [{ module: TerminusModule }];
     } catch (e) {
-      debugLog("TerminusModule not found ");
       return [];
     }
   }

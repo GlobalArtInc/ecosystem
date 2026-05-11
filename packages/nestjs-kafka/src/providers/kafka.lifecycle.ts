@@ -1,7 +1,6 @@
 import { KafkaJS } from "@confluentinc/kafka-javascript";
 import { OnApplicationShutdown, OnModuleInit } from "@nestjs/common";
 import { KafkaConnectionOptions } from "../interfaces/kafka-connection-options";
-import { debugLog } from "../utils/kafka.utils";
 
 /**
  * Manages lifecycle events for the `KafkaModule`. When the `autoConnect`
@@ -47,9 +46,7 @@ export default class KafkaLifecycleManager
 
     if (this.adminClientAutoConnect && this.admin) {
       try {
-        debugLog("Admin client disconnecting");
         await this.admin.disconnect();
-        debugLog("Admin client disconnected successfully.");
       } catch (e) {
         console.error("failed to disconnect admin client: %s", e);
       }

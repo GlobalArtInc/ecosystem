@@ -156,16 +156,11 @@ export class KafkaStrategy
   public async close(): Promise<void> {
     this.logger.log("Closing Kafka transport...");
     this.closed = true;
-    try {
-      await this.consumer?.stop();
-    } catch {}
     await Promise.allSettled([
       this.consumer?.disconnect(),
       this.producer?.disconnect(),
     ]);
     this._status$.next(Status.DISCONNECTED);
-    this.consumer = undefined;
-    this.producer = undefined;
   }
 
   public on<

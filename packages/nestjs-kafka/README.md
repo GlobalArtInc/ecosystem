@@ -1,15 +1,21 @@
 # @globalart/nestjs-kafka
 
-A NestJS microservice transport built on top of `@platformatic/kafka`.
+A NestJS microservice transport built on top of `@confluentinc/kafka-javascript`.
 
 ## Features
 
 - **Transport strategy** — drop-in `CustomTransportStrategy` for `app.connectMicroservice()`
-- **Client proxy** — `PlatformaticKafkaClient` for publishing events and messages
-- **Auto-reconnect** — exponential backoff on broker failures, for both strategy and client
+- **Client proxy** — `KafkaClient` / `KafkaClientsModule` for publishing events and RPC calls
+- **Message decorators** — `@KafkaMessageKey`, `@KafkaMessageHeaders`, `@KafkaMessageAck`, `@KafkaMessageNack`, and more
+- **Inject decorators** — `InjectKafkaProducer`, `InjectKafkaConsumer`, `InjectKafkaAdmin`, etc.
+- **Retry strategies** — fixed or exponential back-off with configurable jitter and max retries
+- **Dead Letter Queue** — automatically routes exhausted messages to a DLQ topic
+- **Batch mode** — `eachBatch` consumer with per-message offset resolution
 - **Producer-only mode** — skip consumer setup when you only need to produce
-- **Batch emit** — send multiple messages in a single broker round-trip
-- **Type-safe** — full TypeScript support
+- **Schema Registry** — built-in Protobuf serde via `@confluentinc/schemaregistry`
+- **Custom serde** — plug in any serializer / deserializer
+- **Health indicator** — `KafkaHealthIndicator` for `@nestjs/terminus`
+- **SASL / SSL** — full authentication support via KafkaJS options
 
 ## Installation
 
