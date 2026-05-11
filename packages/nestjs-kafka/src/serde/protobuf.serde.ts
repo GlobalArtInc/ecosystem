@@ -7,7 +7,11 @@ import {
   type ProtobufSerializerConfig,
 } from "@confluentinc/schemaregistry";
 import type { SchemaRegistryClient } from "@confluentinc/schemaregistry";
-import type { KafkaDeserializer, KafkaSerializer, SerdePayload } from "./kafka-serde.interface";
+import type {
+  KafkaDeserializer,
+  KafkaSerializer,
+  SerdePayload,
+} from "./kafka-serde.interface";
 
 /** Serializes Protobuf messages using Confluent Schema Registry wire format. */
 export class ProtobufKafkaSerializer implements KafkaSerializer {
@@ -20,7 +24,11 @@ export class ProtobufKafkaSerializer implements KafkaSerializer {
     this.inner = new ProtobufSerializer(client, SerdeType.VALUE, config);
   }
 
-  serialize(topic: string, data: unknown, headers?: KafkaJS.IHeaders): Promise<Buffer> {
+  serialize(
+    topic: string,
+    data: unknown,
+    headers?: KafkaJS.IHeaders,
+  ): Promise<Buffer> {
     return this.inner.serialize(topic, data, headers);
   }
 }
@@ -36,7 +44,11 @@ export class ProtobufKafkaDeserializer implements KafkaDeserializer {
     this.inner = new ProtobufDeserializer(client, SerdeType.VALUE, config);
   }
 
-  async deserialize(topic: string, payload: SerdePayload, headers?: KafkaJS.IHeaders): Promise<unknown> {
+  async deserialize(
+    topic: string,
+    payload: SerdePayload,
+    headers?: KafkaJS.IHeaders,
+  ): Promise<unknown> {
     if (payload == null) return undefined;
     return this.inner.deserialize(topic, payload, headers);
   }

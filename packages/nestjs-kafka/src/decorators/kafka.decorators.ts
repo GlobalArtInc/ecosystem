@@ -7,7 +7,7 @@ const getCtx = (ctx: ExecutionContext): KafkaContext =>
 /** Injects the deserialized Kafka message key into a handler parameter. */
 export const KafkaMessageKey = createParamDecorator(
   (_: unknown, ctx: ExecutionContext) => getCtx(ctx).getKey(),
-)
+);
 
 /** Injects the Kafka message headers map into a handler parameter. */
 export const KafkaMessageHeaders = createParamDecorator(
@@ -45,4 +45,3 @@ export const KafkaMessageNack = createParamDecorator(
     return c.nack.bind(c);
   },
 );
-

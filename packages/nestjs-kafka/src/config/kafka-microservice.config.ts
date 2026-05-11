@@ -8,10 +8,10 @@ export interface KafkaConnectConfig {
 }
 
 /** Creates a NestJS {@link CustomStrategy} backed by {@link KafkaStrategy}. */
-export function createKafkaMicroservice(
+export const createKafkaMicroservice = (
   config: KafkaConnectConfig,
-): CustomStrategy {
+): CustomStrategy => {
   return {
     strategy: new KafkaStrategy(config.options),
   };
-}
+};

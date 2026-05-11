@@ -1,6 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import { KafkaJS } from "@confluentinc/kafka-javascript";
 
+type FetchConsumerOffsetsOptions = {
+  timeout?: number;
+  requireStableOffsets?: boolean;
+};
+
 /** Injectable service for Kafka admin operations: topic management, offset inspection, and group control. */
 @Injectable()
 export class KafkaAdminService {
@@ -23,13 +28,20 @@ export class KafkaAdminService {
   /** Creates one or more topics. Returns true if topics were created. */
   createTopics(
     topics: KafkaJS.ITopicConfig[],
-    options?: { validateOnly?: boolean; waitForLeaders?: boolean; timeout?: number },
+    options?: {
+      validateOnly?: boolean;
+      waitForLeaders?: boolean;
+      timeout?: number;
+    },
   ): Promise<boolean> {
     return this.getAdmin().createTopics({ topics, ...options });
   }
 
   /** Deletes one or more topics by name. */
-  deleteTopics(topics: string[], options?: { timeout?: number }): Promise<void> {
+  deleteTopics(
+    topics: string[],
+    options?: { timeout?: number },
+  ): Promise<void> {
     return this.getAdmin().deleteTopics({ topics, ...options });
   }
 
@@ -57,16 +69,26 @@ export class KafkaAdminService {
     timestamp?: number,
     options?: { timeout?: number; isolationLevel: KafkaJS.IsolationLevel },
   ): Promise<KafkaJS.SeekEntry[]> {
-    return this.getAdmin().fetchTopicOffsetsByTimestamp(topic, timestamp, options);
+    return this.getAdmin().fetchTopicOffsetsByTimestamp(
+      topic,
+      timestamp,
+      options,
+    );
   }
 
   /** Returns the committed consumer offsets for a group, optionally filtered by topics. */
   fetchConsumerOffsets(
     groupId: string,
     topics?: string[],
-    options?: { timeout?: number; requireStableOffsets?: boolean },
-  ): Promise<Array<{ topic: string; partitions: KafkaJS.FetchOffsetsPartition[] }>> {
-    return this.getAdmin().fetchOffsets({ groupId, ...(topics && { topics }), ...options });
+    options?: FetchConsumerOffsetsOptions,
+  ): Promise<
+    Array<{ topic: string; partitions: KafkaJS.FetchOffsetsPartition[] }>
+  > {
+    return this.getAdmin().fetchOffsets({
+      groupId,
+      topics,
+      ...options,
+    });
   }
 
   /** Deletes records from topic partitions up to the given offsets. */
@@ -84,7 +106,10 @@ export class KafkaAdminService {
     timeout?: number;
     matchConsumerGroupStates?: KafkaJS.ConsumerGroupStates[];
     matchConsumerGroupTypes?: KafkaJS.ConsumerGroupTypes[];
-  }): Promise<{ groups: KafkaJS.GroupOverview[]; errors: KafkaJS.LibrdKafkaError[] }> {
+  }): Promise<{
+    groups: KafkaJS.GroupOverview[];
+    errors: KafkaJS.LibrdKafkaError[];
+  }> {
     return this.getAdmin().listGroups(options);
   }
 

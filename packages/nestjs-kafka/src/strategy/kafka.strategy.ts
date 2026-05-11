@@ -19,10 +19,21 @@ import {
   Subscription,
 } from "rxjs";
 import { KafkaContext, headersToMap } from "../context/kafka.context";
-import { serializeJson } from "../utils/json.utils";
-import type { KafkaDeserializer, KafkaSerializer, SerdePayload } from "../serde/kafka-serde.interface";
-import { JsonKafkaDeserializer, JsonKafkaSerializer } from "../serde/json.serde";
-import { hasSslConfig, toConsumerRdKafkaConfig, toGlobalRdKafkaConfig, toProducerRdKafkaConfig } from "../utils/rdkafka-config";
+import type {
+  KafkaDeserializer,
+  KafkaSerializer,
+  SerdePayload,
+} from "../serde/kafka-serde.interface";
+import {
+  JsonKafkaDeserializer,
+  JsonKafkaSerializer,
+} from "../serde/json.serde";
+import {
+  hasSslConfig,
+  toConsumerRdKafkaConfig,
+  toGlobalRdKafkaConfig,
+  toProducerRdKafkaConfig,
+} from "../utils/rdkafka-config";
 import { sleepMs } from "../utils/kafka-reconnect";
 import { computeRetryDelay, getMaxRetries } from "../utils/retry.utils";
 import {
@@ -30,7 +41,11 @@ import {
   DEFAULT_POSTFIX_SERVER,
   RDKAFKA_TRANSPORT,
 } from "../constants/kafka.constants";
-import type { KafkaOptions, KafkaStatus, NackState } from "../types/kafka.types";
+import type {
+  KafkaOptions,
+  KafkaStatus,
+  NackState,
+} from "../types/kafka.types";
 import { KafkaStatus as Status } from "../types/kafka.types";
 
 /** NestJS custom transport strategy backed by rdkafka via KafkaJS. */
@@ -51,17 +66,26 @@ export class KafkaStrategy
   constructor(private readonly options: KafkaOptions) {
     super();
     this.kafkaSerializer = options.serializer ?? new JsonKafkaSerializer();
-    this.kafkaDeserializer = options.deserializer ?? new JsonKafkaDeserializer();
+    this.kafkaDeserializer =
+      options.deserializer ?? new JsonKafkaDeserializer();
     this._status$.subscribe((s) => {
       this.currentStatus = s;
     });
   }
 
-  private kafkaSerialize(topic: string, data: unknown, headers?: KafkaJS.IHeaders): Promise<Buffer> {
+  private kafkaSerialize(
+    topic: string,
+    data: unknown,
+    headers?: KafkaJS.IHeaders,
+  ): Promise<Buffer> {
     return this.kafkaSerializer.serialize(topic, data, headers);
   }
 
-  private kafkaDeserialize(topic: string, payload: SerdePayload, headers?: KafkaJS.IHeaders): Promise<unknown> {
+  private kafkaDeserialize(
+    topic: string,
+    payload: SerdePayload,
+    headers?: KafkaJS.IHeaders,
+  ): Promise<unknown> {
     return this.kafkaDeserializer.deserialize(topic, payload, headers);
   }
 
@@ -72,7 +96,10 @@ export class KafkaStrategy
   public async listen(callback: (err?: unknown) => void): Promise<void> {
     this.closed = false;
     try {
-      const { clientId, groupId } = applyPostfix(this.options, DEFAULT_POSTFIX_SERVER);
+      const { clientId, groupId } = applyPostfix(
+        this.options,
+        DEFAULT_POSTFIX_SERVER,
+      );
       const kafka = this.createKafka(clientId);
       this.consumer = kafka.consumer({
         ...toConsumerRdKafkaConfig(this.options.consumerRdKafka),
@@ -236,13 +263,21 @@ export class KafkaStrategy
         nackState = delayMs ?? "auto";
       };
 
-      const ctx = new KafkaContext(message, partition, topic, headers, commit, nack);
+      const ctx = new KafkaContext(
+        message,
+        partition,
+        topic,
+        headers,
+        commit,
+        nack,
+      );
       const data = await this.kafkaDeserialize(topic, message.value, headers);
 
       try {
         await this.handleEvent(topic, { pattern: topic, data }, ctx);
       } catch (err) {
-        const errMessage = err instanceof Error ? err.message : JSON.stringify(err, null, 2);
+        const errMessage =
+          err instanceof Error ? err.message : JSON.stringify(err, null, 2);
         const errStack = err instanceof Error ? err.stack : undefined;
         this.logger.error(
           `Handler error on topic="${topic}" partition=${partition} offset=${message.offset}: ${errMessage}`,
@@ -263,16 +298,24 @@ export class KafkaStrategy
 
       failures++;
       if (failures > maxRetries) {
-        await this.sendToDlq(topic, partition, message, headers, lastError, failures);
+        await this.sendToDlq(
+          topic,
+          partition,
+          message,
+          headers,
+          lastError,
+          failures,
+        );
         try {
           await commit();
         } catch {}
         return;
       }
 
-      const delayMs = nackState === "auto"
-        ? computeRetryDelay(strategy, failures)
-        : nackState;
+      const delayMs =
+        nackState === "auto"
+          ? computeRetryDelay(strategy, failures)
+          : nackState;
 
       this.logger.warn(
         `Retrying "${topic}" in ${delayMs}ms` +
@@ -308,7 +351,14 @@ export class KafkaStrategy
     commit: () => Promise<void>,
   ): Promise<void> {
     const nack = () => {};
-    const ctx = new KafkaContext(message, partition, topic, headers, commit, nack);
+    const ctx = new KafkaContext(
+      message,
+      partition,
+      topic,
+      headers,
+      commit,
+      nack,
+    );
     const publish = (data: WritePacket) =>
       this.sendReply(data, replyTopic, replyPartition, correlationId);
     const handler = this.getHandlerByPattern(topic);
@@ -321,9 +371,7 @@ export class KafkaStrategy
 
     try {
       const value = await this.kafkaDeserialize(topic, message.value, headers);
-      const response$ = this.transformToObservable(
-        handler(value, ctx),
-      );
+      const response$ = this.transformToObservable(handler(value, ctx));
       const replay$ = new ReplaySubject<unknown>();
       await this.combineStreamsAndThrowIfRetriable(response$, replay$);
       this.send(replay$, publish);
@@ -364,9 +412,13 @@ export class KafkaStrategy
       }
       await this.producer!.send({
         topic: dlqTopic,
-        messages: [{ key: message.key, value: message.value, headers: dlqHeaders }],
+        messages: [
+          { key: message.key, value: message.value, headers: dlqHeaders },
+        ],
       });
-      this.logger.warn(`"${topic}" → DLQ "${dlqTopic}" after ${failures} failure(s)`);
+      this.logger.warn(
+        `"${topic}" → DLQ "${dlqTopic}" after ${failures} failure(s)`,
+      );
     } catch (err) {
       this.logger.error(`Failed to send to DLQ "${dlqTopic}":`, err);
     }
@@ -382,13 +434,17 @@ export class KafkaStrategy
       [KafkaHeaders.CORRELATION_ID]: correlationId,
     };
     if (message.err) {
-      headers[KafkaHeaders.NEST_ERR] = serializeJson(message.err);
+      headers[KafkaHeaders.NEST_ERR] = JSON.stringify(message.err);
     }
     if (message.isDisposed) {
       headers[KafkaHeaders.NEST_IS_DISPOSED] = "1";
     }
     const msg: KafkaJS.Message = {
-      value: await this.kafkaSerialize(replyTopic, message.response ?? null, headers),
+      value: await this.kafkaSerialize(
+        replyTopic,
+        message.response ?? null,
+        headers,
+      ),
       headers,
     };
     if (replyPartition != null) {

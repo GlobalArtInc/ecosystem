@@ -5,19 +5,19 @@ import { HealthIndicatorService } from "@nestjs/terminus";
 export class KafkaHealthIndicator {
   constructor(
     private readonly healthIndicatorService?: HealthIndicatorService,
-    private readonly adminClient?: KafkaJS.Admin
+    private readonly adminClient?: KafkaJS.Admin,
   ) {}
 
   async isHealty() {
     if (!this.healthIndicatorService) {
       throw new Error(
-        "Kafka admin client not provided. Did you forget to inject TerminusModule?"
+        "Kafka admin client not provided. Did you forget to inject TerminusModule?",
       );
     }
 
     if (!this.adminClient) {
       throw new Error(
-        "Kafka admin client not provided. Did you forget to provide 'adminClient' configuration in KafkaModule?"
+        "Kafka admin client not provided. Did you forget to provide 'adminClient' configuration in KafkaModule?",
       );
     }
 

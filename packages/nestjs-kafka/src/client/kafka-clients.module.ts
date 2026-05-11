@@ -15,7 +15,10 @@ export interface KafkaClientOptions {
 }
 
 /** Options for registering a named Kafka client asynchronously via a factory. */
-export interface KafkaClientAsyncOptions extends Pick<ModuleMetadata, "imports"> {
+export interface KafkaClientAsyncOptions extends Pick<
+  ModuleMetadata,
+  "imports"
+> {
   name: InjectionToken;
   useFactory: (...args: unknown[]) => KafkaOptions | Promise<KafkaOptions>;
   inject?: InjectionToken[];

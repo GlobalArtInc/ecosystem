@@ -2,7 +2,10 @@ import { DEFAULT_RETRY_DELAY_MS } from "../constants/kafka.constants";
 import type { KafkaRetryStrategy } from "../types/kafka.types";
 
 /** Computes the delay in ms for the given attempt number (1-based) based on the configured strategy. */
-export function computeRetryDelay(strategy: KafkaRetryStrategy, attempt: number): number {
+export const computeRetryDelay = (
+  strategy: KafkaRetryStrategy,
+  attempt: number,
+): number => {
   if (strategy.type === "fixed") {
     return strategy.delayMs ?? DEFAULT_RETRY_DELAY_MS;
   }
@@ -19,9 +22,9 @@ export function computeRetryDelay(strategy: KafkaRetryStrategy, attempt: number)
   }
 
   return Math.round(delay);
-}
+};
 
 /** Returns the maximum number of retries from the strategy, defaulting to Infinity. */
-export function getMaxRetries(strategy: KafkaRetryStrategy): number {
+export const getMaxRetries = (strategy: KafkaRetryStrategy): number => {
   return strategy.maxRetries ?? Infinity;
-}
+};

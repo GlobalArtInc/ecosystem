@@ -17,7 +17,7 @@ export default class KafkaLifecycleManager
     private readonly config: KafkaConnectionOptions,
     private readonly producer: KafkaJS.Producer,
     private readonly consumer: KafkaJS.Consumer,
-    private readonly admin: KafkaJS.Admin
+    private readonly admin: KafkaJS.Admin,
   ) {
     this.consumerAutoConnect = this.config?.consumer?.autoConnect || true;
     this.producerAutoConnect = this.config?.producer?.autoConnect || true;

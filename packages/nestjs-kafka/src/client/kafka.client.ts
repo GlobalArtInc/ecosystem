@@ -10,17 +10,42 @@ import {
 import { KafkaHeaders } from "@nestjs/microservices/enums";
 import { InvalidKafkaClientTopicException } from "@nestjs/microservices/errors/invalid-kafka-client-topic.exception";
 import { InvalidMessageException } from "@nestjs/microservices/errors/invalid-message.exception";
-import { KafkaJS } from "@confluentinc/kafka-javascript";
-import { Observable, Subject, connectable, defer, mergeMap, throwError } from "rxjs";
-import type { KafkaEmitPayload, KafkaMessage, KafkaOptions, KafkaStatus } from "../types/kafka.types";
+import { KafkaJS, CODES } from "@confluentinc/kafka-javascript";
+import {
+  Observable,
+  Subject,
+  connectable,
+  defer,
+  mergeMap,
+  throwError,
+} from "rxjs";
+import type {
+  KafkaEmitPayload,
+  KafkaOptions,
+  KafkaStatus,
+} from "../types/kafka.types";
 import { KafkaStatus as Status } from "../types/kafka.types";
 import { headersToMap } from "../context/kafka.context";
-import { hasSslConfig, toConsumerRdKafkaConfig, toGlobalRdKafkaConfig, toProducerRdKafkaConfig } from "../utils/rdkafka-config";
-import type { KafkaDeserializer, KafkaSerializer } from "../serde/kafka-serde.interface";
-import { JsonKafkaDeserializer, JsonKafkaSerializer } from "../serde/json.serde";
+import {
+  hasSslConfig,
+  toConsumerRdKafkaConfig,
+  toGlobalRdKafkaConfig,
+  toProducerRdKafkaConfig,
+} from "../utils/rdkafka-config";
+import type {
+  KafkaDeserializer,
+  KafkaSerializer,
+} from "../serde/kafka-serde.interface";
+import {
+  JsonKafkaDeserializer,
+  JsonKafkaSerializer,
+} from "../serde/json.serde";
 
 /** NestJS ClientProxy implementation for sending messages and events over Kafka. */
-export class KafkaClient extends ClientProxy<Record<never, never>, KafkaStatus> {
+export class KafkaClient extends ClientProxy<
+  Record<never, never>,
+  KafkaStatus
+> {
   protected readonly logger = new Logger(KafkaClient.name);
   protected responsePatterns: string[] = [];
   protected consumerAssignments: Record<string, number> = {};
@@ -34,13 +59,15 @@ export class KafkaClient extends ClientProxy<Record<never, never>, KafkaStatus> 
   constructor(protected readonly options: KafkaOptions) {
     super();
     this.kafkaSerializer = options.serializer ?? new JsonKafkaSerializer();
-    this.kafkaDeserializer = options.deserializer ?? new JsonKafkaDeserializer();
+    this.kafkaDeserializer =
+      options.deserializer ?? new JsonKafkaDeserializer();
     this.initializeSerializer(undefined);
     this.initializeDeserializer(undefined);
   }
 
   get producer(): KafkaJS.Producer {
-    if (!this._producer) throw new Error("Client not connected. Call connect() first.");
+    if (!this._producer)
+      throw new Error("Client not connected. Call connect() first.");
     return this._producer;
   }
 
@@ -105,7 +132,7 @@ export class KafkaClient extends ClientProxy<Record<never, never>, KafkaStatus> 
     _callback: (...args: unknown[]) => void,
   ): void {
     throw new Error(
-      'Method not supported. Use unwrap() to access consumer/producer.',
+      "Method not supported. Use unwrap() to access consumer/producer.",
     );
   }
 
@@ -137,22 +164,36 @@ export class KafkaClient extends ClientProxy<Record<never, never>, KafkaStatus> 
     const data = packet.data;
 
     if (data?.values?.length) {
-      const { key = null, values, headers } = data;
+      const {
+        key = null,
+        partition,
+        values = [],
+        headers,
+      } = data as KafkaEmitPayload;
       const messages = await Promise.all(
-        values.map(async (value: KafkaMessage) => ({
+        values.map(async (value) => ({
           key,
           value: await this.kafkaSerializer.serialize(topic, value, headers),
           headers,
+          partition,
         })),
       );
       await this.producer.send({ topic, messages });
     } else {
-      const { key = null, value, headers } = data?.value
-        ? data
-        : { value: data, key: null, headers: undefined };
+      const {
+        key = null,
+        value,
+        headers,
+      } = data?.value ? data : { value: data, key: null, headers: undefined };
       await this.producer.send({
         topic,
-        messages: [{ key, value: await this.kafkaSerializer.serialize(topic, value, headers), headers }],
+        messages: [
+          {
+            key,
+            value: await this.kafkaSerializer.serialize(topic, value, headers),
+            headers,
+          },
+        ],
       });
     }
     return undefined as T;
@@ -200,7 +241,11 @@ export class KafkaClient extends ClientProxy<Record<never, never>, KafkaStatus> 
             topic: pattern,
             messages: [
               {
-                value: await this.kafkaSerializer.serialize(pattern, packet.data, headers),
+                value: await this.kafkaSerializer.serialize(
+                  pattern,
+                  packet.data,
+                  headers,
+                ),
                 headers,
               },
             ],
@@ -226,8 +271,14 @@ export class KafkaClient extends ClientProxy<Record<never, never>, KafkaStatus> 
     const callback = this.routingMap.get(correlationId);
     if (!callback) return;
 
-    const { err, response, isDisposed } = await this.deserializeResponse(topic, headersMap, message);
-    callback(err || isDisposed ? { err, response, isDisposed } : { err, response });
+    const { err, response, isDisposed } = await this.deserializeResponse(
+      topic,
+      headersMap,
+      message,
+    );
+    callback(
+      err || isDisposed ? { err, response, isDisposed } : { err, response },
+    );
   }
 
   private async deserializeResponse(
@@ -237,11 +288,19 @@ export class KafkaClient extends ClientProxy<Record<never, never>, KafkaStatus> 
   ): Promise<IncomingResponse> {
     const id = headersMap.get(KafkaHeaders.CORRELATION_ID) ?? "";
     if (!isUndefined(headersMap.get(KafkaHeaders.NEST_ERR))) {
-      return { id, err: headersMap.get(KafkaHeaders.NEST_ERR), isDisposed: true };
+      return {
+        id,
+        err: headersMap.get(KafkaHeaders.NEST_ERR),
+        isDisposed: true,
+      };
     }
     const payload = message.value;
     const headers = "headers" in message ? message.headers : undefined;
-    const response = await this.kafkaDeserializer.deserialize(topic, payload, headers);
+    const response = await this.kafkaDeserializer.deserialize(
+      topic,
+      payload,
+      headers,
+    );
     if (!isUndefined(headersMap.get(KafkaHeaders.NEST_IS_DISPOSED))) {
       return { id, response, isDisposed: true };
     }
@@ -274,3 +333,12 @@ export class KafkaClient extends ClientProxy<Record<never, never>, KafkaStatus> 
     });
   }
 }
+
+/** Typed version of {@link KafkaClient} with narrowed `emit` and `send` signatures. Use as the injection type instead of the raw class. */
+export type KafkaClientProxy = Omit<KafkaClient, "emit" | "send"> & {
+  emit(
+    pattern: string,
+    data: KafkaEmitPayload | Record<string, unknown>,
+  ): Observable<void>;
+  send<R = unknown>(pattern: string, data: unknown): Observable<R>;
+};

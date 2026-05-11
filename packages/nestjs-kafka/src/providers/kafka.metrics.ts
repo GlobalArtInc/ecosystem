@@ -36,7 +36,11 @@ export class KafkaMetricsService {
           topicMetrics[topic] = {};
         }
         const producerOffset = await this.admin!.fetchTopicOffsets(topic);
-        this.populateProducerOffsetForTopic(topic, producerOffset, topicMetrics);
+        this.populateProducerOffsetForTopic(
+          topic,
+          producerOffset,
+          topicMetrics,
+        );
       }
 
       this.evaluateLag(topicMetrics);
@@ -64,7 +68,7 @@ export class KafkaMetricsService {
       topic: string;
       partitions: KafkaJS.FetchOffsetsPartition[];
     }>,
-    topicMetrics: KafkaTopicMetrics
+    topicMetrics: KafkaTopicMetrics,
   ) {
     consumerOffsets.forEach((offset) => {
       if (!topicMetrics[offset.topic]) {
@@ -83,7 +87,7 @@ export class KafkaMetricsService {
   private populateProducerOffsetForTopic(
     topic: string,
     producerOffset: Array<KafkaJS.SeekEntry & { high: string; low: string }>,
-    topicMetrics: KafkaTopicMetrics
+    topicMetrics: KafkaTopicMetrics,
   ) {
     producerOffset.forEach((offset) => {
       if (!topicMetrics[topic]) {
@@ -93,20 +97,18 @@ export class KafkaMetricsService {
         topicMetrics[topic][offset.partition] = {};
       }
       topicMetrics[topic][offset.partition].producerOffset = Number.parseInt(
-        offset.offset
+        offset.offset,
       );
     });
   }
 
   private checkPrerequisites(): void {
     if (!this.groupId) {
-      throw new Error(
-        "Consumer group id not provided."
-      );
+      throw new Error("Consumer group id not provided.");
     }
     if (!this.admin) {
       throw new Error(
-        "Admin client not provided. Did you forget to provide 'adminClient' configuration in KafkaModule?"
+        "Admin client not provided. Did you forget to provide 'adminClient' configuration in KafkaModule?",
       );
     }
   }

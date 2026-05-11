@@ -19,10 +19,9 @@ export class KafkaHealthIndicator {
     const result = { [kafkaKey]: { status } };
 
     if (!healthy) {
-      throw Object.assign(
-        new Error(`Kafka "${kafkaKey}" is ${status}`),
-        { causes: result },
-      );
+      throw Object.assign(new Error(`Kafka "${kafkaKey}" is ${status}`), {
+        causes: result,
+      });
     }
 
     return result;
