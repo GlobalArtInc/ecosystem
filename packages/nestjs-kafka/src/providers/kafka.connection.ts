@@ -29,33 +29,33 @@ export const KAFKA_HEALTH_INDICATOR_TOKEN = KafkaHealthIndicator;
 /** Injection token for the Kafka metrics service. */
 export const KAFKA_METRICS_TOKEN = KafkaMetricsService;
 
-function createConsumer(
-  consumerOptions: KafkaConsumerOptions
-): KafkaJS.Consumer {
+const createConsumer = (
+  consumerOptions: KafkaConsumerOptions,
+): KafkaJS.Consumer => {
   return new KafkaJS.Kafka({}).consumer(consumerOptions.conf);
-}
+};
 
-function createProducer(
-  producerOptions: KafkaProducerOptions
-): KafkaJS.Producer {
+const createProducer = (
+  producerOptions: KafkaProducerOptions,
+): KafkaJS.Producer => {
   return new KafkaJS.Kafka({}).producer(producerOptions.conf);
-}
+};
 
-function createAdminClient(options: KafkaAdminClientOptions): KafkaJS.Admin {
+const createAdminClient = (options: KafkaAdminClientOptions): KafkaJS.Admin => {
   return new KafkaJS.Kafka({}).admin(options.conf);
-}
+};
 
-function createSchemaRegistry(
-  options: KafkaSchemaRegistryClientOptions
-): SchemaRegistryClient {
+const createSchemaRegistry = (
+  options: KafkaSchemaRegistryClientOptions,
+): SchemaRegistryClient => {
   return new SchemaRegistryClient(options.conf);
-}
+};
 
 /** Builds the list of NestJS providers for a synchronous Kafka connection. */
-export function getKafkaConnectionProviderList(
+export const getKafkaConnectionProviderList = (
   options: KafkaConnectionOptions,
-  pluginModules: DynamicModule[]
-): Provider[] {
+  pluginModules: DynamicModule[],
+): Provider[] => {
   const adminClient: KafkaJS.Admin | undefined =
     options.adminClient && createAdminClient(options.adminClient);
   const consumer: KafkaJS.Consumer | undefined =
@@ -73,7 +73,10 @@ export function getKafkaConnectionProviderList(
     { provide: KAFKA_SCHEMA_REGISTRY_TOKEN, useValue: schemaRegistry },
     {
       provide: KafkaMetricsService,
-      useValue: new KafkaMetricsService(adminClient, options.consumer?.conf?.["group.id"]),
+      useValue: new KafkaMetricsService(
+        adminClient,
+        options.consumer?.conf?.["group.id"],
+      ),
     },
     {
       provide: KafkaAdminService,
@@ -90,12 +93,12 @@ export function getKafkaConnectionProviderList(
   });
 
   return providers;
-}
+};
 
 /** Builds the list of NestJS providers for an asynchronous Kafka connection. */
-export function getAsyncKafkaConnectionProvider(
-  options: KafkaConnectionAsyncOptions
-): Provider[] {
+export const getAsyncKafkaConnectionProvider = (
+  options: KafkaConnectionAsyncOptions,
+): Provider[] => {
   return [
     {
       provide: KAFKA_CONFIGURATION_TOKEN,
@@ -108,7 +111,10 @@ export function getAsyncKafkaConnectionProvider(
         adminClient?: KafkaJS.Admin,
         config?: KafkaConnectionOptions,
       ) => {
-        return new KafkaMetricsService(adminClient, config?.consumer?.conf?.["group.id"] as string | undefined);
+        return new KafkaMetricsService(
+          adminClient,
+          config?.consumer?.conf?.["group.id"] as string | undefined,
+        );
       },
       inject: [
         { token: KAFKA_ADMIN_CLIENT_TOKEN, optional: true },
@@ -117,7 +123,8 @@ export function getAsyncKafkaConnectionProvider(
     },
     {
       provide: KafkaAdminService,
-      useFactory: (adminClient?: KafkaJS.Admin) => new KafkaAdminService(adminClient),
+      useFactory: (adminClient?: KafkaJS.Admin) =>
+        new KafkaAdminService(adminClient),
       inject: [{ token: KAFKA_ADMIN_CLIENT_TOKEN, optional: true }],
     },
     {
@@ -190,4 +197,4 @@ export function getAsyncKafkaConnectionProvider(
       },
     },
   ];
-}
+};

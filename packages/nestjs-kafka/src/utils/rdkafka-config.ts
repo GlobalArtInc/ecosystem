@@ -67,7 +67,9 @@ export interface KafkaRdKafkaConfig {
   saslOauthbearerScope?: string;
   saslOauthbearerExtensions?: string;
   saslOauthbearerTokenEndpointUrl?: string;
-  saslOauthbearerGrantType?: "client_credentials" | "urn:ietf:params:oauth:grant-type:jwt-bearer";
+  saslOauthbearerGrantType?:
+    | "client_credentials"
+    | "urn:ietf:params:oauth:grant-type:jwt-bearer";
   saslOauthbearerSubClaimName?: string;
   enableSaslOauthbearerUnsecureJwt?: boolean;
   // SASL OAuth JWT assertion
@@ -106,7 +108,14 @@ export interface KafkaConsumerRdKafkaConfig {
   isolationLevel?: "read_uncommitted" | "read_committed";
   enablePartitionEof?: boolean;
   checkCrcs?: boolean;
-  autoOffsetReset?: "smallest" | "earliest" | "beginning" | "largest" | "latest" | "end" | "error";
+  autoOffsetReset?:
+    | "smallest"
+    | "earliest"
+    | "beginning"
+    | "largest"
+    | "latest"
+    | "end"
+    | "error";
 }
 
 /** Producer-specific rdkafka configuration options. */
@@ -191,14 +200,20 @@ const GLOBAL_MAP: Record<keyof KafkaRdKafkaConfig, string> = {
   saslOauthbearerSubClaimName: "sasl.oauthbearer.sub.claim.name",
   enableSaslOauthbearerUnsecureJwt: "enable.sasl.oauthbearer.unsecure.jwt",
   saslOauthbearerAssertionAlgorithm: "sasl.oauthbearer.assertion.algorithm",
-  saslOauthbearerAssertionPrivateKeyFile: "sasl.oauthbearer.assertion.private.key.file",
-  saslOauthbearerAssertionPrivateKeyPassphrase: "sasl.oauthbearer.assertion.private.key.passphrase",
-  saslOauthbearerAssertionPrivateKeyPem: "sasl.oauthbearer.assertion.private.key.pem",
+  saslOauthbearerAssertionPrivateKeyFile:
+    "sasl.oauthbearer.assertion.private.key.file",
+  saslOauthbearerAssertionPrivateKeyPassphrase:
+    "sasl.oauthbearer.assertion.private.key.passphrase",
+  saslOauthbearerAssertionPrivateKeyPem:
+    "sasl.oauthbearer.assertion.private.key.pem",
   saslOauthbearerAssertionClaimAud: "sasl.oauthbearer.assertion.claim.aud",
-  saslOauthbearerAssertionClaimExpSeconds: "sasl.oauthbearer.assertion.claim.exp.seconds",
+  saslOauthbearerAssertionClaimExpSeconds:
+    "sasl.oauthbearer.assertion.claim.exp.seconds",
   saslOauthbearerAssertionClaimIss: "sasl.oauthbearer.assertion.claim.iss",
-  saslOauthbearerAssertionClaimJtiInclude: "sasl.oauthbearer.assertion.claim.jti.include",
-  saslOauthbearerAssertionClaimNbfSeconds: "sasl.oauthbearer.assertion.claim.nbf.seconds",
+  saslOauthbearerAssertionClaimJtiInclude:
+    "sasl.oauthbearer.assertion.claim.jti.include",
+  saslOauthbearerAssertionClaimNbfSeconds:
+    "sasl.oauthbearer.assertion.claim.nbf.seconds",
   saslOauthbearerAssertionClaimSub: "sasl.oauthbearer.assertion.claim.sub",
 };
 
@@ -246,32 +261,43 @@ const PRODUCER_MAP: Record<keyof KafkaProducerRdKafkaConfig, string> = {
   requestRequiredAcks: "request.required.acks",
 };
 
-function convertConfig<T extends object>(config: T, map: Record<keyof T, string>): Record<string, unknown> {
+const convertConfig = <T extends object>(
+  config: T,
+  map: Record<keyof T, string>,
+): Record<string, unknown> => {
   const result: Record<string, unknown> = {};
   for (const key of Object.keys(map) as (keyof T)[]) {
     const value = config[key];
     if (value) result[map[key]] = value;
   }
   return result;
-}
+};
 
 /** Converts {@link KafkaRdKafkaConfig} to a flat rdkafka global config object. */
-export function toGlobalRdKafkaConfig(config?: KafkaRdKafkaConfig): Record<string, unknown> {
+export const toGlobalRdKafkaConfig = (
+  config?: KafkaRdKafkaConfig,
+): Record<string, unknown> => {
   return config ? convertConfig(config, GLOBAL_MAP) : {};
-}
+};
 
 /** Converts {@link KafkaConsumerRdKafkaConfig} to a flat rdkafka consumer config object. */
-export function toConsumerRdKafkaConfig(config?: KafkaConsumerRdKafkaConfig): Record<string, unknown> {
+export const toConsumerRdKafkaConfig = (
+  config?: KafkaConsumerRdKafkaConfig,
+): Record<string, unknown> => {
   return config ? convertConfig(config, CONSUMER_MAP) : {};
-}
+};
 
 /** Converts {@link KafkaProducerRdKafkaConfig} to a flat rdkafka producer config object. */
-export function toProducerRdKafkaConfig(config?: KafkaProducerRdKafkaConfig): Record<string, unknown> {
+export const toProducerRdKafkaConfig = (
+  config?: KafkaProducerRdKafkaConfig,
+): Record<string, unknown> => {
   return config ? convertConfig(config, PRODUCER_MAP) : {};
-}
+};
 
 /** Returns true if any SSL-related keys are present in the global rdkafka config. */
-export function hasSslConfig(config?: KafkaRdKafkaConfig): boolean {
+export const hasSslConfig = (config?: KafkaRdKafkaConfig): boolean => {
   if (!config) return false;
-  return Object.keys(toGlobalRdKafkaConfig(config)).some((k) => k.startsWith("ssl."));
-}
+  return Object.keys(toGlobalRdKafkaConfig(config)).some((k) =>
+    k.startsWith("ssl."),
+  );
+};

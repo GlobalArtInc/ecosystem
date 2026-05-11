@@ -27,7 +27,7 @@ const getKafkaLifecycleMangerProvider = (): Provider => {
       admin: KafkaJS.Admin,
       producer: KafkaJS.Producer,
       consumer: KafkaJS.Consumer,
-      config: KafkaConnectionOptions
+      config: KafkaConnectionOptions,
     ): KafkaLifecycleManager => {
       return new KafkaLifecycleManager(config, producer, consumer, admin);
     },
@@ -66,7 +66,7 @@ export class KafkaModule {
    * @param options the async options for the node-rdkafka connection.
    */
   static async forRootAsync(
-    options: KafkaConnectionAsyncOptions
+    options: KafkaConnectionAsyncOptions,
   ): Promise<DynamicModule> {
     const providers: Provider[] = getAsyncKafkaConnectionProvider(options);
 

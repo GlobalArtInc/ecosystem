@@ -14,8 +14,10 @@ export interface KafkaConnectionOptions {
 }
 
 /** Async variant of {@link KafkaConnectionOptions} for factory-based configuration. */
-export interface KafkaConnectionAsyncOptions
-  extends Pick<ModuleMetadata, "imports"> {
+export interface KafkaConnectionAsyncOptions extends Pick<
+  ModuleMetadata,
+  "imports"
+> {
   useFactory: (
     ...args: any[]
   ) => Promise<KafkaConnectionOptions> | KafkaConnectionOptions;

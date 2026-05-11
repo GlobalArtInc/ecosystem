@@ -1,6 +1,11 @@
 import { BaseRpcContext } from "@nestjs/microservices/ctx-host/base-rpc.context";
 import type { KafkaJS } from "@confluentinc/kafka-javascript";
-import { KafkaAck, KafkaHeaders, KafkaKey, KafkaNack } from "../types/kafka.types";
+import {
+  KafkaAck,
+  KafkaHeaders,
+  KafkaKey,
+  KafkaNack,
+} from "../types/kafka.types";
 
 type KafkaContextArgs = [
   message: KafkaJS.KafkaMessage,
@@ -12,17 +17,17 @@ type KafkaContextArgs = [
   nack: KafkaNack,
 ];
 
-function parseKey(key: KafkaJS.KafkaMessage["key"]): KafkaKey | null {
-  if (key == null) return null;
+const parseKey = (key: KafkaJS.KafkaMessage["key"]): KafkaKey => {
+  if (!key) return null;
   const raw = key.toString("utf8");
   try {
     return JSON.parse(raw);
   } catch {
     return raw;
   }
-}
+};
 
-function normalizeHeaders(headers?: KafkaJS.IHeaders): KafkaJS.IHeaders {
+const normalizeHeaders = (headers?: KafkaJS.IHeaders): KafkaJS.IHeaders => {
   const result: KafkaJS.IHeaders = {};
   if (!headers) return result;
   for (const [k, v] of Object.entries(headers)) {
@@ -30,12 +35,16 @@ function normalizeHeaders(headers?: KafkaJS.IHeaders): KafkaJS.IHeaders {
     if (raw) result[k] = Buffer.isBuffer(raw) ? raw.toString("utf8") : raw;
   }
   return result;
-}
+};
 
 /** Converts rdkafka IHeaders to a normalised string Map. */
-export function headersToMap(headers?: KafkaJS.IHeaders): Map<string, string> {
-  return new Map(Object.entries(normalizeHeaders(headers)) as [string, string][]);
-}
+export const headersToMap = (
+  headers?: KafkaJS.IHeaders,
+): Map<string, string> => {
+  return new Map(
+    Object.entries(normalizeHeaders(headers)) as [string, string][],
+  );
+};
 
 /** RPC execution context that exposes typed Kafka message fields. */
 export class KafkaContext extends BaseRpcContext<KafkaContextArgs> {
@@ -54,7 +63,15 @@ export class KafkaContext extends BaseRpcContext<KafkaContextArgs> {
       key,
       headers: normalizedHeaders,
     } as KafkaJS.KafkaMessage;
-    super([normalizedMessage, partition, topic, key, new Map(Object.entries(normalizedHeaders) as [string, string][]), commit, nack]);
+    super([
+      normalizedMessage,
+      partition,
+      topic,
+      key,
+      new Map(Object.entries(normalizedHeaders) as [string, string][]),
+      commit,
+      nack,
+    ]);
   }
 
   getMessage(): KafkaJS.KafkaMessage {

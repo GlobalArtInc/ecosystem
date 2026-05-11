@@ -1,6 +1,13 @@
 import type { KafkaJS } from "@confluentinc/kafka-javascript";
-import type { KafkaConsumerRdKafkaConfig, KafkaProducerRdKafkaConfig, KafkaRdKafkaConfig } from "../utils/rdkafka-config";
-import type { KafkaDeserializer, KafkaSerializer } from "../serde/kafka-serde.interface";
+import type {
+  KafkaConsumerRdKafkaConfig,
+  KafkaProducerRdKafkaConfig,
+  KafkaRdKafkaConfig,
+} from "../utils/rdkafka-config";
+import type {
+  KafkaDeserializer,
+  KafkaSerializer,
+} from "../serde/kafka-serde.interface";
 
 /** KafkaJS consumer instance. */
 export type KafkaConsumer = KafkaJS.Consumer;
@@ -17,7 +24,11 @@ export type KafkaNack = (delayMs?: number) => void;
 /** Possible shapes for a Kafka message key. */
 export type KafkaKey = Record<string, unknown> | string | null;
 
-export type { KafkaRdKafkaConfig, KafkaConsumerRdKafkaConfig, KafkaProducerRdKafkaConfig };
+export type {
+  KafkaRdKafkaConfig,
+  KafkaConsumerRdKafkaConfig,
+  KafkaProducerRdKafkaConfig,
+};
 
 /** Lifecycle status of a Kafka transport or client. */
 export enum KafkaStatus {
@@ -52,6 +63,9 @@ export interface ExponentialRetryStrategy {
 
 /** Configures how failed messages are retried before going to the DLQ. */
 export type KafkaRetryStrategy = FixedRetryStrategy | ExponentialRetryStrategy;
+
+/** Map of Kafka topic names to their event payload types. Used to type `KafkaClient<T>`. */
+export type KafkaTopicMap = Record<string, unknown>;
 
 /** Options passed to the KafkaJS-based strategy and client. */
 export interface KafkaOptions {
@@ -88,6 +102,8 @@ export interface KafkaOptions {
 export interface KafkaEmitPayload<T = unknown> {
   /** Message key, shared by all produced messages. */
   key?: Buffer | string | null;
+  /** Target partition, shared by all produced messages. */
+  partition?: number;
   /** Single message value. */
   value?: T;
   /** Multiple message values — one Kafka message is produced per element. */
