@@ -124,17 +124,32 @@ export class KafkaStrategy
         if (this.options.batchMode) {
           await this.consumer.run({
             ...(this.options.consumerRun ?? {}),
-            eachBatch: async ({ batch, resolveOffset, heartbeat, pause }) => {
+            eachBatch: async ({
+              batch,
+              resolveOffset,
+              heartbeat,
+              pause,
+              isRunning,
+              isStale,
+            }) => {
               for (const message of batch.messages) {
-                await this.processMessage({
-                  message,
-                  heartbeat,
-                  partition: batch.partition,
-                  topic: batch.topic,
-                  pause,
-                });
+                if (!isRunning() || isStale()) break;
+                const heartbeatTimer = setInterval(
+                  () => heartbeat().catch(() => {}),
+                  3000,
+                );
+                try {
+                  await this.processMessage({
+                    message,
+                    heartbeat,
+                    partition: batch.partition,
+                    topic: batch.topic,
+                    pause,
+                  });
+                } finally {
+                  clearInterval(heartbeatTimer);
+                }
                 resolveOffset(message.offset);
-                await heartbeat();
               }
             },
           });
