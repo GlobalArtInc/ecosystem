@@ -112,7 +112,6 @@ export class KafkaStrategy
     );
     const kafka = this.createKafka(clientId);
     this.consumer = kafka.consumer({
-      'enable.auto.offset.store': false,
       ...toConsumerRdKafkaConfig(this.options.consumerRdKafka),
       kafkaJS: {
         groupId,
