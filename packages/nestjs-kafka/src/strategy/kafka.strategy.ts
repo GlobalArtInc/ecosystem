@@ -96,76 +96,110 @@ export class KafkaStrategy
   public async listen(callback: (err?: unknown) => void): Promise<void> {
     this.closed = false;
     try {
-      const { clientId, groupId } = applyPostfix(
-        this.options,
-        DEFAULT_POSTFIX_SERVER,
-      );
-      const kafka = this.createKafka(clientId);
-      this.consumer = kafka.consumer({
-        ...toConsumerRdKafkaConfig(this.options.consumerRdKafka),
-        kafkaJS: {
-          groupId,
-          autoCommit: false,
-          ...(this.options.consumer ?? {}),
-        },
-      });
-      this.producer = kafka.producer({
-        ...toProducerRdKafkaConfig(this.options.producerRdKafka),
-        ...(this.options.producer ? { kafkaJS: this.options.producer } : {}),
-      });
-
-      await this.consumer.connect();
-      await this.producer.connect();
-      this._status$.next(Status.CONNECTED);
-
-      const topics = [...this.messageHandlers.keys()];
-      if (topics.length > 0) {
-        await this.consumer.subscribe({ topics });
-        if (this.options.batchMode) {
-          await this.consumer.run({
-            ...(this.options.consumerRun ?? {}),
-            eachBatch: async ({ batch, resolveOffset, heartbeat, pause, isRunning, isStale }) => {
-              let heartbeatInFlight = false;
-              const heartbeatTimer = setInterval(() => {
-                if (heartbeatInFlight) return;
-                heartbeatInFlight = true;
-                heartbeat()
-                  .catch(() => {})
-                  .finally(() => { heartbeatInFlight = false; });
-              }, 3000);
-
-              try {
-                for (const message of batch.messages) {
-                  if (!isRunning() || isStale()) break;
-
-                  await this.processMessage({
-                    message,
-                    heartbeat,
-                    partition: batch.partition,
-                    topic: batch.topic,
-                    pause,
-                  });
-
-                  resolveOffset(message.offset);
-                }
-              } finally {
-                clearInterval(heartbeatTimer);
-              }
-            },
-          });
-        } else {
-          await this.consumer.run({
-            ...(this.options.consumerRun ?? {}),
-            eachMessage: async (payload) => this.processMessage(payload),
-          });
-        }
-      }
-
+      await this.connect();
       callback();
     } catch (err) {
       this._status$.next(Status.FAILED);
       callback(err);
     }
+  }
+
+  private async connect(): Promise<void> {
+    const { clientId, groupId } = applyPostfix(
+      this.options,
+      DEFAULT_POSTFIX_SERVER,
+    );
+    const kafka = this.createKafka(clientId);
+    this.consumer = kafka.consumer({
+      ...toConsumerRdKafkaConfig(this.options.consumerRdKafka),
+      kafkaJS: {
+        groupId,
+        autoCommit: false,
+        ...(this.options.consumer ?? {}),
+      },
+    });
+    this.producer = kafka.producer({
+      ...toProducerRdKafkaConfig(this.options.producerRdKafka),
+      ...(this.options.producer ? { kafkaJS: this.options.producer } : {}),
+    });
+
+    await this.consumer.connect();
+    await this.producer.connect();
+    this._status$.next(Status.CONNECTED);
+
+    const internalClient = (this.consumer as any)._getInternalClient();
+    if (internalClient) {
+      internalClient.on('event.error', (err: any) => {
+        if (this.closed) return;
+        if (err?.isFatal) {
+          this.logger.error(`Consumer fatal error, scheduling reconnect: ${err?.message}`);
+          this.scheduleReconnect();
+        }
+      });
+    }
+
+    const topics = [...this.messageHandlers.keys()];
+    if (topics.length > 0) {
+      await this.consumer.subscribe({ topics });
+      if (this.options.batchMode) {
+        await this.consumer.run({
+          ...(this.options.consumerRun ?? {}),
+          eachBatch: async ({ batch, resolveOffset, heartbeat, pause, isRunning, isStale }) => {
+            let heartbeatInFlight = false;
+            const heartbeatTimer = setInterval(() => {
+              if (heartbeatInFlight) return;
+              heartbeatInFlight = true;
+              heartbeat()
+                .catch(() => {})
+                .finally(() => { heartbeatInFlight = false; });
+            }, 3000);
+
+            try {
+              for (const message of batch.messages) {
+                if (!isRunning() || isStale()) break;
+
+                await this.processMessage({
+                  message,
+                  heartbeat,
+                  partition: batch.partition,
+                  topic: batch.topic,
+                  pause,
+                });
+
+                resolveOffset(message.offset);
+              }
+            } finally {
+              clearInterval(heartbeatTimer);
+            }
+          },
+        });
+      } else {
+        await this.consumer.run({
+          ...(this.options.consumerRun ?? {}),
+          eachMessage: async (payload) => this.processMessage(payload),
+        });
+      }
+    }
+  }
+
+  private scheduleReconnect(attempt = 1): void {
+    const delay = Math.min(1000 * 2 ** (attempt - 1), 30000);
+    this.logger.warn(`Reconnecting in ${delay}ms (attempt ${attempt})`);
+    this._status$.next(Status.DISCONNECTED);
+
+    setTimeout(async () => {
+      if (this.closed) return;
+      try {
+        await Promise.allSettled([
+          this.consumer?.disconnect(),
+          this.producer?.disconnect(),
+        ]);
+        await this.connect();
+      } catch (err) {
+        this.logger.error(`Reconnect attempt ${attempt} failed`, err);
+        this.scheduleReconnect(attempt + 1);
+      }
+    }, delay);
   }
 
   public async close(): Promise<void> {
