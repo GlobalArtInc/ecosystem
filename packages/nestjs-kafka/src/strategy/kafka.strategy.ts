@@ -58,6 +58,7 @@ export class KafkaStrategy
 
   private consumer: KafkaJS.Consumer | undefined;
   private producer: KafkaJS.Producer | undefined;
+  private commitTimer: ReturnType<typeof setInterval> | undefined;
   private closed = false;
   private currentStatus: KafkaStatus = Status.DISCONNECTED;
   private readonly kafkaSerializer: KafkaSerializer;
@@ -127,6 +128,14 @@ export class KafkaStrategy
     await this.producer.connect();
     this._status$.next(Status.CONNECTED);
 
+    this.commitTimer = setInterval(async () => {
+      try {
+        await this.consumer?.commitOffsets();
+      } catch {
+        // swallow — next tick will retry
+      }
+    }, 5000);
+
     const internalClient = (this.consumer as any)._getInternalClient();
     if (internalClient) {
       internalClient.on('event.error', (err: any) => {
@@ -186,6 +195,7 @@ export class KafkaStrategy
     const delay = Math.min(1000 * 2 ** (attempt - 1), 30000);
     this.logger.warn(`Reconnecting in ${delay}ms (attempt ${attempt})`);
     this._status$.next(Status.DISCONNECTED);
+    clearInterval(this.commitTimer);
 
     setTimeout(async () => {
       if (this.closed) return;
@@ -205,6 +215,7 @@ export class KafkaStrategy
   public async close(): Promise<void> {
     this.logger.log("Closing Kafka transport...");
     this.closed = true;
+    clearInterval(this.commitTimer);
     await Promise.allSettled([
       this.consumer?.disconnect(),
       this.producer?.disconnect(),
@@ -283,7 +294,7 @@ export class KafkaStrategy
     partition: number,
     offset: string,
   ): Promise<void> {
-    await this.consumer!.commitOffsets([
+    this.consumer!.storeOffsets([
       { topic, partition, offset: (BigInt(offset) + 1n).toString() },
     ]);
   }
