@@ -10,7 +10,11 @@ import {
   NO_EVENT_HANDLER,
   NO_MESSAGE_HANDLER,
 } from "@nestjs/microservices/constants";
-import { KafkaJS } from "@confluentinc/kafka-javascript";
+import { KafkaJS, RdKafka } from "@confluentinc/kafka-javascript";
+
+interface KafkaJSConsumerInternal {
+  _getInternalClient(): RdKafka.KafkaConsumer | null;
+}
 import {
   firstValueFrom,
   isObservable,
@@ -136,9 +140,9 @@ export class KafkaStrategy
       }
     }, 5000);
 
-    const internalClient = (this.consumer as any)._getInternalClient();
+    const internalClient = (this.consumer as unknown as KafkaJSConsumerInternal)._getInternalClient();
     if (internalClient) {
-      internalClient.on('event.error', (err: any) => {
+      internalClient.on('event.error', (err: RdKafka.LibrdKafkaError) => {
         if (this.closed) return;
         if (err?.isFatal) {
           this.logger.error(`Consumer fatal error, scheduling reconnect: ${err?.message}`);
@@ -294,9 +298,8 @@ export class KafkaStrategy
     partition: number,
     offset: string,
   ): Promise<void> {
-    this.consumer!.storeOffsets([
-      { topic, partition, offset: (BigInt(offset) + 1n).toString() },
-    ]);
+    const internalClient = (this.consumer as unknown as KafkaJSConsumerInternal)?._getInternalClient();
+    internalClient?.offsetsStore([{ topic, partition, offset: Number(offset) + 1 }]);
   }
 
   private async handleEventMessage(
