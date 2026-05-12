@@ -52,6 +52,11 @@ import type {
 } from "../types/kafka.types";
 import { KafkaStatus as Status } from "../types/kafka.types";
 
+// librdkafka error codes that require a strategy-level reconnect.
+// ERR__MAX_POLL_EXCEEDED (-147): consumer exceeded poll interval and left the group.
+// ERR__ASSIGNMENT_LOST   (-142): broker forcibly revoked partition assignments.
+const RECONNECT_ERROR_CODES = new Set([-147, -142]);
+
 /** NestJS custom transport strategy backed by rdkafka via KafkaJS. */
 export class KafkaStrategy
   extends Server<never, KafkaStatus>
@@ -145,20 +150,35 @@ export class KafkaStrategy
     if (internalClient) {
       internalClient.on('event.error', (err: RdKafka.LibrdKafkaError) => {
         if (this.closed || this.reconnecting) return;
-        if (err?.isFatal) {
-          this.logger.error(`Consumer fatal error, scheduling reconnect: ${err?.message}`);
+        if (err?.isFatal || RECONNECT_ERROR_CODES.has(err?.code)) {
+          this.logger.error(`Consumer error [code=${err?.code}], scheduling reconnect: ${err?.message}`);
           this.scheduleReconnect();
         }
       });
       internalClient.on('event.log', (log: { fac: string; message: string }) => {
         if (this.closed || this.reconnecting) return;
-        if (log.fac === 'MAXPOLL') {
-          this.logger.warn(`MAXPOLL exceeded, scheduling reconnect: ${log.message}`);
-          this.scheduleReconnect();
-        } else if (log.fac === 'FAIL') {
-          this.logger.warn(`Connection failure, scheduling reconnect: ${log.message}`);
+        const shouldReconnect =
+          // Transport-level disconnect: SSL close, network blip, broker restart.
+          log.fac === 'FAIL' ||
+          // Consumer exceeded max.poll.interval.ms and left the group.
+          log.fac === 'MAXPOLL' ||
+          // OffsetCommit/GroupCoordinator request timed out — coordinator unreachable.
+          log.fac === 'REQTMOUT' ||
+          // Consumer group session expired — rdkafka tries to rejoin but may fail.
+          log.fac === 'SESSTMOUT' ||
+          // KafkaJS compat layer swallows fatal errors internally and re-emits them
+          // as BINDING logs instead of propagating to event.error.
+          (log.fac === 'BINDING' && log.message.includes('Fatal error'));
+        if (shouldReconnect) {
+          this.logger.warn(`Scheduling reconnect [${log.fac}]: ${log.message}`);
           this.scheduleReconnect();
         }
+      });
+      // Rebalance errors leave the consumer in an indeterminate state.
+      internalClient.on('rebalance.error', (err: Error) => {
+        if (this.closed || this.reconnecting) return;
+        this.logger.error(`Rebalance error, scheduling reconnect: ${err?.message}`);
+        this.scheduleReconnect();
       });
     }
 
