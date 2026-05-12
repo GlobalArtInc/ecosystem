@@ -64,6 +64,7 @@ export class KafkaStrategy
   private producer: KafkaJS.Producer | undefined;
   private commitTimer: ReturnType<typeof setInterval> | undefined;
   private closed = false;
+  private reconnecting = false;
   private currentStatus: KafkaStatus = Status.DISCONNECTED;
   private readonly kafkaSerializer: KafkaSerializer;
   private readonly kafkaDeserializer: KafkaDeserializer;
@@ -143,9 +144,19 @@ export class KafkaStrategy
     const internalClient = (this.consumer as unknown as KafkaJSConsumerInternal)._getInternalClient();
     if (internalClient) {
       internalClient.on('event.error', (err: RdKafka.LibrdKafkaError) => {
-        if (this.closed) return;
+        if (this.closed || this.reconnecting) return;
         if (err?.isFatal) {
           this.logger.error(`Consumer fatal error, scheduling reconnect: ${err?.message}`);
+          this.scheduleReconnect();
+        }
+      });
+      internalClient.on('event.log', (log: { fac: string; message: string }) => {
+        if (this.closed || this.reconnecting) return;
+        if (log.fac === 'MAXPOLL') {
+          this.logger.warn(`MAXPOLL exceeded, scheduling reconnect: ${log.message}`);
+          this.scheduleReconnect();
+        } else if (log.fac === 'FAIL') {
+          this.logger.warn(`Connection failure, scheduling reconnect: ${log.message}`);
           this.scheduleReconnect();
         }
       });
@@ -196,6 +207,8 @@ export class KafkaStrategy
   }
 
   private scheduleReconnect(attempt = 1): void {
+    if (attempt === 1 && this.reconnecting) return;
+    this.reconnecting = true;
     const delay = Math.min(1000 * 2 ** (attempt - 1), 30000);
     this.logger.warn(`Reconnecting in ${delay}ms (attempt ${attempt})`);
     this._status$.next(Status.DISCONNECTED);
@@ -209,6 +222,7 @@ export class KafkaStrategy
           this.producer?.disconnect(),
         ]);
         await this.connect();
+        this.reconnecting = false;
       } catch (err) {
         this.logger.error(`Reconnect attempt ${attempt} failed`, err);
         this.scheduleReconnect(attempt + 1);
@@ -219,6 +233,7 @@ export class KafkaStrategy
   public async close(): Promise<void> {
     this.logger.log("Closing Kafka transport...");
     this.closed = true;
+    this.reconnecting = false;
     clearInterval(this.commitTimer);
     await Promise.allSettled([
       this.consumer?.disconnect(),
@@ -316,7 +331,7 @@ export class KafkaStrategy
     let failures = 0;
     let lastError: unknown = null;
 
-    while (!this.closed) {
+    while (!this.closed && !this.reconnecting) {
       // null = ack (success), number = explicit delay, 'auto' = compute from strategy
       let nackState: NackState = null;
       const nack = (delayMs?: number) => {
@@ -552,7 +567,7 @@ export class KafkaStrategy
   ): Promise<void> {
     const interval = 1000;
     const end = Date.now() + ms;
-    while (Date.now() < end && !this.closed) {
+    while (Date.now() < end && !this.closed && !this.reconnecting) {
       await heartbeat().catch(() => {});
       const remaining = end - Date.now();
       if (remaining > 0) await sleepMs(Math.min(interval, remaining));
