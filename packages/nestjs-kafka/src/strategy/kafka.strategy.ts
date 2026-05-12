@@ -125,7 +125,14 @@ export class KafkaStrategy
           await this.consumer.run({
             ...(this.options.consumerRun ?? {}),
             eachBatch: async ({ batch, resolveOffset, heartbeat, pause, isRunning, isStale }) => {
-              const heartbeatTimer = setInterval(() => heartbeat().catch(() => {}), 3000);
+              let heartbeatInFlight = false;
+              const heartbeatTimer = setInterval(() => {
+                if (heartbeatInFlight) return;
+                heartbeatInFlight = true;
+                heartbeat()
+                  .catch(() => {})
+                  .finally(() => { heartbeatInFlight = false; });
+              }, 3000);
 
               try {
                 for (const message of batch.messages) {
