@@ -1,7 +1,6 @@
 import { BaseRpcContext } from "@nestjs/microservices/ctx-host/base-rpc.context";
 import type { KafkaJS } from "@confluentinc/kafka-javascript";
 import {
-  KafkaAck,
   KafkaHeaders,
   KafkaKey,
   KafkaNack,
@@ -13,9 +12,9 @@ type KafkaContextArgs = [
   topic: string,
   key: KafkaKey,
   headers: KafkaHeaders,
-  commit: KafkaAck,
   nack: KafkaNack,
 ];
+
 
 const parseKey = (key: KafkaJS.KafkaMessage["key"]): KafkaKey => {
   if (!key) return null;
@@ -53,7 +52,6 @@ export class KafkaContext extends BaseRpcContext<KafkaContextArgs> {
     partition: number,
     topic: string,
     headers: KafkaJS.IHeaders | undefined,
-    commit: () => Promise<void>,
     nack: (delayMs?: number) => void,
   ) {
     const normalizedHeaders = normalizeHeaders(headers);
@@ -69,7 +67,6 @@ export class KafkaContext extends BaseRpcContext<KafkaContextArgs> {
       topic,
       key,
       new Map(Object.entries(normalizedHeaders) as [string, string][]),
-      commit,
       nack,
     ]);
   }
@@ -95,10 +92,10 @@ export class KafkaContext extends BaseRpcContext<KafkaContextArgs> {
   }
 
   commit(): Promise<void> {
-    return this.args[5]();
+    return Promise.resolve();
   }
 
   nack(delayMs?: number): void {
-    this.args[6](delayMs);
+    this.args[5](delayMs);
   }
 }

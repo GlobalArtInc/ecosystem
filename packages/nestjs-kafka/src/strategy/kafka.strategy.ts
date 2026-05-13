@@ -10,11 +10,8 @@ import {
   NO_EVENT_HANDLER,
   NO_MESSAGE_HANDLER,
 } from "@nestjs/microservices/constants";
-import { KafkaJS, RdKafka } from "@confluentinc/kafka-javascript";
+import { KafkaJS } from "@confluentinc/kafka-javascript";
 
-interface KafkaJSConsumerInternal {
-  _getInternalClient(): RdKafka.KafkaConsumer | null;
-}
 import {
   firstValueFrom,
   isObservable,
@@ -52,11 +49,6 @@ import type {
 } from "../types/kafka.types";
 import { KafkaStatus as Status } from "../types/kafka.types";
 
-// librdkafka error codes that require a strategy-level reconnect.
-// ERR__MAX_POLL_EXCEEDED (-147): consumer exceeded poll interval and left the group.
-// ERR__ASSIGNMENT_LOST   (-142): broker forcibly revoked partition assignments.
-const RECONNECT_ERROR_CODES = new Set([-147, -142]);
-
 /** NestJS custom transport strategy backed by rdkafka via KafkaJS. */
 export class KafkaStrategy
   extends Server<never, KafkaStatus>
@@ -68,6 +60,7 @@ export class KafkaStrategy
   private consumer: KafkaJS.Consumer | undefined;
   private producer: KafkaJS.Producer | undefined;
   private commitTimer: ReturnType<typeof setInterval> | undefined;
+  private pendingOffsets = new Map<string, KafkaJS.TopicPartitionOffsetAndMetadata>();
   private closed = false;
   private reconnecting = false;
   private currentStatus: KafkaStatus = Status.DISCONNECTED;
@@ -125,8 +118,8 @@ export class KafkaStrategy
       ...toConsumerRdKafkaConfig(this.options.consumerRdKafka),
       kafkaJS: {
         groupId,
-        autoCommit: false,
         ...(this.options.consumer ?? {}),
+        autoCommit: false,
       },
     });
     this.producer = kafka.producer({
@@ -139,51 +132,25 @@ export class KafkaStrategy
     this._status$.next(Status.CONNECTED);
 
     this.commitTimer = setInterval(async () => {
-      try {
-        await this.consumer?.commitOffsets();
-      } catch {
-        // swallow — next tick will retry
-      }
+      if (this.pendingOffsets.size === 0) return;
+      const offsets = [...this.pendingOffsets.values()];
+      this.pendingOffsets.clear();
+      await this.consumer?.commitOffsets(offsets).catch(() => {});
     }, 5000);
-
-    const internalClient = (this.consumer as unknown as KafkaJSConsumerInternal)._getInternalClient();
-    if (internalClient) {
-      internalClient.on('event.error', (err: RdKafka.LibrdKafkaError) => {
-        if (this.closed || this.reconnecting) return;
-        if (err?.isFatal || RECONNECT_ERROR_CODES.has(err?.code)) {
-          this.logger.error(`Consumer error [code=${err?.code}], scheduling reconnect: ${err?.message}`);
-          this.scheduleReconnect();
-        }
-      });
-      internalClient.on('event.log', (log: { fac: string; message: string }) => {
-        if (this.closed || this.reconnecting) return;
-        const shouldReconnect =
-          // Transport-level disconnect: SSL close, network blip, broker restart.
-          log.fac === 'FAIL' ||
-          // Consumer exceeded max.poll.interval.ms and left the group.
-          log.fac === 'MAXPOLL' ||
-          // OffsetCommit/GroupCoordinator request timed out — coordinator unreachable.
-          log.fac === 'REQTMOUT' ||
-          // Consumer group session expired — rdkafka tries to rejoin but may fail.
-          log.fac === 'SESSTMOUT' ||
-          // KafkaJS compat layer swallows fatal errors internally and re-emits them
-          // as BINDING logs instead of propagating to event.error.
-          (log.fac === 'BINDING' && log.message.includes('Fatal error'));
-        if (shouldReconnect) {
-          this.logger.warn(`Scheduling reconnect [${log.fac}]: ${log.message}`);
-          this.scheduleReconnect();
-        }
-      });
-      // Rebalance errors leave the consumer in an indeterminate state.
-      internalClient.on('rebalance.error', (err: Error) => {
-        if (this.closed || this.reconnecting) return;
-        this.logger.error(`Rebalance error, scheduling reconnect: ${err?.message}`);
-        this.scheduleReconnect();
-      });
-    }
 
     const topics = [...this.messageHandlers.keys()];
     if (topics.length > 0) {
+      const admin = kafka.admin();
+      await admin.connect();
+      try {
+        await admin.createTopics({
+          topics: topics.map((topic) => ({ ...(this.options.autoCreateTopics ?? {}), topic })),
+        });
+      } catch (err) {
+        this.logger.warn('Failed to auto-create topics (they may already exist)', err);
+      } finally {
+        await admin.disconnect();
+      }
       await this.consumer.subscribe({ topics });
       if (this.options.batchMode) {
         await this.consumer.run({
@@ -233,6 +200,7 @@ export class KafkaStrategy
     this.logger.warn(`Reconnecting in ${delay}ms (attempt ${attempt})`);
     this._status$.next(Status.DISCONNECTED);
     clearInterval(this.commitTimer);
+    this.pendingOffsets.clear();
 
     setTimeout(async () => {
       if (this.closed) return;
@@ -255,6 +223,8 @@ export class KafkaStrategy
     this.closed = true;
     this.reconnecting = false;
     clearInterval(this.commitTimer);
+    this.pendingOffsets.clear();
+
     await Promise.allSettled([
       this.consumer?.disconnect(),
       this.producer?.disconnect(),
@@ -285,9 +255,9 @@ export class KafkaStrategy
       ...toGlobalRdKafkaConfig(rdKafka),
       kafkaJS: {
         brokers: this.options.brokers,
-        ...(clientId !== undefined && { clientId }),
+        ...(clientId && { clientId }),
         ...(sslEnabled && { ssl: true }),
-        ...(this.options.sasl !== undefined && { sasl: this.options.sasl }),
+        ...(this.options.sasl && { sasl: this.options.sasl }),
       },
     });
   }
@@ -303,15 +273,12 @@ export class KafkaStrategy
     const replyTopic = headersMap.get(KafkaHeaders.REPLY_TOPIC);
     const handler = this.getHandlerByPattern(topic);
 
-    const commit = () => this.commitOffset(topic, partition, message.offset);
-
     if (handler?.isEventHandler || !correlationId || !replyTopic) {
       await this.handleEventMessage(
         topic,
         partition,
         message,
         headers,
-        commit,
         heartbeat,
       );
     } else {
@@ -323,18 +290,8 @@ export class KafkaStrategy
         correlationId,
         replyTopic,
         headersMap.get(KafkaHeaders.REPLY_PARTITION),
-        commit,
       );
     }
-  }
-
-  private async commitOffset(
-    topic: string,
-    partition: number,
-    offset: string,
-  ): Promise<void> {
-    const internalClient = (this.consumer as unknown as KafkaJSConsumerInternal)?._getInternalClient();
-    internalClient?.offsetsStore([{ topic, partition, offset: Number(offset) + 1 }]);
   }
 
   private async handleEventMessage(
@@ -342,7 +299,6 @@ export class KafkaStrategy
     partition: number,
     message: KafkaJS.KafkaMessage,
     headers: KafkaJS.IHeaders | undefined,
-    commit: () => Promise<void>,
     heartbeat: () => Promise<void>,
   ): Promise<void> {
     const strategy = this.options.retryStrategy ?? { type: "fixed" as const };
@@ -363,7 +319,6 @@ export class KafkaStrategy
         partition,
         topic,
         headers,
-        commit,
         nack,
       );
       const data = await this.kafkaDeserialize(topic, message.value, headers);
@@ -383,11 +338,7 @@ export class KafkaStrategy
       }
 
       if (nackState === null) {
-        try {
-          await commit();
-        } catch (err) {
-          this.logger.error(err);
-        }
+        this.storeOffset(topic, partition, message.offset);
         return;
       }
 
@@ -401,9 +352,7 @@ export class KafkaStrategy
           lastError,
           failures,
         );
-        try {
-          await commit();
-        } catch {}
+        this.storeOffset(topic, partition, message.offset);
         return;
       }
 
@@ -443,7 +392,6 @@ export class KafkaStrategy
     correlationId: string,
     replyTopic: string,
     replyPartition: string | undefined,
-    commit: () => Promise<void>,
   ): Promise<void> {
     const nack = () => {};
     const ctx = new KafkaContext(
@@ -451,7 +399,6 @@ export class KafkaStrategy
       partition,
       topic,
       headers,
-      commit,
       nack,
     );
     const publish = (data: WritePacket) =>
@@ -460,7 +407,7 @@ export class KafkaStrategy
 
     if (!handler) {
       await publish({ err: NO_MESSAGE_HANDLER });
-      await commit();
+      this.storeOffset(topic, partition, message.offset);
       return;
     }
 
@@ -470,11 +417,19 @@ export class KafkaStrategy
       const replay$ = new ReplaySubject<unknown>();
       await this.combineStreamsAndThrowIfRetriable(response$, replay$);
       this.send(replay$, publish);
-      await commit();
+      this.storeOffset(topic, partition, message.offset);
     } catch (err) {
       this.logger.error(err);
       await publish({ err });
     }
+  }
+
+  private storeOffset(topic: string, partition: number, offset: string): void {
+    this.pendingOffsets.set(`${topic}:${partition}`, {
+      topic,
+      partition,
+      offset: String(Number(offset) + 1),
+    });
   }
 
   private async sendToDlq(
