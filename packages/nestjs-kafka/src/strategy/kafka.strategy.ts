@@ -35,7 +35,6 @@ import {
   toGlobalRdKafkaConfig,
   toProducerRdKafkaConfig,
 } from "../utils/rdkafka-config";
-import { sleepMs } from "../utils/kafka-reconnect";
 import { computeRetryDelay, getMaxRetries } from "../utils/retry.utils";
 import {
   applyPostfix,
@@ -61,6 +60,7 @@ export class KafkaStrategy
   private producer: KafkaJS.Producer | undefined;
   private commitTimer: ReturnType<typeof setInterval> | undefined;
   private pendingOffsets = new Map<string, KafkaJS.TopicPartitionOffsetAndMetadata>();
+  private failureCounts = new Map<string, number>();
   private closed = false;
   private reconnecting = false;
   private currentStatus: KafkaStatus = Status.DISCONNECTED;
@@ -156,38 +156,31 @@ export class KafkaStrategy
         await this.consumer.run({
           ...(this.options.consumerRun ?? {}),
           eachBatch: async ({ batch, resolveOffset, heartbeat, pause, isRunning, isStale }) => {
-            let heartbeatInFlight = false;
-            const heartbeatTimer = setInterval(() => {
-              if (heartbeatInFlight) return;
-              heartbeatInFlight = true;
-              heartbeat()
-                .catch(() => {})
-                .finally(() => { heartbeatInFlight = false; });
-            }, 3000);
+            for (const message of batch.messages) {
+              if (!isRunning() || isStale()) break;
 
-            try {
-              for (const message of batch.messages) {
-                if (!isRunning() || isStale()) break;
+              const ok = await this.processMessage({
+                message,
+                heartbeat,
+                partition: batch.partition,
+                topic: batch.topic,
+                pause,
+              });
 
-                await this.processMessage({
-                  message,
-                  heartbeat,
-                  partition: batch.partition,
-                  topic: batch.topic,
-                  pause,
-                });
-
+              if (ok) {
                 resolveOffset(message.offset);
+              } else {
+                break;
               }
-            } finally {
-              clearInterval(heartbeatTimer);
             }
           },
         });
       } else {
         await this.consumer.run({
           ...(this.options.consumerRun ?? {}),
-          eachMessage: async (payload) => this.processMessage(payload),
+          eachMessage: async (payload) => { 
+            await this.processMessage(payload);
+          },
         });
       }
     }
@@ -201,6 +194,7 @@ export class KafkaStrategy
     this._status$.next(Status.DISCONNECTED);
     clearInterval(this.commitTimer);
     this.pendingOffsets.clear();
+    this.failureCounts.clear();
 
     setTimeout(async () => {
       if (this.closed) return;
@@ -224,6 +218,7 @@ export class KafkaStrategy
     this.reconnecting = false;
     clearInterval(this.commitTimer);
     this.pendingOffsets.clear();
+    this.failureCounts.clear();
 
     await Promise.allSettled([
       this.consumer?.disconnect(),
@@ -264,8 +259,8 @@ export class KafkaStrategy
 
   private async processMessage(
     payload: KafkaJS.EachMessagePayload,
-  ): Promise<void> {
-    const { topic, partition, message, heartbeat } = payload;
+  ): Promise<boolean> {
+    const { topic, partition, message, pause } = payload;
     const headers = "headers" in message ? message.headers : undefined;
     const headersMap = headersToMap(headers);
 
@@ -274,13 +269,7 @@ export class KafkaStrategy
     const handler = this.getHandlerByPattern(topic);
 
     if (handler?.isEventHandler || !correlationId || !replyTopic) {
-      await this.handleEventMessage(
-        topic,
-        partition,
-        message,
-        headers,
-        heartbeat,
-      );
+      return this.handleEventMessage(topic, partition, message, headers, pause);
     } else {
       await this.handleRpcMessage(
         topic,
@@ -291,6 +280,7 @@ export class KafkaStrategy
         replyTopic,
         headersMap.get(KafkaHeaders.REPLY_PARTITION),
       );
+      return true;
     }
   }
 
@@ -299,75 +289,62 @@ export class KafkaStrategy
     partition: number,
     message: KafkaJS.KafkaMessage,
     headers: KafkaJS.IHeaders | undefined,
-    heartbeat: () => Promise<void>,
-  ): Promise<void> {
+    pause: () => () => void,
+  ): Promise<boolean> {
     const strategy = this.options.retryStrategy ?? { type: "fixed" as const };
     const maxRetries = getMaxRetries(strategy);
+    const key = `${topic}:${partition}:${message.offset}`;
+    const failures = this.failureCounts.get(key) ?? 0;
 
-    let failures = 0;
+    let nackState: NackState = null;
     let lastError: unknown = null;
+    const nack = (delayMs?: number) => { nackState = delayMs ?? "auto"; };
 
-    while (!this.closed && !this.reconnecting) {
-      // null = ack (success), number = explicit delay, 'auto' = compute from strategy
-      let nackState: NackState = null;
-      const nack = (delayMs?: number) => {
-        nackState = delayMs ?? "auto";
-      };
+    const ctx = new KafkaContext(message, partition, topic, headers, nack);
+    const data = await this.kafkaDeserialize(topic, message.value, headers);
 
-      const ctx = new KafkaContext(
-        message,
-        partition,
-        topic,
-        headers,
-        nack,
+    try {
+      await this.handleEvent(topic, { pattern: topic, data }, ctx);
+    } catch (err) {
+      const errMessage = err instanceof Error ? err.message : JSON.stringify(err, null, 2);
+      const errStack = err instanceof Error ? err.stack : undefined;
+      this.logger.error(
+        `Handler error on topic="${topic}" partition=${partition} offset=${message.offset}: ${errMessage}`,
+        errStack,
       );
-      const data = await this.kafkaDeserialize(topic, message.value, headers);
-
-      try {
-        await this.handleEvent(topic, { pattern: topic, data }, ctx);
-      } catch (err) {
-        const errMessage =
-          err instanceof Error ? err.message : JSON.stringify(err, null, 2);
-        const errStack = err instanceof Error ? err.stack : undefined;
-        this.logger.error(
-          `Handler error on topic="${topic}" partition=${partition} offset=${message.offset}: ${errMessage}`,
-          errStack,
-        );
-        lastError = err;
-        nackState = "auto";
-      }
-
-      if (nackState === null) {
-        this.storeOffset(topic, partition, message.offset);
-        return;
-      }
-
-      failures++;
-      if (failures > maxRetries) {
-        await this.sendToDlq(
-          topic,
-          partition,
-          message,
-          headers,
-          lastError,
-          failures,
-        );
-        this.storeOffset(topic, partition, message.offset);
-        return;
-      }
-
-      const delayMs =
-        nackState === "auto"
-          ? computeRetryDelay(strategy, failures)
-          : nackState;
-
-      this.logger.warn(
-        `Retrying "${topic}" in ${delayMs}ms` +
-          (isFinite(maxRetries) ? ` (${failures}/${maxRetries})` : ""),
-      );
-
-      await this.sleepWithHeartbeat(delayMs, heartbeat);
+      lastError = err;
+      nackState = "auto";
     }
+
+    if (nackState === null) {
+      this.failureCounts.delete(key);
+      this.storeOffset(topic, partition, message.offset);
+      return true;
+    }
+
+    const newFailures = failures + 1;
+
+    if (newFailures > maxRetries) {
+      await this.sendToDlq(topic, partition, message, headers, lastError, newFailures);
+      this.failureCounts.delete(key);
+      this.storeOffset(topic, partition, message.offset);
+      return true;
+    }
+
+    this.failureCounts.set(key, newFailures);
+    const delayMs = nackState === "auto" ? computeRetryDelay(strategy, newFailures) : nackState;
+    this.logger.warn(
+      `Retrying "${topic}" in ${delayMs}ms` +
+        (isFinite(maxRetries) ? ` (${newFailures}/${maxRetries})` : ""),
+    );
+
+    this.consumer?.seek({ topic, partition, offset: message.offset });
+    const resume = pause();
+    setTimeout(() => {
+      if (!this.closed && !this.reconnecting) resume();
+    }, delayMs);
+
+    return false;
   }
 
   public override async handleEvent(
@@ -536,16 +513,4 @@ export class KafkaStrategy
     });
   }
 
-  private async sleepWithHeartbeat(
-    ms: number,
-    heartbeat: () => Promise<void>,
-  ): Promise<void> {
-    const interval = 1000;
-    const end = Date.now() + ms;
-    while (Date.now() < end && !this.closed && !this.reconnecting) {
-      await heartbeat().catch(() => {});
-      const remaining = end - Date.now();
-      if (remaining > 0) await sleepMs(Math.min(interval, remaining));
-    }
-  }
 }
