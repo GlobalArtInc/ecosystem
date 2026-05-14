@@ -58,7 +58,7 @@
     "typeorm": "^0.3.0"
   },
   "devDependencies": {
-    "@types/node": "25.7.0",
+    "@types/node": "25.8.0",
     "prettier": "^3.8.1",
     "reflect-metadata": "^0.2.2",
     "release-it": "20.0.1",
