@@ -4,6 +4,7 @@ import {
   KafkaHeaders,
   KafkaRetriableException,
   Server,
+  Transport,
   WritePacket,
 } from "@nestjs/microservices";
 import {
@@ -53,7 +54,7 @@ export class KafkaStrategy
   extends Server<never, KafkaStatus>
   implements CustomTransportStrategy
 {
-  readonly transportId = RDKAFKA_TRANSPORT;
+  readonly transportId = Transport.KAFKA;
   protected readonly logger = new Logger(KafkaStrategy.name);
 
   private consumer: KafkaJS.Consumer | undefined;
