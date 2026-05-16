@@ -141,11 +141,17 @@ export class KafkaStrategy
 
     const topics = [...this.messageHandlers.keys()];
     if (topics.length > 0) {
+      const topicsToCreate = topics.flatMap((topic) => {
+        const handler = this.getHandlerByPattern(topic);
+        return handler && !handler.isEventHandler
+          ? [topic, `${topic}.reply`]
+          : [topic];
+      });
       const admin = kafka.admin();
       await admin.connect();
       try {
         await admin.createTopics({
-          topics: topics.map((topic) => ({ ...(this.options.autoCreateTopics ?? {}), topic })),
+          topics: topicsToCreate.map((topic) => ({ ...(this.options.autoCreateTopics ?? {}), topic })),
         });
       } catch (err) {
         this.logger.warn('Failed to auto-create topics (they may already exist)', err);
