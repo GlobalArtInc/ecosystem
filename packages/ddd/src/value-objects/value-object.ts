@@ -29,6 +29,10 @@ export abstract class ValueObject<T = any> {
       return this.props.value;
     }
 
+    if (Array.isArray(this.props)) {
+      return Object.freeze(Array.from(this.props)) as T;
+    }
+
     const propsCopy = convertPropsToObject(this.props);
 
     return Object.freeze(propsCopy);
