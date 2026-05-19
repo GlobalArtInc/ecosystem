@@ -54,7 +54,7 @@
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
-    "@types/node": "25.8.0",
+    "@types/node": "25.9.0",
     "reflect-metadata": "^0.2.2",
     "release-it": "20.0.1",
     "tsdown": "0.22.0",
