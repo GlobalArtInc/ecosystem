@@ -51,7 +51,7 @@
   },
   "dependencies": {
     "@globalart/oxide": "1.0.1",
-    "date-fns": "4.1.0",
+    "date-fns": "4.2.1",
     "dequal": "2.0.3",
     "nanoid": "5.1.11",
     "prettier": "3.8.3",
