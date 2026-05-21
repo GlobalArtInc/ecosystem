@@ -11,7 +11,7 @@ import {
   NO_EVENT_HANDLER,
   NO_MESSAGE_HANDLER,
 } from "@nestjs/microservices/constants";
-import { KafkaJS } from "@confluentinc/kafka-javascript";
+import { CODES, KafkaJS } from "@confluentinc/kafka-javascript";
 
 import {
   firstValueFrom,
@@ -64,6 +64,7 @@ export class KafkaStrategy
   private failureCounts = new Map<string, number>();
   private closed = false;
   private reconnecting = false;
+  private rebalancing = false;
   private currentStatus: KafkaStatus = Status.DISCONNECTED;
   private readonly kafkaSerializer: KafkaSerializer;
   private readonly kafkaDeserializer: KafkaDeserializer;
@@ -115,8 +116,33 @@ export class KafkaStrategy
       DEFAULT_POSTFIX_SERVER,
     );
     const kafka = this.createKafka(clientId);
+
+    const rebalanceCb = async (
+      err: { code: number; message: string },
+      assignment: Array<{ topic: string; partition: number }>,
+      assignmentFns: {
+        assign: (a: typeof assignment) => void;
+        unassign: (a: typeof assignment) => void;
+      },
+    ) => {
+      if (err.code === CODES.ERRORS.ERR__REVOKE_PARTITIONS) {
+        this.rebalancing = true;
+        this.pendingOffsets.clear();
+        this.failureCounts.clear();
+        this.logger.log(`Rebalance: revoking ${assignment.length} partition(s), pausing consumption`);
+        assignmentFns.unassign(assignment);
+      } else if (err.code === CODES.ERRORS.ERR__ASSIGN_PARTITIONS) {
+        this.pendingOffsets.clear();
+        this.failureCounts.clear();
+        this.rebalancing = false;
+        this.logger.log(`Rebalance: assigned ${assignment.length} partition(s), resuming consumption`);
+        assignmentFns.assign(assignment);
+      }
+    };
+
     this.consumer = kafka.consumer({
       ...toConsumerRdKafkaConfig(this.options.consumerRdKafka),
+      'rebalance_cb': rebalanceCb,
       kafkaJS: {
         groupId,
         ...(this.options.consumer ?? {}),
@@ -132,8 +158,18 @@ export class KafkaStrategy
     await this.producer.connect();
     this._status$.next(Status.CONNECTED);
 
+    const internalClient = (this.consumer as any)._getInternalClient?.();
+    if (internalClient) {
+      internalClient.on('event.error', (err: { isFatal?: boolean; message?: string }) => {
+        if (err.isFatal && !this.closed) {
+          this.logger.error(`Fatal Kafka consumer error: ${err.message}`);
+          this.scheduleReconnect();
+        }
+      });
+    }
+
     this.commitTimer = setInterval(async () => {
-      if (this.pendingOffsets.size === 0) return;
+      if (this.pendingOffsets.size === 0 || this.rebalancing) return;
       const offsets = [...this.pendingOffsets.values()];
       this.pendingOffsets.clear();
       await this.consumer?.commitOffsets(offsets).catch(() => {});
@@ -141,22 +177,24 @@ export class KafkaStrategy
 
     const topics = [...this.messageHandlers.keys()];
     if (topics.length > 0) {
-      const topicsToCreate = topics.flatMap((topic) => {
-        const handler = this.getHandlerByPattern(topic);
-        return handler && !handler.isEventHandler
-          ? [topic, `${topic}.reply`]
-          : [topic];
-      });
-      const admin = kafka.admin();
-      await admin.connect();
-      try {
-        await admin.createTopics({
-          topics: topicsToCreate.map((topic) => ({ ...(this.options.autoCreateTopics ?? {}), topic })),
+      if (this.options.autoCreateTopics) {
+        const topicsToCreate = topics.flatMap((topic) => {
+          const handler = this.getHandlerByPattern(topic);
+          return handler && !handler.isEventHandler
+            ? [topic, `${topic}.reply`]
+            : [topic];
         });
-      } catch (err) {
-        this.logger.warn('Failed to auto-create topics (they may already exist)', err);
-      } finally {
-        await admin.disconnect();
+        const admin = kafka.admin();
+        try {
+          await admin.connect();
+          await admin.createTopics({
+            topics: topicsToCreate.map((topic) => ({ ...this.options.autoCreateTopics!, topic })),
+          });
+        } catch (err) {
+          this.logger.warn('Failed to auto-create topics (they may already exist)', err);
+        } finally {
+          await admin.disconnect().catch(() => {});
+        }
       }
       await this.consumer.subscribe({ topics });
       if (this.options.batchMode) {
@@ -196,6 +234,7 @@ export class KafkaStrategy
   private scheduleReconnect(attempt = 1): void {
     if (attempt === 1 && this.reconnecting) return;
     this.reconnecting = true;
+    this.rebalancing = false;
     const delay = Math.min(1000 * 2 ** (attempt - 1), 30000);
     this.logger.warn(`Reconnecting in ${delay}ms (attempt ${attempt})`);
     this._status$.next(Status.DISCONNECTED);
@@ -223,6 +262,7 @@ export class KafkaStrategy
     this.logger.log("Closing Kafka transport...");
     this.closed = true;
     this.reconnecting = false;
+    this.rebalancing = false;
     clearInterval(this.commitTimer);
     this.pendingOffsets.clear();
     this.failureCounts.clear();
@@ -267,6 +307,7 @@ export class KafkaStrategy
   private async processMessage(
     payload: KafkaJS.EachMessagePayload,
   ): Promise<boolean> {
+    if (this.rebalancing) return false;
     const { topic, partition, message, pause } = payload;
     const headers = "headers" in message ? message.headers : undefined;
     const headersMap = headersToMap(headers);
