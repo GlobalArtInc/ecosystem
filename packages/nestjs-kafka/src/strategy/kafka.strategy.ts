@@ -173,7 +173,7 @@ export class KafkaStrategy
       const offsets = [...this.pendingOffsets.values()];
       this.pendingOffsets.clear();
       await this.consumer?.commitOffsets(offsets).catch(() => {});
-    }, 5000);
+    }, 1000);
 
     const topics = [...this.messageHandlers.keys()];
     if (topics.length > 0) {
