@@ -51,7 +51,7 @@
     "@types/node": "^25.3.0",
     "cpx2": "9.0.0",
     "reflect-metadata": "^0.2.2",
-    "release-it": "20.0.1",
+    "release-it": "20.2.0",
     "typescript": "^6.0.2"
   },
   "publishConfig": {
