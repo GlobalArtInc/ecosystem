@@ -37,7 +37,7 @@
   },
   "dependencies": {
     "@globalart/nestjs-redis": "workspace:*",
-    "ioredis": "^5.11.0",
+    "ioredis": "^5.11.1",
     "nestjs-cls": "6.2.1",
     "rxjs": "^7.8.1"
   },
