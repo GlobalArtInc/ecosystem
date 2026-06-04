@@ -61,7 +61,7 @@
     "release-it": "20.2.0",
     "rxjs": "^7.8.2",
     "ts-jest": "29.4.11",
-    "tsdown": "0.22.1",
+    "tsdown": "0.22.2",
     "typescript": "^6.0.2"
   },
   "jest": {
