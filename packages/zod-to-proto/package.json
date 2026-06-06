@@ -1,6 +1,6 @@
 {
   "name": "@globalart/zod-to-proto",
-  "version": "2.1.0",
+  "version": "2.5.1",
   "author": {
     "name": "GlobalArt, Inc"
   },
@@ -32,9 +32,7 @@
     "coveralls": "yarn run test:cov --coverageReporters=text-lcov | coveralls",
     "build": "tsdown",
     "build:watch": "tsdown --watch",
-    "prepublishOnly": "npm run build",
-    "publish:dev": "npm publish --access public --tag dev",
-    "publish:npm": "release-it --config ../../.release-it.json"
+    "prepublishOnly": "npm run build"
   },
   "description": "Convert Zod schemas to Protobuf definitions",
   "devDependencies": {
@@ -42,7 +40,6 @@
     "@types/node": "25.9.2",
     "@types/passport": "^1.0.17",
     "prettier": "3.8.3",
-    "release-it": "20.2.0",
     "ts-node": "^10.9.2",
     "tsdown": "0.22.2",
     "typescript": "^6.0.3"

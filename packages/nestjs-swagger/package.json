@@ -1,6 +1,6 @@
 {
   "name": "@globalart/nestjs-swagger",
-  "version": "1.7.0",
+  "version": "2.5.1",
   "description": "A simple documentation builder for NestJS Swagger Module",
   "author": {
     "name": "GlobalArt, Inc"
@@ -43,12 +43,10 @@
     "coveralls": "yarn run test:cov --coverageReporters=text-lcov | coveralls",
     "build": "tsdown",
     "build:watch": "tsdown --watch",
-    "prepublishOnly": "npm run build",
-    "publish:dev": "npm publish --access public --tag dev",
-    "publish:npm": "release-it --config ../../.release-it.json"
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@globalart/nestjs-zod": "^1.0.0",
+    "@globalart/nestjs-zod": "workspace:*",
     "mysql": "^2.18.1"
   },
   "peerDependencies": {
@@ -65,7 +63,6 @@
     "jest": "^30.4.2",
     "prettier": "3.8.3",
     "reflect-metadata": "^0.2.2",
-    "release-it": "20.2.0",
     "rxjs": "^7.8.2",
     "ts-jest": "29.4.11",
     "ts-node": "^10.9.2",

@@ -1,7 +1,7 @@
 {
   "name": "@globalart/nestjs-unit-of-work",
   "description": "Transactional integration for NestJS",
-  "version": "1.1.2",
+  "version": "2.5.1",
   "type": "module",
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
@@ -40,13 +40,11 @@
     "format": "prettier --write \"**/*.ts\"",
     "build": "tsdown",
     "build:watch": "tsdown --watch",
-    "prepublishOnly": "npm run build",
-    "publish:dev": "npm publish --access public --tag dev",
-    "publish:npm": "release-it --config ../../.release-it.json"
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@globalart/ddd": "^1.4.1",
-    "@globalart/text-utils": "^1.1.0",
+    "@globalart/ddd": "workspace:*",
+    "@globalart/text-utils": "workspace:*",
     "rxjs": "^7.8.2",
     "typeorm": "^1.0.0"
   },
@@ -60,7 +58,6 @@
     "@types/node": "25.9.2",
     "prettier": "^3.8.3",
     "reflect-metadata": "^0.2.2",
-    "release-it": "20.2.0",
     "tsdown": "0.22.2",
     "typescript": "^6.0.3"
   }

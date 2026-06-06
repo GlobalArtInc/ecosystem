@@ -1,6 +1,6 @@
 {
   "name": "@globalart/nestjs-fastify",
-  "version": "2.0.3",
+  "version": "2.5.1",
   "description": "A fastify for NestJS",
   "author": {
     "name": "GlobalArt, Inc"
@@ -42,9 +42,7 @@
     "coveralls": "yarn run test:cov --coverageReporters=text-lcov | coveralls",
     "build": "rm -rf ./dist && tsdown && cp src/globals.d.ts dist/",
     "build:watch": "tsdown --watch",
-    "prepublishOnly": "npm run build",
-    "publish:dev": "npm publish --access public --tag dev",
-    "publish:npm": "release-it --config ../../.release-it.json"
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@fastify/cookie": "11.0.2",
@@ -69,7 +67,6 @@
     "jest": "^30.4.2",
     "prettier": "3.8.3",
     "reflect-metadata": "^0.2.2",
-    "release-it": "20.2.0",
     "rxjs": "^7.8.2",
     "ts-jest": "29.4.11",
     "ts-node": "^10.9.2",

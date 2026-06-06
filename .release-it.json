@@ -1,16 +1,20 @@
 {
   "$schema": "https://unpkg.com/release-it@19/schema/release-it.json",
   "git": {
-    "commitMessage": "release ${name} v${version}",
-    "tag": false
+    "commitMessage": "release v${version}",
+    "tagName": "v${version}",
+    "tag": true,
+    "requireCleanWorkingDir": true
   },
   "github": {
     "release": false
   },
   "npm": {
-    "publish": true
+    "publish": false
   },
   "hooks": {
-    "after:release": "echo Successfully released ${name} v${version} to npm and GitHub!"
+    "after:bump": "node scripts/sync-versions.mjs",
+    "before:release": "pnpm build",
+    "after:release": "node scripts/publish-packages.mjs"
   }
 }

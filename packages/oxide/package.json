@@ -1,6 +1,6 @@
 {
   "name": "@globalart/oxide",
-  "version": "1.0.1",
+  "version": "2.5.1",
   "author": {
     "name": "GlobalArt, Inc"
   },
@@ -33,9 +33,7 @@
     "coveralls": "yarn run test:cov --coverageReporters=text-lcov | coveralls",
     "build": "tsdown",
     "build:watch": "tsdown --watch",
-    "prepublishOnly": "npm run build",
-    "publish:dev": "npm publish --access public --tag dev",
-    "publish:npm": "release-it --config ../../.release-it.json"
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "oxide",
@@ -45,7 +43,6 @@
   "devDependencies": {
     "@types/node": "25.9.2",
     "prettier": "3.8.3",
-    "release-it": "20.2.0",
     "tsdown": "0.22.2",
     "typescript": "^6.0.3"
   },
