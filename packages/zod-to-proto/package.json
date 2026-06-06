@@ -39,13 +39,13 @@
   "description": "Convert Zod schemas to Protobuf definitions",
   "devDependencies": {
     "@types/express": "5.0.6",
-    "@types/node": "25.9.1",
+    "@types/node": "25.9.2",
     "@types/passport": "^1.0.17",
     "prettier": "3.8.3",
     "release-it": "20.2.0",
     "ts-node": "^10.9.2",
     "tsdown": "0.22.2",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.3"
   },
   "dependencies": {
     "inflection": "3.0.2",

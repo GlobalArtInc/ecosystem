@@ -43,11 +43,11 @@
   ],
   "description": "A simple toolkit for building scalable and maintainable applications",
   "devDependencies": {
-    "@types/node": "25.9.1",
+    "@types/node": "25.9.2",
     "prettier": "3.8.3",
     "release-it": "20.2.0",
     "tsdown": "0.22.2",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.3"
   },
   "publishConfig": {
     "access": "public"

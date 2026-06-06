@@ -1,0 +1,9 @@
+{
+  "defaults": {
+    "target": "latest",
+    "createBackup": true,
+    "format": "table"
+  },
+  "exclude": [],
+  "include": []
+}

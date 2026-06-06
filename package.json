@@ -21,9 +21,9 @@
     "clone:examples": "git clone https://github.com/GlobalArtInc/ecosystem-examples.git ecosystem-examples && pnpm install"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.29.7",
+    "@changesets/cli": "^2.31.0",
     "rimraf": "^6.1.3",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.3"
   },
   "engines": {
     "node": ">=18.0.0",
@@ -45,17 +45,19 @@
   "author": "GlobalArt, Inc",
   "license": "MIT",
   "dependencies": {
-    "css-select": "6.0.0"
+    "css-select": "7.0.0"
   },
   "pnpm": {
     "overrides": {
       "css-select": "4.3.0"
     },
     "onlyBuiltDependencies": [
+      "@apollo/protobufjs",
       "@confluentinc/kafka-javascript",
       "@nestjs/core",
       "@parcel/watcher",
       "@scarf/scarf",
+      "@swc/core",
       "core-js",
       "core-js-pure",
       "esbuild",

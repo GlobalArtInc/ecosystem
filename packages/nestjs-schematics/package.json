@@ -48,11 +48,11 @@
     "@nestjs/throttler": "^5.0.0 || ^6.0.0"
   },
   "devDependencies": {
-    "@types/node": "^25.3.0",
+    "@types/node": "^25.9.2",
     "cpx2": "9.0.0",
     "reflect-metadata": "^0.2.2",
     "release-it": "20.2.0",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.3"
   },
   "publishConfig": {
     "access": "public"
