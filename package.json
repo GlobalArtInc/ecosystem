@@ -15,6 +15,7 @@
     "dev": "pnpm -r --parallel dev",
     "publish:npm": "release-it",
     "publish:dev": "NPM_TAG=dev release-it --preRelease=dev",
+    "publish:packages": "node scripts/publish-packages.mjs",
     "sync-versions": "node scripts/sync-versions.mjs",
     "upgrade:all": "pnpm upgrade --latest --interactive -r",
     "clone:examples": "git clone https://github.com/GlobalArtInc/ecosystem-examples.git ecosystem-examples && pnpm install"

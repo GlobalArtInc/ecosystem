@@ -15,6 +15,6 @@
   "hooks": {
     "after:bump": "node scripts/sync-versions.mjs",
     "before:release": "pnpm build",
-    "after:release": "node scripts/publish-packages.mjs"
+    "before:git:commit": "node scripts/publish-packages.mjs"
   }
 }
