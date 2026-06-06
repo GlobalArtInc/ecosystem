@@ -1159,8 +1159,8 @@ importers:
   packages/ddd:
     dependencies:
       '@globalart/oxide':
-        specifier: workspace:*
-        version: link:../oxide
+        specifier: 4.0.3
+        version: 4.0.3
       date-fns:
         specifier: 4.4.0
         version: 4.4.0
@@ -1190,8 +1190,8 @@ importers:
   packages/nestjs-daemon:
     dependencies:
       '@globalart/nestjs-redis':
-        specifier: workspace:*
-        version: link:../nestjs-redis
+        specifier: 4.0.3
+        version: 4.0.3(1de34a89a351805806ecb2b1ac9b638c)
       '@nestjs/cache-manager':
         specifier: ^2.0.0 || ^3.0.0
         version: 3.1.0(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24)(cache-manager@7.2.7)(keyv@5.6.0)(rxjs@7.8.2)
@@ -1600,8 +1600,8 @@ importers:
   packages/nestjs-swagger:
     dependencies:
       '@globalart/nestjs-zod':
-        specifier: workspace:*
-        version: link:../nestjs-zod
+        specifier: 4.0.3
+        version: 4.0.3(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24)(@nestjs/swagger@11.4.4(@fastify/static@9.1.3)(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24)(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2))(rxjs@7.8.2)(zod@4.4.3)
       '@nestjs/common':
         specifier: ^10.0.0 || ^11.0.0
         version: 11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -1704,8 +1704,8 @@ importers:
   packages/nestjs-typeorm-outbox:
     dependencies:
       '@globalart/text-utils':
-        specifier: workspace:*
-        version: link:../text-utils
+        specifier: 4.0.3
+        version: 4.0.3
       '@nestjs/common':
         specifier: ^10.0.0 || ^11.0.0
         version: 11.1.17(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -1750,8 +1750,8 @@ importers:
   packages/nestjs-typeorm-pagination:
     dependencies:
       '@globalart/nestjs-zod':
-        specifier: workspace:*
-        version: link:../nestjs-zod
+        specifier: 4.0.3
+        version: 4.0.3(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24)(@nestjs/swagger@11.4.4(@fastify/static@9.1.3)(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24)(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2))(rxjs@7.8.2)(zod@4.4.3)
       '@nestjs/common':
         specifier: ^10.0.0 || ^11.0.0
         version: 11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -1844,11 +1844,11 @@ importers:
   packages/nestjs-unit-of-work:
     dependencies:
       '@globalart/ddd':
-        specifier: workspace:*
-        version: link:../ddd
+        specifier: 4.0.3
+        version: 4.0.3
       '@globalart/text-utils':
-        specifier: workspace:*
-        version: link:../text-utils
+        specifier: 4.0.3
+        version: 4.0.3
       '@nestjs/common':
         specifier: ^10.0.0 || ^11.0.0
         version: 11.1.17(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -4234,6 +4234,18 @@ packages:
   '@gar/promisify@1.1.3':
     resolution: {integrity: sha512-k2Ty1JcVojjJFwrg/ThKi2ujJ7XNLYaFGNB/bWT9wGR+oSMJHMa5w+CUq6p/pVrKeNNgA7pCqEcjSnHVoqJQFw==}
 
+  '@globalart/ddd@4.0.3':
+    resolution: {integrity: sha512-xnjdCEiPRBUim3Ok/KWvYeRVBb2Fx53voGFwhs7tMO/WVCTKxKYfjVvDbSL+rudxojR1Dhj0F9dMPjQPhPleBg==}
+
+  '@globalart/nestjs-redis@4.0.3':
+    resolution: {integrity: sha512-1Xv0rQ1Cq0ALksCjvORs1VMewjPoGvK6JIaneqWGQo1MDBfiA25hf/vD1GDukZKPMXObfkh+o+b8NxMzoEwCIQ==}
+    peerDependencies:
+      '@nestjs/common': ^10.0.0 || ^11.0.0
+      '@nestjs/core': ^10.0.0 || ^11.0.0
+      '@nestjs/platform-socket.io': ^10.0.0 || ^11.0.0
+      '@nestjs/terminus': ^0.2.0 || ^10.0.0 || ^11.0.0
+      '@nestjs/throttler': ^5.0.0 || ^6.0.0
+
   '@globalart/nestjs-zod@1.0.0':
     resolution: {integrity: sha512-9iyoWMoDnTtQIU2CIkPb7hi/ea1iKPRn3hQVRVoSw7kOq/MQWmaHRp2gKK5CyYKR1fNF85ZJnvPFLPrroV74QQ==}
     peerDependencies:
@@ -4244,6 +4256,24 @@ packages:
     peerDependenciesMeta:
       '@nestjs/swagger':
         optional: true
+
+  '@globalart/nestjs-zod@4.0.3':
+    resolution: {integrity: sha512-yYYkgBCiDLF+2M1lsmEoeMwYJBtGA3MGvmDUs0OtyNFtE/+UVbYAP5jIYeR5GTmcnAv5kSKe6Ikkfwgd2f9fCQ==}
+    peerDependencies:
+      '@nestjs/common': ^10.0.0 || ^11.0.0
+      '@nestjs/core': ^10.0.0 || ^11.0.0
+      '@nestjs/swagger': ^7.4.2 || ^8.0.0 || ^11.0.0
+      rxjs: ^7.0.0
+      zod: ^3.25.0 || ^4.0.0
+    peerDependenciesMeta:
+      '@nestjs/swagger':
+        optional: true
+
+  '@globalart/oxide@4.0.3':
+    resolution: {integrity: sha512-RZzNL/rK5Q8ey/aKelvcZGQGk4+BxuutuBQ+wuo/F9Sn3plhwVAGUoRZNnMsVanVkAuDnZgVRqffDKwbVHpW1A==}
+
+  '@globalart/text-utils@4.0.3':
+    resolution: {integrity: sha512-50Rdr00lC7Kb2lfa/fzByA4/SqhEP1Bzct8A10EyIwTbDGar2GpckD/Po8H8K2KzsZGbgszvqUgCFlBFduZpmQ==}
 
   '@golevelup/ts-jest@3.0.0':
     resolution: {integrity: sha512-ei0cvUKrVv8cJBW6df54yeod8PyzR2LTYG6wJ1xm+213p7HnThw5ShQcRH0/hhhnXnJCLrpmJM7e6fkRjHUF1g==}
@@ -18487,6 +18517,32 @@ snapshots:
   '@gar/promisify@1.1.3':
     optional: true
 
+  '@globalart/ddd@4.0.3':
+    dependencies:
+      '@globalart/oxide': link:packages/oxide
+      date-fns: 4.4.0
+      dequal: 2.0.3
+      nanoid: 5.1.11
+      prettier: 3.8.3
+      ts-pattern: 5.9.0
+      uuid: 14.0.0
+      zod: 4.4.3
+
+  '@globalart/nestjs-redis@4.0.3(1de34a89a351805806ecb2b1ac9b638c)':
+    dependencies:
+      '@nestjs/common': 11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/core': 11.1.24(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/microservices@11.1.24)(@nestjs/platform-express@11.1.24)(@nestjs/websockets@11.1.10)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/platform-socket.io': 11.1.14(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/websockets@11.1.10)(rxjs@7.8.2)
+      '@nestjs/terminus': 11.1.1(@grpc/grpc-js@1.14.4)(@grpc/proto-loader@0.8.1)(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24)(@nestjs/microservices@11.1.24)(@nestjs/typeorm@11.0.1(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@1.0.0(ioredis@5.11.1)(pg@8.21.0)(redis@5.11.0)(ts-node@10.9.2(@swc/core@1.15.40)(@types/node@25.9.2)(typescript@6.0.3))))(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@1.0.0(ioredis@5.11.1)(pg@8.21.0)(redis@5.11.0)(ts-node@10.9.2(@swc/core@1.15.40)(@types/node@25.9.2)(typescript@6.0.3)))
+      '@nestjs/throttler': 6.5.0(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24)(reflect-metadata@0.2.2)
+      '@socket.io/redis-adapter': 8.3.0(socket.io-adapter@2.5.7)
+      redis: 6.0.0(@opentelemetry/api@1.9.0)
+    transitivePeerDependencies:
+      - '@node-rs/xxhash'
+      - '@opentelemetry/api'
+      - socket.io-adapter
+      - supports-color
+
   '@globalart/nestjs-zod@1.0.0(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/swagger@11.4.4(@fastify/static@9.1.3)(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24)(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2))(rxjs@7.8.2)(zod@4.4.3)':
     dependencies:
       '@nestjs/common': 11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -18495,6 +18551,23 @@ snapshots:
       zod: 4.4.3
     optionalDependencies:
       '@nestjs/swagger': 11.4.4(@fastify/static@9.1.3)(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24)(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)
+
+  '@globalart/nestjs-zod@4.0.3(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24)(@nestjs/swagger@11.4.4(@fastify/static@9.1.3)(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24)(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2))(rxjs@7.8.2)(zod@4.4.3)':
+    dependencies:
+      '@nestjs/common': 11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@nestjs/core': 11.1.24(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/microservices@11.1.24)(@nestjs/platform-express@11.1.24)(@nestjs/websockets@11.1.10)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      deepmerge: 4.3.1
+      rxjs: 7.8.2
+      zod: 4.4.3
+    optionalDependencies:
+      '@nestjs/swagger': 11.4.4(@fastify/static@9.1.3)(@nestjs/common@11.1.24(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.24)(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)
+
+  '@globalart/oxide@4.0.3': {}
+
+  '@globalart/text-utils@4.0.3':
+    dependencies:
+      rimraf: 6.1.3
+      tldts: 7.4.2
 
   '@golevelup/ts-jest@3.0.0': {}
 
@@ -20316,7 +20389,7 @@ snapshots:
       '@redis/client': 5.11.0
     optional: true
 
-  '@redis/bloom@6.0.0(@redis/client@6.0.0(@opentelemetry/api@1.9.0))':
+  '@redis/bloom@6.0.0(@redis/client@6.0.0)':
     dependencies:
       '@redis/client': 6.0.0(@opentelemetry/api@1.9.0)
 
@@ -20336,7 +20409,7 @@ snapshots:
       '@redis/client': 5.11.0
     optional: true
 
-  '@redis/json@6.0.0(@redis/client@6.0.0(@opentelemetry/api@1.9.0))':
+  '@redis/json@6.0.0(@redis/client@6.0.0)':
     dependencies:
       '@redis/client': 6.0.0(@opentelemetry/api@1.9.0)
 
@@ -20345,7 +20418,7 @@ snapshots:
       '@redis/client': 5.11.0
     optional: true
 
-  '@redis/search@6.0.0(@redis/client@6.0.0(@opentelemetry/api@1.9.0))':
+  '@redis/search@6.0.0(@redis/client@6.0.0)':
     dependencies:
       '@redis/client': 6.0.0(@opentelemetry/api@1.9.0)
 
@@ -20354,7 +20427,7 @@ snapshots:
       '@redis/client': 5.11.0
     optional: true
 
-  '@redis/time-series@6.0.0(@redis/client@6.0.0(@opentelemetry/api@1.9.0))':
+  '@redis/time-series@6.0.0(@redis/client@6.0.0)':
     dependencies:
       '@redis/client': 6.0.0(@opentelemetry/api@1.9.0)
 
@@ -28600,11 +28673,11 @@ snapshots:
 
   redis@6.0.0(@opentelemetry/api@1.9.0):
     dependencies:
-      '@redis/bloom': 6.0.0(@redis/client@6.0.0(@opentelemetry/api@1.9.0))
+      '@redis/bloom': 6.0.0(@redis/client@6.0.0)
       '@redis/client': 6.0.0(@opentelemetry/api@1.9.0)
-      '@redis/json': 6.0.0(@redis/client@6.0.0(@opentelemetry/api@1.9.0))
-      '@redis/search': 6.0.0(@redis/client@6.0.0(@opentelemetry/api@1.9.0))
-      '@redis/time-series': 6.0.0(@redis/client@6.0.0(@opentelemetry/api@1.9.0))
+      '@redis/json': 6.0.0(@redis/client@6.0.0)
+      '@redis/search': 6.0.0(@redis/client@6.0.0)
+      '@redis/time-series': 6.0.0(@redis/client@6.0.0)
     transitivePeerDependencies:
       - '@node-rs/xxhash'
       - '@opentelemetry/api'
