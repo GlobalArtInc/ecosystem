@@ -1,6 +1,6 @@
 {
   "name": "@globalart/ddd",
-  "version": "4.0.3",
+  "version": "4.0.4",
   "description": "Advanced Domain-Driven Design",
   "author": {
     "name": "GlobalArt, Inc"
@@ -48,7 +48,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@globalart/oxide": "4.0.3",
+    "@globalart/oxide": "4.0.4",
     "date-fns": "4.4.0",
     "dequal": "2.0.3",
     "nanoid": "5.1.11",
