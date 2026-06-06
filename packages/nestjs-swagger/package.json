@@ -1,6 +1,6 @@
 {
   "name": "@globalart/nestjs-swagger",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "A simple documentation builder for NestJS Swagger Module",
   "author": {
     "name": "GlobalArt, Inc"
