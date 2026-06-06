@@ -34,7 +34,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@globalart/nestjs-redis": "workspace:*",
+    "@globalart/nestjs-redis": "4.0.3",
     "ioredis": "^5.11.1",
     "nestjs-cls": "6.2.1",
     "rxjs": "^7.8.1"

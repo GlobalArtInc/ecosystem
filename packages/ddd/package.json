@@ -48,7 +48,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@globalart/oxide": "workspace:*",
+    "@globalart/oxide": "4.0.3",
     "date-fns": "4.4.0",
     "dequal": "2.0.3",
     "nanoid": "5.1.11",

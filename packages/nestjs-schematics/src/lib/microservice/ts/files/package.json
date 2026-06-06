@@ -16,10 +16,10 @@
     "start:prod": "node dist/main"
   },
   "dependencies": {
-    "@globalart/nestjs-zod": "catalog:prod"
+    "@globalart/nestjs-zod": "^4.0.3"
   },
   "devDependencies": {
-    "<%= projectScope %>/typescript-configs": "workspace:*",
+    "<%= projectScope %>/typescript-configs": "^4.0.3",
     "typescript": "catalog:dev",
     "@swc/cli": "catalog:dev",
     "@swc/core": "catalog:dev",

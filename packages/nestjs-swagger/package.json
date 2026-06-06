@@ -46,7 +46,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@globalart/nestjs-zod": "workspace:*",
+    "@globalart/nestjs-zod": "4.0.3",
     "mysql": "^2.18.1"
   },
   "peerDependencies": {

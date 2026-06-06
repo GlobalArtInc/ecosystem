@@ -21,7 +21,7 @@ function syncGlobalartDeps(deps) {
   }
   for (const name of Object.keys(deps)) {
     if (name.startsWith('@globalart/')) {
-      deps[name] = 'workspace:*';
+      deps[name] = version;
     }
   }
 }

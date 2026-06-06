@@ -43,8 +43,8 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@globalart/ddd": "workspace:*",
-    "@globalart/text-utils": "workspace:*",
+    "@globalart/ddd": "4.0.3",
+    "@globalart/text-utils": "4.0.3",
     "rxjs": "^7.8.2",
     "typeorm": "^1.0.0"
   },
