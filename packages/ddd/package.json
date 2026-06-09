@@ -52,7 +52,7 @@
     "date-fns": "4.4.0",
     "dequal": "2.0.3",
     "nanoid": "5.1.11",
-    "prettier": "3.8.3",
+    "prettier": "3.8.4",
     "ts-pattern": "5.9.0",
     "uuid": "14.0.0",
     "zod": "4.4.3"
