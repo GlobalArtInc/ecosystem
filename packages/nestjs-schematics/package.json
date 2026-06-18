@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@angular-devkit/core": "22.0.3",
-    "@angular-devkit/schematics": "22.0.2",
+    "@angular-devkit/schematics": "22.0.3",
     "comment-json": "5.0.0",
     "jsonc-parser": "3.3.1"
   },
