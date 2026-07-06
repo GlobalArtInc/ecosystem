@@ -4,10 +4,10 @@ import { DiscoveryModule } from "@nestjs/core";
 import { TemporalMetadataAccessor } from "./temporal-metadata.accessors";
 import { TemporalExplorer } from "./temporal.explorer";
 import {
+  SharedWorkflowClientConfig,
   SharedWorkflowClientOptions,
-  TemporalModuleOptions,
 } from "./interfaces";
-import { createClientProviders } from "./temporal.providers";
+import { createClientProvider } from "./temporal.providers";
 import { createClientAsyncProvider } from "./utils";
 import {
   ConfigurableModuleClass,
@@ -38,15 +38,27 @@ export class TemporalModule extends ConfigurableModuleClass {
       TemporalExplorer,
       TemporalMetadataAccessor,
     );
-    superDynamicModule.exports?.push(
-      TemporalExplorer,
-      TemporalMetadataAccessor,
-      DiscoveryModule,
-    );
 
     return {
       ...superDynamicModule,
-      exports: [DiscoveryModule],
+      exports: [DiscoveryModule, TemporalExplorer, TemporalMetadataAccessor],
+    };
+  }
+
+  /**
+   * Registers a Temporal WorkflowClient.
+   *
+   * @param options - Client configuration options
+   * @returns Dynamic module configuration
+   */
+  static registerClient(options: SharedWorkflowClientConfig): DynamicModule {
+    const provider = createClientProvider(options);
+
+    return {
+      global: true,
+      module: TemporalModule,
+      providers: [provider],
+      exports: [provider],
     };
   }
 

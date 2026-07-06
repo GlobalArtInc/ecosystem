@@ -32,6 +32,12 @@ import {
 } from "./constants/temporal.constants";
 import { TemporalParamsFactory } from "./temporal-params.factory";
 import { Context } from "@temporalio/activity";
+import {
+  DuplicateActivityError,
+  TemporalConnectionError,
+  TemporalWorkerCreationError,
+  UnsupportedActivityScopeError,
+} from "./errors";
 
 /**
  * TemporalExplorer is responsible for discovering and registering Temporal activities
@@ -72,14 +78,27 @@ export class TemporalExplorer
       return;
     }
 
-    try {
-      this.workers.forEach((worker) => worker.shutdown());
-      if (this.workerRunPromises) {
-        await Promise.all(this.workerRunPromises);
+    this.workers.forEach((worker) => {
+      try {
+        worker.shutdown();
+      } catch (err: unknown) {
+        this.logger.warn(`Failed to signal shutdown for a Temporal worker.`, {
+          err: err instanceof Error ? err.message : String(err),
+        });
       }
-    } catch (err: unknown) {
-      this.logger.warn("Temporal workers were not cleanly shutdown.", {
-        err: err instanceof Error ? err.message : String(err),
+    });
+
+    if (this.workerRunPromises) {
+      const results = await Promise.allSettled(this.workerRunPromises);
+      results.forEach((result, index) => {
+        if (result.status === "rejected") {
+          this.logger.warn(`Temporal worker #${index} was not cleanly shutdown.`, {
+            err:
+              result.reason instanceof Error
+                ? result.reason.message
+                : String(result.reason),
+          });
+        }
       });
     }
   }
@@ -125,8 +144,12 @@ export class TemporalExplorer
 
     if (connectionOptions) {
       this.logger.verbose("Connecting to the Temporal server");
-      sharedWorkerOptions.connection =
-        await NativeConnection.connect(connectionOptions);
+      try {
+        sharedWorkerOptions.connection =
+          await NativeConnection.connect(connectionOptions);
+      } catch (err: unknown) {
+        throw new TemporalConnectionError(err);
+      }
     }
 
     this.logger.verbose("Creating a new Worker");
@@ -135,7 +158,9 @@ export class TemporalExplorer
         Worker.create({
           ...sharedWorkerOptions,
           ...config,
-          activities: { ...(configActivities as Record<string, Function>), ...activitiesFunc },
+          activities: { ...activitiesFunc, ...(configActivities as Record<string, Function>) },
+        }).catch((err: unknown) => {
+          throw new TemporalWorkerCreationError(config.taskQueue, err);
         }),
       ),
     );
@@ -201,9 +226,13 @@ export class TemporalExplorer
         .getAllMethodNames(Object.getPrototypeOf(instance))
         .forEach((key) => {
           if (this.metadataAccessor.isActivity(instance[key])) {
-            activityMethods[key] = (activityMethods[key] || []).concat(
-              instance.constructor.name,
-            );
+            const activityOptions = this.metadataAccessor.getActivity(
+              instance[key],
+            ) as { name?: string } | undefined;
+            const activityName = activityOptions?.name || key;
+            activityMethods[activityName] = (
+              activityMethods[activityName] || []
+            ).concat(instance.constructor.name);
           }
         });
     });
@@ -213,11 +242,9 @@ export class TemporalExplorer
     );
 
     if (violations.length > 0) {
-      const message = `Activity names must be unique across all Activity classes. Identified activities with conflicting names: ${JSON.stringify(
-        Object.fromEntries(violations),
-      )}`;
-      this.logger.error(message);
-      throw new Error(message);
+      const error = new DuplicateActivityError(Object.fromEntries(violations));
+      this.logger.error(error.message);
+      throw error;
     }
   }
 
@@ -258,10 +285,17 @@ export class TemporalExplorer
         (key: string) => {
           if (this.metadataAccessor.isActivity(instance[key])) {
             if (isRequestScoped) {
-              this.logger.warn(
-                `Request-scoped activities are not yet fully supported. Activity "${key}" from class "${instance.constructor.name}" may not work correctly.`,
+              throw new UnsupportedActivityScopeError(
+                key,
+                instance.constructor.name,
               );
             }
+
+            const activityOptions = this.metadataAccessor.getActivity(
+              instance[key],
+            ) as { name?: string } | undefined;
+            const activityName = activityOptions?.name || key;
+
             const paramsFactory = new TemporalParamsFactory(
               instance,
               instance[key],
@@ -279,13 +313,32 @@ export class TemporalExplorer
               "temporal",
             );
 
-            activitiesMethod[key] = async (...args: unknown[]) => {
+            if (activitiesMethod[activityName]) {
+              this.logger.warn(
+                `Activity "${activityName}" from class "${instance.constructor.name}" overrides a previously registered activity with the same name. Enable errorOnDuplicateActivities to fail fast on this instead.`,
+              );
+            }
+
+            activitiesMethod[activityName] = async (...args: unknown[]) => {
               const ctx = Context.current();
               const result = handler(...args, ctx.info);
 
-              const interval = setInterval(() => {
-                ctx.heartbeat(crypto.randomUUID());
-              }, 5000);
+              const { heartbeatTimeoutMs } = ctx.info;
+              let interval: NodeJS.Timeout | undefined;
+              if (heartbeatTimeoutMs) {
+                interval = setInterval(
+                  () => {
+                    try {
+                      ctx.heartbeat();
+                    } catch (error) {
+                      this.logger.warn(
+                        `Failed to send heartbeat for activity "${activityName}": ${error}`,
+                      );
+                    }
+                  },
+                  Math.min(heartbeatTimeoutMs / 2, 30000),
+                );
+              }
 
               try {
                 return isObservable(result)

@@ -9,7 +9,6 @@ import {
 } from '../interfaces';
 import { getWorkflowClient } from './client.util';
 import { getAsyncQueueToken, getQueueToken } from './get-queue-token.util';
-import { DiscoveryModule } from '@nestjs/core';
 
 export function createAsyncProvider(
   provide: string,
@@ -47,6 +46,5 @@ export function createClientAsyncProvider(
         getWorkflowClient(options),
       inject: [optionsProvide],
     },
-    DiscoveryModule,
   ];
 }

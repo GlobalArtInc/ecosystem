@@ -21,7 +21,7 @@ export class TemporalExecutionContext implements ExecutionContext {
   }
 
   getWorkflowInfo(): Info {
-    return this.args[0] as Info;
+    return this.args[this.args.length - 1] as Info;
   }
 
   getArgByIndex<T = unknown>(index: number): T {
