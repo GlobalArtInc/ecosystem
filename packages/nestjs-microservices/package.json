@@ -1,6 +1,6 @@
 {
   "name": "@globalart/nestjs-microservices",
-  "version": "4.0.4",
+  "version": "4.0.5",
   "description": "A simple microservices builder for NestJS",
   "author": {
     "name": "GlobalArt, Inc"

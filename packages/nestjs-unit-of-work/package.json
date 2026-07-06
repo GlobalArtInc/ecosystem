@@ -1,7 +1,7 @@
 {
   "name": "@globalart/nestjs-unit-of-work",
   "description": "Transactional integration for NestJS",
-  "version": "4.0.4",
+  "version": "4.0.5",
   "type": "module",
   "main": "dist/index.mjs",
   "module": "dist/index.mjs",
@@ -43,8 +43,8 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@globalart/ddd": "4.0.4",
-    "@globalart/text-utils": "4.0.4",
+    "@globalart/ddd": "4.0.5",
+    "@globalart/text-utils": "4.0.5",
     "rxjs": "^7.8.2",
     "typeorm": "^1.0.0"
   },
