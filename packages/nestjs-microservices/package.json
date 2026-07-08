@@ -67,7 +67,7 @@
     "ts-node": "^10.9.2",
     "tsdown": "0.22.3",
     "typeorm": "1.0.0",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.2"
   },
   "jest": {
     "coveragePathIgnorePatterns": [
