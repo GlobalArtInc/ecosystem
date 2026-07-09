@@ -1,1 +1,2 @@
-export { VersioningController } from './decorators/versioning-controller.decorator';
+export * from './decorators';
+export * from './pipes';
