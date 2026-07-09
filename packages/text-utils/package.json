@@ -1,7 +1,7 @@
 {
   "name": "@globalart/text-utils",
   "description": "A collection of modules, helpers and utils for working with text.",
-  "version": "4.0.5",
+  "version": "4.0.6",
   "private": false,
   "license": "MIT",
   "type": "module",
