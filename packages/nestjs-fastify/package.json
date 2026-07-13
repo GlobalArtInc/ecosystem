@@ -70,7 +70,7 @@
     "rxjs": "^7.8.2",
     "ts-jest": "29.4.11",
     "ts-node": "^10.9.2",
-    "tsdown": "0.22.4",
+    "tsdown": "0.22.7",
     "typescript": "^7.0.2"
   },
   "publishConfig": {
