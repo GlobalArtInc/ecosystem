@@ -51,7 +51,7 @@
     "@globalart/oxide": "4.0.6",
     "date-fns": "4.4.0",
     "dequal": "2.0.3",
-    "nanoid": "5.1.16",
+    "nanoid": "6.0.0",
     "prettier": "3.9.5",
     "ts-pattern": "5.9.0",
     "uuid": "14.0.1",
