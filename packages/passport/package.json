@@ -48,7 +48,7 @@
     "@types/passport": "^1.0.17",
     "prettier": "3.9.5",
     "ts-node": "^10.9.2",
-    "tsdown": "0.22.7",
+    "tsdown": "0.22.8",
     "typescript": "^7.0.2"
   },
   "dependencies": {
