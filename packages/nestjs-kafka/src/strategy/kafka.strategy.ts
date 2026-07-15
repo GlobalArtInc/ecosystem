@@ -37,6 +37,8 @@ import {
   toProducerRdKafkaConfig,
 } from "../utils/rdkafka-config";
 import { computeRetryDelay, getMaxRetries } from "../utils/retry.utils";
+import { KAFKA_RETRY_EXTRAS_KEY } from "../decorators/kafka-retry.decorator";
+import type { KafkaRetryOptions } from "../decorators/kafka-retry.decorator";
 import {
   applyPostfix,
   DEFAULT_POSTFIX_SERVER,
@@ -332,6 +334,13 @@ export class KafkaStrategy
     }
   }
 
+  private getRetryOverrides(topic: string): KafkaRetryOptions | undefined {
+    const handler = this.getHandlerByPattern(topic);
+    return (handler as { extras?: Record<string, unknown> } | null)?.extras?.[
+      KAFKA_RETRY_EXTRAS_KEY
+    ] as KafkaRetryOptions | undefined;
+  }
+
   private async handleEventMessage(
     topic: string,
     partition: number,
@@ -339,8 +348,10 @@ export class KafkaStrategy
     headers: KafkaJS.IHeaders | undefined,
     pause: () => () => void,
   ): Promise<boolean> {
-    const strategy = this.options.retryStrategy ?? { type: "fixed" as const };
-    const maxRetries = getMaxRetries(strategy);
+    const overrides = this.getRetryOverrides(topic);
+    const strategy =
+      overrides?.strategy ?? this.options.retryStrategy ?? { type: "fixed" as const };
+    const maxRetries = overrides?.maxRetries ?? getMaxRetries(strategy);
     const key = `${topic}:${partition}:${message.offset}`;
     const failures = this.failureCounts.get(key) ?? 0;
 
@@ -373,7 +384,15 @@ export class KafkaStrategy
     const newFailures = failures + 1;
 
     if (newFailures > maxRetries) {
-      await this.sendToDlq(topic, partition, message, headers, lastError, newFailures);
+      await this.sendToDlq(
+        topic,
+        partition,
+        message,
+        headers,
+        lastError,
+        newFailures,
+        overrides?.deadLetterTopic,
+      );
       this.failureCounts.delete(key);
       this.storeOffset(topic, partition, message.offset);
       return true;
@@ -464,8 +483,12 @@ export class KafkaStrategy
     headers: KafkaJS.IHeaders | undefined,
     error: unknown,
     failures: number,
+    deadLetterTopicOverride?: string | false,
   ): Promise<void> {
-    const dlqTopic = this.options.deadLetterTopic;
+    const dlqTopic =
+      deadLetterTopicOverride === false
+        ? undefined
+        : (deadLetterTopicOverride ?? this.options.deadLetterTopic);
     if (!dlqTopic) {
       this.logger.warn(
         `Max retries exceeded on "${topic}", dropping message (no DLQ configured)`,

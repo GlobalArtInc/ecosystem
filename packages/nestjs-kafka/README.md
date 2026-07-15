@@ -10,6 +10,7 @@ A NestJS microservice transport built on top of `@confluentinc/kafka-javascript`
 - **Inject decorators** — `InjectKafkaProducer`, `InjectKafkaConsumer`, `InjectKafkaAdmin`, etc.
 - **Retry strategies** — fixed or exponential back-off with configurable jitter and max retries
 - **Dead Letter Queue** — automatically routes exhausted messages to a DLQ topic
+- **Per-handler retry overrides** — `@KafkaRetry` to customize max retries / DLQ per `@EventPattern` handler
 - **Batch mode** — `eachBatch` consumer with per-message offset resolution
 - **Producer-only mode** — skip consumer setup when you only need to produce
 - **Schema Registry** — built-in Protobuf serde via `@confluentinc/schemaregistry`

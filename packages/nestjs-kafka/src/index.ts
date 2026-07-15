@@ -58,6 +58,8 @@ export {
   KafkaMessageAck,
   KafkaMessageNack,
 } from "./decorators/kafka.decorators";
+export { KafkaRetry } from "./decorators/kafka-retry.decorator";
+export type { KafkaRetryOptions } from "./decorators/kafka-retry.decorator";
 export {
   InjectKafkaProducer,
   InjectKafkaConsumer,
