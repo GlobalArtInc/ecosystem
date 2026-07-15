@@ -1,6 +1,6 @@
 {
   "name": "@globalart/nestjs-swagger",
-  "version": "4.0.6",
+  "version": "4.0.7",
   "description": "A simple documentation builder for NestJS Swagger Module",
   "author": {
     "name": "GlobalArt, Inc"
@@ -46,7 +46,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@globalart/nestjs-zod": "4.0.6",
+    "@globalart/nestjs-zod": "4.0.7",
     "mysql": "^2.18.1"
   },
   "peerDependencies": {

@@ -1,7 +1,7 @@
 {
   "name": "@globalart/nestjs-zod",
   "description": "All NestJS + Zod utilities you need",
-  "version": "4.0.6",
+  "version": "4.0.7",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.cts",

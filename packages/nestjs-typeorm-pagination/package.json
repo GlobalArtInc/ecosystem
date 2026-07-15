@@ -1,6 +1,6 @@
 {
   "name": "@globalart/nestjs-typeorm-pagination",
-  "version": "4.0.6",
+  "version": "4.0.7",
   "author": "GlobalArt, Inc",
   "license": "MIT",
   "type": "module",
@@ -76,7 +76,7 @@
     "typescript": "^7.0.2"
   },
   "dependencies": {
-    "@globalart/nestjs-zod": "4.0.6",
+    "@globalart/nestjs-zod": "4.0.7",
     "class-transformer": "^0.5.1",
     "class-validator": "0.15.1",
     "lodash": "^4.18.1",
