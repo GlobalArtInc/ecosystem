@@ -58,6 +58,6 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
-    "tsdown": "0.22.8"
+    "tsdown": "0.22.9"
   }
 }
