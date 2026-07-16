@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "rimraf": "^6.1.3",
-    "tldts": "7.4.8"
+    "tldts": "7.4.9"
   },
   "devDependencies": {
     "prettier": "3.9.5",
