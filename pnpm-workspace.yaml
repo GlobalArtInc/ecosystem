@@ -2,3 +2,16 @@ packages:
   - "packages/*"
   - "ecosystem-examples/examples/*"
   - "docs"
+allowBuilds:
+  '@apollo/protobufjs': true
+  '@confluentinc/kafka-javascript': true
+  '@nestjs/core': true
+  '@parcel/watcher': true
+  '@scarf/scarf': true
+  '@swc/core': true
+  core-js: true
+  esbuild: true
+  hiredis: true
+  protobufjs: true
+  sqlite3: true
+  unrs-resolver: true

@@ -12,6 +12,7 @@
     "lint": "pnpm -r lint",
     "format": "pnpm -r format",
     "clean": "pnpm -r clean && npx rimraf packages/*/node_modules packages/*/dist examples/*/node_modules examples/*/dist",
+    "predev": "bash scripts/kill-stale-dev-all.sh",
     "dev": "pnpm -r --parallel dev",
     "publish:npm": "release-it",
     "publish:dev": "NPM_TAG=dev release-it --preRelease=dev",
@@ -29,7 +30,7 @@
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
   },
-  "packageManager": "pnpm@10.26.2",
+  "packageManager": "pnpm@11.17.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/GlobalArtInc/ecosystem.git"

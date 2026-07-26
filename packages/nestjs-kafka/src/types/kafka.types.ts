@@ -86,8 +86,8 @@ export interface KafkaOptions {
   retryStrategy?: KafkaRetryStrategy;
   deadLetterTopic?: string;
   shutdownTimeoutMs?: number;
-  /** When set, auto-creates subscribed topics before the consumer starts. Pass {} for defaults or specify numPartitions/replicationFactor. */
-  autoCreateTopics?: Omit<KafkaJS.ITopicConfig, 'topic'>;
+  /** Auto-creates subscribed topics before the consumer starts. Enabled by default with broker defaults; pass an object to set numPartitions/replicationFactor, or false to disable. */
+  autoCreateTopics?: Omit<KafkaJS.ITopicConfig, 'topic'> | false;
   /** When true, consumer runs in eachBatch mode instead of eachMessage. */
   batchMode?: boolean;
   /** Options forwarded to consumer.run() — excludes eachMessage/eachBatch which are managed internally. */
