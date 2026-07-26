@@ -2,6 +2,8 @@ packages:
   - "packages/*"
   - "ecosystem-examples/examples/*"
   - "docs"
+overrides:
+  css-select: "4.3.0"
 allowBuilds:
   '@apollo/protobufjs': true
   '@confluentinc/kafka-javascript': true
@@ -10,6 +12,7 @@ allowBuilds:
   '@scarf/scarf': true
   '@swc/core': true
   core-js: true
+  core-js-pure: true
   esbuild: true
   hiredis: true
   protobufjs: true

@@ -1,6 +1,6 @@
 {
   "name": "@globalart/nestjs-daemon",
-  "version": "4.0.7",
+  "version": "4.0.8",
   "description": "A daemon modules for NestJS",
   "author": {
     "name": "GlobalArt, Inc"
