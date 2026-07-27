@@ -48,7 +48,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@globalart/oxide": "4.0.7",
+    "@globalart/oxide": "4.0.8",
     "dequal": "2.0.3",
     "nanoid": "6.0.0",
     "prettier": "3.9.6",
