@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "@globalart/ddd": "4.0.7",
-    "@globalart/text-utils": "4.0.7",
+    "@globalart/text-utils": "4.0.8",
     "rxjs": "^7.8.2",
     "typeorm": "^1.0.0"
   },
