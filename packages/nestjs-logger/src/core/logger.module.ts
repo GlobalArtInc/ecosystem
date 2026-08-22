@@ -36,6 +36,10 @@ export interface LoggerModuleOptions {
   sensitiveFields?: string[];
   exclude?: ExcludeOption[];
   logRequests?: boolean;
+  includeHeaders?: string[];
+  logRequestBody?: boolean;
+  logResponseBody?: boolean;
+  maxBodyLength?: number;
 }
 
 export const {

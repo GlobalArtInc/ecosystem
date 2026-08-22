@@ -220,15 +220,42 @@ interface LogOptions {
 
 ### Configuration Options
 
-| Option            | Type              | Default     | Description                           |
-| ----------------- | ----------------- | ----------- | ------------------------------------- |
-| `level`           | `LogLevel`        | `'info'`    | Logging level                         |
-| `timestamp`       | `boolean`         | `true`      | Show timestamp                        |
-| `colors`          | `boolean`         | `true`      | Colored output                        |
-| `format`          | `LogFormat`       | `'text'`    | Output format                         |
-| `context`         | `string`          | `undefined` | Default context                       |
-| `sensitiveFields` | `string[]`        | `[...]`     | Fields to sanitize                    |
-| `exclude`         | `ExcludeOption[]` | `[]`        | HTTP requests to exclude from logging |
+| Option            | Type              | Default     | Description                                          |
+| ----------------- | ----------------- | ----------- | ---------------------------------------------------- |
+| `level`           | `LogLevel`        | `'info'`    | Logging level                                        |
+| `timestamp`       | `boolean`         | `true`      | Show timestamp                                       |
+| `colors`          | `boolean`         | `true`      | Colored output                                       |
+| `format`          | `LogFormat`       | `'text'`    | Output format                                        |
+| `context`         | `string`          | `undefined` | Default context                                      |
+| `sensitiveFields` | `string[]`        | `[...]`     | Fields to sanitize                                   |
+| `exclude`         | `ExcludeOption[]` | `[]`        | HTTP requests to exclude from logging                |
+| `logRequests`     | `boolean`         | `false`     | Log every handled HTTP request                       |
+| `includeHeaders`  | `string[]`        | `undefined` | Log only these headers; all of them when unset       |
+| `logRequestBody`  | `boolean`         | `true`      | Include the request body in the log entry            |
+| `logResponseBody` | `boolean`         | `false`     | Include the response body in the log entry           |
+| `maxBodyLength`   | `number`          | `2048`      | Truncate a serialized body longer than this          |
+
+### HTTP Payload Logging
+
+By default every request header is written to the log entry, which makes lines large enough to be
+dropped by log backends that enforce a per-line size limit, and leaks `cookie` and other
+credential-carrying headers into log storage. Pass `includeHeaders` to keep only the headers you
+actually query on, and cap payloads with `maxBodyLength`:
+
+```typescript
+LoggerModule.forRoot({
+  format: "pino",
+  logRequests: true,
+  includeHeaders: ["user-agent", "x-request-id", "content-type"],
+  logRequestBody: true,
+  logResponseBody: true,
+  maxBodyLength: 2048,
+});
+```
+
+Header matching is case-insensitive and applies to both request and response headers.
+Bodies are sanitized with `sensitiveFields` first and truncated afterwards; a truncated body is
+replaced by its serialized prefix followed by `...[TRUNCATED <n> chars]`.
 
 ## Decorators
 

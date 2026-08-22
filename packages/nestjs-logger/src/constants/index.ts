@@ -37,6 +37,8 @@ export const COLORS = {
   bright: "\x1b[1m",
 };
 
+export const DEFAULT_MAX_BODY_LENGTH = 2048;
+
 export const DEFAULT_LOGGER_CONFIG = {
   level: "info" as const,
   timestamp: true,
@@ -44,4 +46,7 @@ export const DEFAULT_LOGGER_CONFIG = {
   format: "text" as const,
   sensitiveFields: DEFAULT_SENSITIVE_FIELDS,
   exclude: [] as never[],
+  logRequestBody: true,
+  logResponseBody: false,
+  maxBodyLength: DEFAULT_MAX_BODY_LENGTH,
 };

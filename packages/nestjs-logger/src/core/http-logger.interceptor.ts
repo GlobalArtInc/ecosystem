@@ -10,7 +10,11 @@ import { Reflector } from "@nestjs/core";
 import { hostname } from "os";
 import { Observable } from "rxjs";
 import { catchError, tap } from "rxjs/operators";
-import { LOGGER_CONFIG_TOKEN, LOGGER_EXCLUDE_METADATA } from "../constants";
+import {
+  DEFAULT_MAX_BODY_LENGTH,
+  LOGGER_CONFIG_TOKEN,
+  LOGGER_EXCLUDE_METADATA,
+} from "../constants";
 import type { IDataSanitizer, IRequestIdGenerator } from "../contracts/index";
 import type {
   HttpRequest,
@@ -25,6 +29,7 @@ import { LoggerService } from "./logger.service";
 export class HttpLoggerInterceptor implements NestInterceptor {
   private readonly hostname = hostname();
   private readonly pid = process.pid;
+  private headerAllowList: Set<string> | null | undefined;
 
   constructor(
     private readonly logger: LoggerService,
@@ -64,7 +69,7 @@ export class HttpLoggerInterceptor implements NestInterceptor {
     const startTime = Date.now();
 
     return next.handle().pipe(
-      tap(() => {
+      tap((data) => {
         if (this.config.format === "pino") {
           const entry = this.createHttpLogEntry(
             request,
@@ -73,6 +78,7 @@ export class HttpLoggerInterceptor implements NestInterceptor {
             startTime,
             30,
             "request completed",
+            data,
           );
           this.logger.logHttpRequest(entry);
         } else {
@@ -124,6 +130,7 @@ export class HttpLoggerInterceptor implements NestInterceptor {
     startTime: number,
     level: number,
     message: string,
+    responseBody?: unknown,
   ): HttpRequestLogEntry {
     const responseTime = Date.now() - startTime;
     const ip = this.getClientIp(request);
@@ -137,12 +144,18 @@ export class HttpLoggerInterceptor implements NestInterceptor {
       headers: this.sanitizeHeaders(request.headers || {}),
       remoteAddress: ip,
       remotePort: request.connection?.remotePort,
-      body: this.dataSanitizer.sanitize(request.body),
+      body:
+        this.config.logRequestBody === false
+          ? undefined
+          : this.truncateBody(this.dataSanitizer.sanitize(request.body)),
     };
 
     const httpResponse: HttpResponse = {
       statusCode: response.statusCode || 500,
       headers: this.sanitizeHeaders(response.getHeaders?.() || {}),
+      body: this.config.logResponseBody
+        ? this.truncateBody(this.dataSanitizer.sanitize(responseBody))
+        : undefined,
     };
 
     return {
@@ -191,12 +204,54 @@ export class HttpLoggerInterceptor implements NestInterceptor {
     );
   }
 
+  private getHeaderAllowList(): Set<string> | null {
+    if (this.headerAllowList === undefined) {
+      const includeHeaders = this.config.includeHeaders;
+      this.headerAllowList =
+        includeHeaders && includeHeaders.length > 0
+          ? new Set(includeHeaders.map((header) => header.toLowerCase()))
+          : null;
+    }
+
+    return this.headerAllowList;
+  }
+
+  private truncateBody(body: unknown): unknown {
+    if (body === null || body === undefined) {
+      return body;
+    }
+
+    const maxLength = this.config.maxBodyLength ?? DEFAULT_MAX_BODY_LENGTH;
+    if (maxLength <= 0) {
+      return body;
+    }
+
+    let serialized: string;
+    try {
+      serialized =
+        typeof body === "string" ? body : (JSON.stringify(body) ?? String(body));
+    } catch {
+      return "[UNSERIALIZABLE]";
+    }
+
+    if (serialized.length <= maxLength) {
+      return body;
+    }
+
+    return `${serialized.slice(0, maxLength)}...[TRUNCATED ${serialized.length} chars]`;
+  }
+
   private sanitizeHeaders(
     headers: Record<string, any>,
   ): Record<string, string> {
+    const allowList = this.getHeaderAllowList();
     const sanitized: Record<string, string> = {};
 
     for (const [key, value] of Object.entries(headers)) {
+      if (allowList && !allowList.has(key.toLowerCase())) {
+        continue;
+      }
+
       if (typeof value === "string") {
         sanitized[key] = value;
       } else if (Array.isArray(value)) {

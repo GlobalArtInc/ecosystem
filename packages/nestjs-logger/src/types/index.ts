@@ -41,6 +41,7 @@ export interface HttpRequest {
 export interface HttpResponse {
   readonly statusCode: number;
   readonly headers: Record<string, string>;
+  readonly body?: unknown;
 }
 
 export interface HttpRequestLogEntry {
@@ -71,6 +72,10 @@ export interface LoggerConfiguration {
   readonly sensitiveFields: readonly string[];
   readonly exclude: readonly ExcludeOption[];
   readonly logRequests?: boolean;
+  readonly includeHeaders?: readonly string[];
+  readonly logRequestBody?: boolean;
+  readonly logResponseBody?: boolean;
+  readonly maxBodyLength?: number;
 }
 
 export interface FormatterOptions {
