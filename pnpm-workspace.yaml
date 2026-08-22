@@ -2,6 +2,8 @@ packages:
   - "packages/*"
   - "ecosystem-examples/examples/*"
   - "docs"
+verifyDepsBeforeRun: false
+
 overrides:
   css-select: "4.3.0"
 allowBuilds:
