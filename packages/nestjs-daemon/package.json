@@ -1,6 +1,6 @@
 {
   "name": "@globalart/nestjs-daemon",
-  "version": "4.0.8",
+  "version": "4.1.0",
   "description": "A daemon modules for NestJS",
   "author": {
     "name": "GlobalArt, Inc"
@@ -34,7 +34,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@globalart/nestjs-redis": "4.0.8",
+    "@globalart/nestjs-redis": "4.1.0",
     "ioredis": "^6.0.0",
     "nestjs-cls": "6.2.1",
     "rxjs": "^7.8.1"
