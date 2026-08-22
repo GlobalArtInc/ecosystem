@@ -23,28 +23,36 @@ pnpm build
 
 ## Release
 
-One command releases the whole monorepo — never `npm publish` a single package by hand, that leaves
-the shared version inconsistent:
+A release covers every package at once — never `npm publish` a single package by hand, that leaves
+the shared version inconsistent. It takes two commands:
 
 ```bash
-pnpm publish:npm
+pnpm publish:npm        # bump, build, commit, tag, push
+pnpm publish:packages   # publish every package to npm
 ```
 
-`release-it` drives the chain defined in `.release-it.json`:
+`pnpm publish:npm` runs `release-it` over the chain in `.release-it.json`:
 
 1. bumps the version in the root `package.json`
 2. `after:bump` → `scripts/sync-versions.mjs` writes that version into every `packages/*/package.json`
    and rewrites their `@globalart/*` dependency ranges to it
 3. `before:release` → `pnpm build`
-4. `before:git:commit` → `scripts/publish-packages.mjs` publishes every package to npm, ordered so a
-   dependency is always published before its dependents
-5. release-it commits `release v<version>`, tags `v<version>` and pushes
+4. commits `release v<version>`, tags `v<version>` and pushes
 
-Requirements: a clean working tree (`requireCleanWorkingDir`) and working npm auth — the publish
-script aborts when `npm whoami` fails. Non-interactive runs need an explicit increment, for example
-`npx release-it minor --ci`.
+It does not publish: `npm.publish` is off, and the `before:git:commit` hook that was meant to call
+`scripts/publish-packages.mjs` is not a hook name release-it recognises, so it is silently skipped.
+Run `pnpm publish:packages` afterwards — it publishes every non-private package in dependency order,
+so a dependency always lands on the registry before its dependents.
 
-`pnpm publish:dev` does the same under the `dev` dist-tag as a prerelease.
+Requirements: a clean working tree (`requireCleanWorkingDir`), a branch with an upstream, and working
+npm auth — the publish script aborts when `npm whoami` fails. Non-interactive runs need an explicit
+increment, for example `npx release-it minor --ci`.
+
+`verifyDepsBeforeRun: false` in `pnpm-workspace.yaml` is what keeps the release build working: after
+the bump the internal `@globalart/*` ranges point at a version that is not on the registry yet, and
+pnpm would otherwise try to install it before running the build.
+
+`pnpm publish:dev` releases the same way under the `dev` dist-tag as a prerelease.
 
 ## Conventions
 
