@@ -230,10 +230,34 @@ interface LogOptions {
 | `sensitiveFields` | `string[]`        | `[...]`     | Fields to sanitize                                   |
 | `exclude`         | `ExcludeOption[]` | `[]`        | HTTP requests to exclude from logging                |
 | `logRequests`     | `boolean`         | `false`     | Log every handled HTTP request                       |
+| `fieldNaming`     | `FieldNaming`     | `'camelCase'` | Case of the log entry's own field names            |
 | `includeHeaders`  | `string[]`        | `undefined` | Log only these headers; all of them when unset       |
 | `logRequestBody`  | `boolean`         | `true`      | Include the request body in the log entry            |
 | `logResponseBody` | `boolean`         | `false`     | Include the response body in the log entry           |
 | `maxBodyLength`   | `number`          | `2048`      | Truncate a serialized body longer than this          |
+
+### Field Naming
+
+Log entries name their own fields in camelCase by default — `responseTime`, `statusCode`,
+`remoteAddress`, `traceId`. Set `fieldNaming: "snake_case"` when the log pipeline expects snake_case
+keys:
+
+```typescript
+LoggerModule.forRoot({
+  format: "pino",
+  logRequests: true,
+  fieldNaming: "snake_case",
+});
+```
+
+```json
+{ "level": 30, "req": { "remote_address": "10.0.0.1" }, "res": { "status_code": 200 }, "response_time": 56 }
+```
+
+Only the entry's own fields are renamed. Everything the application or the client supplied —
+`headers`, `metadata`, `query`, `params` and the request and response bodies — keeps its keys
+verbatim, so a payload field named `accountId` stays `accountId`. Applies to the `json` and `pino`
+formats; `text` output is unaffected.
 
 ### HTTP Payload Logging
 

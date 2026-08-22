@@ -36,6 +36,7 @@ export interface LoggerModuleOptions {
   sensitiveFields?: string[];
   exclude?: ExcludeOption[];
   logRequests?: boolean;
+  fieldNaming?: "camelCase" | "snake_case";
   includeHeaders?: string[];
   logRequestBody?: boolean;
   logResponseBody?: boolean;
@@ -156,6 +157,7 @@ export class LoggerModule
             colors: config.colors,
             timestamp: config.timestamp,
             context: config.context,
+            fieldNaming: config.fieldNaming,
           });
           return new LoggerService(
             config, 

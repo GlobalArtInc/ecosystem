@@ -15,11 +15,11 @@ export class PinoFormatter extends BaseFormatter {
     if (entry.trace) obj.trace = entry.trace;
     if (entry.traceId) obj.traceId = entry.traceId;
     if (entry.spanId) obj.spanId = entry.spanId;
-    return JSON.stringify(obj);
+    return JSON.stringify(this.applyFieldNaming(obj));
   }
 
   formatHttpRequest(entry: HttpRequestLogEntry): string {
-    const jsonString = JSON.stringify(entry);
+    const jsonString = JSON.stringify(this.applyFieldNaming(entry));
     return this.options.colors
       ? this.colorize(jsonString, this.getColorForLevel(entry.level))
       : jsonString;

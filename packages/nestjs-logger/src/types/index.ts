@@ -3,6 +3,7 @@ import { RequestMethod } from "@nestjs/common";
 // Basic Types
 export type LogLevel = "error" | "warn" | "info" | "debug" | "verbose";
 export type LogFormat = "json" | "text" | "pino";
+export type FieldNaming = "camelCase" | "snake_case";
 
 // Core Interfaces
 export interface LogEntry {
@@ -73,6 +74,7 @@ export interface LoggerConfiguration {
   readonly exclude: readonly ExcludeOption[];
   readonly logRequests?: boolean;
   readonly includeHeaders?: readonly string[];
+  readonly fieldNaming?: FieldNaming;
   readonly logRequestBody?: boolean;
   readonly logResponseBody?: boolean;
   readonly maxBodyLength?: number;
@@ -82,5 +84,6 @@ export interface FormatterOptions {
   readonly colors: boolean;
   readonly timestamp: boolean;
   readonly context?: string;
+  readonly fieldNaming?: FieldNaming;
 }
 

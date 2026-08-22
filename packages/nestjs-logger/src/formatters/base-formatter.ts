@@ -1,6 +1,6 @@
 import { ILogFormatter } from "../contracts";
 import { LogEntry, HttpRequestLogEntry, FormatterOptions } from "../types";
-import { COLORS } from "../constants";
+import { COLORS, OPAQUE_LOG_FIELDS } from "../constants";
 
 export abstract class BaseFormatter implements ILogFormatter {
   constructor(protected readonly options: FormatterOptions) {}
@@ -8,6 +8,41 @@ export abstract class BaseFormatter implements ILogFormatter {
   abstract format(entry: LogEntry): string;
 
   abstract formatHttpRequest(entry: HttpRequestLogEntry): string;
+
+  protected applyFieldNaming<T>(value: T): T | unknown {
+    if (this.options.fieldNaming !== "snake_case") {
+      return value;
+    }
+    return this.toSnakeCaseKeys(value);
+  }
+
+  private toSnakeCaseKeys(value: unknown): unknown {
+    if (Array.isArray(value)) {
+      return value.map((item) => this.toSnakeCaseKeys(item));
+    }
+
+    if (value === null || typeof value !== "object" || value instanceof Date) {
+      return value;
+    }
+
+    const result: Record<string, unknown> = {};
+    for (const [key, nested] of Object.entries(
+      value as Record<string, unknown>,
+    )) {
+      result[this.toSnakeCase(key)] = OPAQUE_LOG_FIELDS.has(key)
+        ? nested
+        : this.toSnakeCaseKeys(nested);
+    }
+
+    return result;
+  }
+
+  private toSnakeCase(key: string): string {
+    return key
+      .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+      .replace(/-/g, "_")
+      .toLowerCase();
+  }
 
   protected formatTimestamp(timestamp: Date): string {
     return timestamp.toISOString();

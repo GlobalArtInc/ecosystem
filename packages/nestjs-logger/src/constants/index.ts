@@ -39,8 +39,17 @@ export const COLORS = {
 
 export const DEFAULT_MAX_BODY_LENGTH = 2048;
 
+export const OPAQUE_LOG_FIELDS = new Set([
+  "headers",
+  "metadata",
+  "query",
+  "params",
+  "body",
+]);
+
 export const DEFAULT_LOGGER_CONFIG = {
   level: "info" as const,
+  fieldNaming: "camelCase" as const,
   timestamp: true,
   colors: true,
   format: "text" as const,

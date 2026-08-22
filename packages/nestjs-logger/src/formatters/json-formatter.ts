@@ -6,11 +6,11 @@ import { LogEntry, HttpRequestLogEntry } from "../types";
 export class JsonFormatter extends BaseFormatter {
   format(entry: LogEntry): string {
     const logObject = this.buildLogObject(entry);
-    return JSON.stringify(logObject);
+    return JSON.stringify(this.applyFieldNaming(logObject));
   }
 
   formatHttpRequest(entry: HttpRequestLogEntry): string {
-    const jsonString = JSON.stringify(entry);
+    const jsonString = JSON.stringify(this.applyFieldNaming(entry));
     return this.options.colors
       ? this.colorize(jsonString, this.getColorForLevel(entry.level))
       : jsonString;
