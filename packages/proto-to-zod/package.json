@@ -45,7 +45,7 @@
   "dependencies": {
     "inflection": "3.0.2",
     "protobufjs": "^8.6.0",
-    "zod": "4.4.3"
+    "zod": "4.5.1"
   },
   "publishConfig": {
     "access": "public"
