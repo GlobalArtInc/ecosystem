@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.0.0",
-    "cpx2": "9.0.0",
+    "cpx2": "9.0.2",
     "reflect-metadata": "^0.2.2",
     "typescript": "^7.0.2"
   },
