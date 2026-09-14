@@ -59,7 +59,7 @@
     "ts-jest": "29.4.12",
     "tsdown": "0.23.0",
     "typescript": "^7.0.2",
-    "zod": "4.5.4"
+    "zod": "4.6.2"
   },
   "peerDependencies": {
     "@nestjs/common": "^10.0.0 || ^11.0.0",
