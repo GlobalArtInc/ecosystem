@@ -7,15 +7,22 @@ import {
   retry,
   of,
   catchError,
+  defer,
 } from "rxjs";
 import { Metadata, MetadataValue, status } from "@grpc/grpc-js";
 import { randomUUID } from "crypto";
 import { GrpcService, InjectGrpcService } from "./grpc.service";
 import { Inject } from "@nestjs/common";
 import { ClsService } from "nestjs-cls";
-import { switchMap } from "rxjs/operators";
+import { getGrpcCallOptions } from "./grpc-call-options";
 
 type UnwrapObservable<U> = U extends Observable<infer R> ? R : U;
+
+const DEFAULT_RETRY_DELAY_MS = 5000;
+
+const isTransientError = (error: { code?: number } | undefined): boolean =>
+  error?.code === status.UNAVAILABLE ||
+  error?.code === status.DEADLINE_EXCEEDED;
 
 export abstract class AbstractGrpcClient {
   protected constructor(private readonly client: ClientGrpc) {}
@@ -65,21 +72,30 @@ export abstract class AbstractGrpcClient {
       ...args: any[]
     ) => Observable<any>;
 
-    const stream$ = method(payload, this.getMetadata()).pipe(
+    const { deadlineMs, maxRetries, retryDelayMs } = getGrpcCallOptions(
+      this.client,
+    );
+    const metadata = this.getMetadata();
+
+    const stream$ = defer(() =>
+      deadlineMs
+        ? method(payload, metadata, {
+            deadline: new Date(Date.now() + deadlineMs),
+          })
+        : method(payload, metadata),
+    ).pipe(
       retry({
+        count: maxRetries,
         delay: (error) => {
-          if (
-            error?.code === status.UNAVAILABLE ||
-            error?.code === status.DEADLINE_EXCEEDED
-          ) {
+          if (isTransientError(error)) {
             console.error("grpc error", error);
-            return timer(5000);
+            return timer(retryDelayMs ?? DEFAULT_RETRY_DELAY_MS);
           }
           return throwError(() => error);
         },
       }),
       catchError((error) => {
-        if (retryNullOnError) {
+        if (retryNullOnError && !isTransientError(error)) {
           return of(null);
         }
         return throwError(() => error);

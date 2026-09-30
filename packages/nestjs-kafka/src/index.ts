@@ -20,6 +20,7 @@ export {
   KAFKA_ADMIN_TOKEN,
 } from "./constants/kafka.constants";
 export { KafkaContext } from "./context/kafka.context";
+export { KafkaHandlerTimeoutError } from "./errors/kafka-handler-timeout.error";
 export { KafkaHealthIndicator } from "./health/kafka-health.indicator";
 export type { KafkaHealthCheckable } from "./health/kafka-health.indicator";
 export { KafkaMetricsService } from "./providers/kafka.metrics";

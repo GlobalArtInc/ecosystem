@@ -50,6 +50,9 @@ import type {
   NackState,
 } from "../types/kafka.types";
 import { KafkaStatus as Status } from "../types/kafka.types";
+import { KafkaHandlerTimeoutError } from "../errors/kafka-handler-timeout.error";
+
+const RECONNECT_DISCONNECT_TIMEOUT_MS = 10000;
 
 /** NestJS custom transport strategy backed by rdkafka via KafkaJS. */
 export class KafkaStrategy
@@ -67,6 +70,7 @@ export class KafkaStrategy
   private closed = false;
   private reconnecting = false;
   private rebalancing = false;
+  private generation = 0;
   private currentStatus: KafkaStatus = Status.DISCONNECTED;
   private readonly kafkaSerializer: KafkaSerializer;
   private readonly kafkaDeserializer: KafkaDeserializer;
@@ -118,6 +122,8 @@ export class KafkaStrategy
       DEFAULT_POSTFIX_SERVER,
     );
     const kafka = this.createKafka(clientId);
+    const generation = ++this.generation;
+    const isCurrent = () => generation === this.generation && !this.closed;
 
     const rebalanceCb = async (
       err: { code: number; message: string },
@@ -127,6 +133,14 @@ export class KafkaStrategy
         unassign: (a: typeof assignment) => void;
       },
     ) => {
+      if (!isCurrent()) {
+        if (err.code === CODES.ERRORS.ERR__ASSIGN_PARTITIONS) {
+          assignmentFns.assign(assignment);
+        } else {
+          assignmentFns.unassign(assignment);
+        }
+        return;
+      }
       if (err.code === CODES.ERRORS.ERR__REVOKE_PARTITIONS) {
         this.rebalancing = true;
         this.pendingOffsets.clear();
@@ -163,8 +177,14 @@ export class KafkaStrategy
     const internalClient = (this.consumer as any)._getInternalClient?.();
     if (internalClient) {
       internalClient.on('event.error', (err: { isFatal?: boolean; message?: string }) => {
-        if (err.isFatal && !this.closed) {
+        if (err.isFatal && isCurrent()) {
           this.logger.error(`Fatal Kafka consumer error: ${err.message}`);
+          this.scheduleReconnect();
+        }
+      });
+      internalClient.on('event.log', (log: { fac?: string; message?: string }) => {
+        if (log.fac === 'MAXPOLL' && isCurrent()) {
+          this.logger.error(`Kafka consumer stopped polling: ${log.message}`);
           this.scheduleReconnect();
         }
       });
@@ -248,10 +268,9 @@ export class KafkaStrategy
     setTimeout(async () => {
       if (this.closed) return;
       try {
-        await Promise.allSettled([
-          this.consumer?.disconnect(),
-          this.producer?.disconnect(),
-        ]);
+        await this.disconnectClients(
+          this.options.shutdownTimeoutMs ?? RECONNECT_DISCONNECT_TIMEOUT_MS,
+        );
         await this.connect();
         this.reconnecting = false;
       } catch (err) {
@@ -270,11 +289,32 @@ export class KafkaStrategy
     this.pendingOffsets.clear();
     this.failureCounts.clear();
 
-    await Promise.allSettled([
+    await this.disconnectClients(this.options.shutdownTimeoutMs);
+    this._status$.next(Status.DISCONNECTED);
+  }
+
+  private async disconnectClients(timeoutMs?: number): Promise<void> {
+    const done = Promise.allSettled([
       this.consumer?.disconnect(),
       this.producer?.disconnect(),
     ]);
-    this._status$.next(Status.DISCONNECTED);
+    if (timeoutMs === undefined) {
+      await done;
+      return;
+    }
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timedOut = await Promise.race([
+      done.then(() => false),
+      new Promise<boolean>((resolve) => {
+        timer = setTimeout(() => resolve(true), timeoutMs);
+      }),
+    ]);
+    clearTimeout(timer);
+    if (timedOut) {
+      this.logger.warn(
+        `Kafka clients did not disconnect within ${timeoutMs}ms, abandoning them`,
+      );
+    }
   }
 
   public on<
@@ -311,6 +351,7 @@ export class KafkaStrategy
     payload: KafkaJS.EachMessagePayload,
   ): Promise<boolean> {
     if (this.rebalancing) return false;
+    const generation = this.generation;
     const { topic, partition, message, pause } = payload;
     const headers = "headers" in message ? message.headers : undefined;
     const headersMap = headersToMap(headers);
@@ -320,7 +361,14 @@ export class KafkaStrategy
     const handler = this.getHandlerByPattern(topic);
 
     if (handler?.isEventHandler || !correlationId || !replyTopic) {
-      return this.handleEventMessage(topic, partition, message, headers, pause);
+      return this.handleEventMessage(
+        topic,
+        partition,
+        message,
+        headers,
+        pause,
+        generation,
+      );
     } else {
       await this.handleRpcMessage(
         topic,
@@ -330,8 +378,36 @@ export class KafkaStrategy
         correlationId,
         replyTopic,
         headersMap.get(KafkaHeaders.REPLY_PARTITION),
+        generation,
       );
-      return true;
+      return generation === this.generation;
+    }
+  }
+
+  private async withHandlerTimeout<T>(
+    work: Promise<T>,
+    topic: string,
+    partition: number,
+    offset: string,
+  ): Promise<T> {
+    const timeoutMs = this.options.handlerTimeoutMs;
+    if (!timeoutMs) return work;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      return await Promise.race([
+        work,
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(
+            () =>
+              reject(
+                new KafkaHandlerTimeoutError(topic, partition, offset, timeoutMs),
+              ),
+            timeoutMs,
+          );
+        }),
+      ]);
+    } finally {
+      clearTimeout(timer);
     }
   }
 
@@ -348,6 +424,7 @@ export class KafkaStrategy
     message: KafkaJS.KafkaMessage,
     headers: KafkaJS.IHeaders | undefined,
     pause: () => () => void,
+    generation: number,
   ): Promise<boolean> {
     const overrides = this.getRetryOverrides(topic);
     const strategy =
@@ -364,7 +441,12 @@ export class KafkaStrategy
     const data = await this.kafkaDeserialize(topic, message.value, headers);
 
     try {
-      await this.handleEvent(topic, { pattern: topic, data }, ctx);
+      await this.withHandlerTimeout(
+        this.handleEvent(topic, { pattern: topic, data }, ctx),
+        topic,
+        partition,
+        message.offset,
+      );
     } catch (err) {
       const errMessage = err instanceof Error ? err.message : JSON.stringify(err, null, 2);
       const errStack = err instanceof Error ? err.stack : undefined;
@@ -375,6 +457,8 @@ export class KafkaStrategy
       lastError = err;
       nackState = "auto";
     }
+
+    if (generation !== this.generation) return false;
 
     if (nackState === null) {
       this.failureCounts.delete(key);
@@ -406,10 +490,27 @@ export class KafkaStrategy
         (isFinite(maxRetries) ? ` (${newFailures}/${maxRetries})` : ""),
     );
 
-    this.consumer?.seek({ topic, partition, offset: message.offset });
-    const resume = pause();
+    let resume: (() => void) | undefined;
+    try {
+      this.consumer?.seek({ topic, partition, offset: message.offset });
+      resume = pause();
+    } catch (err) {
+      this.logger.warn(
+        `Failed to pause "${topic}" partition=${partition} for retry: ${String(err)}`,
+      );
+      return false;
+    }
     setTimeout(() => {
-      if (!this.closed && !this.reconnecting) resume();
+      if (this.closed || this.reconnecting || generation !== this.generation) {
+        return;
+      }
+      try {
+        resume?.();
+      } catch (err) {
+        this.logger.warn(
+          `Failed to resume "${topic}" partition=${partition}: ${String(err)}`,
+        );
+      }
     }, delayMs);
 
     return false;
@@ -437,6 +538,7 @@ export class KafkaStrategy
     correlationId: string,
     replyTopic: string,
     replyPartition: string | undefined,
+    generation: number,
   ): Promise<void> {
     const nack = () => {};
     const ctx = new KafkaContext(
@@ -460,10 +562,17 @@ export class KafkaStrategy
       const value = await this.kafkaDeserialize(topic, message.value, headers);
       const response$ = this.transformToObservable(handler(value, ctx));
       const replay$ = new ReplaySubject<unknown>();
-      await this.combineStreamsAndThrowIfRetriable(response$, replay$);
+      await this.withHandlerTimeout(
+        this.combineStreamsAndThrowIfRetriable(response$, replay$),
+        topic,
+        partition,
+        message.offset,
+      );
+      if (generation !== this.generation) return;
       this.send(replay$, publish);
       this.storeOffset(topic, partition, message.offset);
     } catch (err) {
+      if (generation !== this.generation) return;
       this.logger.error(err);
       await publish({ err });
     }

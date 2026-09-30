@@ -136,12 +136,43 @@ bootstrap();
 
 ### GrpcOptionsClient
 
-| Option        | Type     | Required | Description        |
-| ------------- | -------- | -------- | ------------------ |
-| `clientName`  | `string` | Yes      | Unique client name |
-| `packageName` | `string` | Yes      | Proto package name |
-| `protoPath`   | `string` | Yes      | Path to proto file |
-| `url`         | `string` | Yes      | gRPC server URL    |
+| Option         | Type     | Required | Default    | Description                                                                  |
+| -------------- | -------- | -------- | ---------- | ---------------------------------------------------------------------------- |
+| `clientName`   | `string` | Yes      | —          | Unique client name                                                           |
+| `packageName`  | `string` | Yes      | —          | Proto package name                                                           |
+| `protoPath`    | `string` | Yes      | —          | Path to proto file                                                           |
+| `url`          | `string` | Yes      | —          | gRPC server URL                                                              |
+| `deadlineMs`   | `number` | No       | none       | Deadline of every attempt made through `AbstractGrpcClient`, in ms           |
+| `maxRetries`   | `number` | No       | `Infinity` | Retries after `UNAVAILABLE` or `DEADLINE_EXCEEDED` before the error is thrown |
+| `retryDelayMs` | `number` | No       | `5000`     | Delay between those retries, in ms                                           |
+
+### Deadlines and retries
+
+Without `deadlineMs` a call waits for the server as long as the connection stays open, and
+`UNAVAILABLE` / `DEADLINE_EXCEEDED` are retried forever. A server that stops answering a single
+request therefore blocks the caller indefinitely. Set a deadline and a retry budget on clients that
+run inside consumers or other loops that must keep moving:
+
+```typescript
+GrpcModule.forRoot({
+  clients: [
+    {
+      clientName: "userService",
+      packageName: "user",
+      protoPath: join(__dirname, "proto/user.proto"),
+      url: "localhost:5000",
+      deadlineMs: 10000,
+      maxRetries: 2,
+      retryDelayMs: 1000,
+    },
+  ],
+});
+```
+
+The deadline is computed for every attempt, so a retry gets the full `deadlineMs` again. Once
+`maxRetries` is spent, the last `UNAVAILABLE` or `DEADLINE_EXCEEDED` error is thrown even when
+`retryNullOnError` is `true`: a transport failure is not reported as a missing result. Other errors
+keep the `retryNullOnError` behaviour.
 
 ## Usage
 

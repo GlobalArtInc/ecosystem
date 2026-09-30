@@ -11,8 +11,9 @@ import { randomUUID } from "crypto";
 import { Metadata, MetadataValue } from "@grpc/grpc-js";
 import { setupGrpcFollower } from "./setup-grpc-controller";
 import { GrpcLoader } from "./grpc.config";
+import { GrpcCallOptions, setGrpcCallOptions } from "./grpc-call-options";
 
-interface GrpcOptionsClient {
+interface GrpcOptionsClient extends GrpcCallOptions {
   clientName: string;
   packageName: string;
   protoPath: string;
@@ -78,6 +79,11 @@ export class GrpcModule {
                 url: client.url,
                 loader: client.loader,
                 credentials: client.credentials,
+              });
+              setGrpcCallOptions(grpcClient, {
+                deadlineMs: client.deadlineMs,
+                maxRetries: client.maxRetries,
+                retryDelayMs: client.retryDelayMs,
               });
               factory.register(token, grpcClient);
 

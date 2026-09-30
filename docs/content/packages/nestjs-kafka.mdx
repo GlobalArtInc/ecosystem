@@ -171,7 +171,8 @@ export class AppService implements OnModuleInit {
 | `producerOnlyMode` | `boolean` | `false` | Skip consumer creation |
 | `maxRetries` | `number` | `Infinity` | Max handler retries before sending to DLQ |
 | `deadLetterTopic` | `string` | — | Topic for failed messages after max retries |
-| `shutdownTimeoutMs` | `number` | — | Graceful shutdown timeout in ms |
+| `shutdownTimeoutMs` | `number` | — | How long `close()` waits for the consumer and producer to disconnect. Reconnects use it too, with `10000` when unset |
+| `handlerTimeoutMs` | `number` | — | Fails a handler that has not finished within this time, so the message goes through the retry/DLQ path instead of blocking the consumer |
 
 ### Async registration
 
@@ -458,6 +459,42 @@ The DLQ message carries additional headers:
 | `x-original-offset` | Source offset |
 | `x-failure-count` | Number of attempts |
 | `x-error` | Error message |
+
+---
+
+## Stuck handlers and stalled consumers
+
+`@confluentinc/kafka-javascript` runs `partitionsConsumedConcurrently` workers and waits for all of
+them before every rebalance, seek, pause or cache reset. A handler whose promise never settles, for
+example an outgoing call without a deadline to a server that lost the connection, therefore stops
+the whole consumer, not just its partition. Nothing is polled any more, and after
+`max.poll.interval.ms` librdkafka drops the member from the group.
+
+`handlerTimeoutMs` prevents this. When a handler runs longer, it is treated as failed with a
+`KafkaHandlerTimeoutError`: event messages are retried with `retryStrategy` and end up in the DLQ
+after `maxRetries`, RPC messages get the error as their reply. The handler promise itself cannot be
+cancelled and keeps running in the background, so handlers should stay idempotent.
+
+```ts
+createKafkaMicroservice({
+  options: {
+    brokers: ["kafka:9092"],
+    groupId: "my-service",
+    handlerTimeoutMs: 120000,
+    shutdownTimeoutMs: 10000,
+  },
+})
+```
+
+Pick the timeout above the slowest legitimate handler and below `max.poll.interval.ms`.
+
+Whether or not a timeout is set, the transport watches librdkafka for the `MAXPOLL` event
+("Application maximum poll interval exceeded"). When it fires, the status switches to
+`disconnected` and the transport reconnects: it waits up to `shutdownTimeoutMs` (10 s when unset)
+for the old consumer to disconnect, abandons it if it does not, and starts a fresh consumer.
+Rebalance callbacks, errors and offsets that arrive later from the abandoned consumer are ignored,
+so a handler that finally completes on it cannot commit through the new one; the message is
+processed again by the new consumer.
 
 ---
 
