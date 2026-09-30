@@ -13,3 +13,5 @@ updates:
       include: "scope"
     ignore:
       - dependency-name: "@nestjs/*"
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
