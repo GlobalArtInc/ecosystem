@@ -52,7 +52,7 @@
     "dequal": "2.0.3",
     "nanoid": "6.0.2",
     "prettier": "3.9.10",
-    "ts-pattern": "5.9.1",
+    "ts-pattern": "5.9.2",
     "uuid": "14.0.3",
     "zod": "4.6.7"
   },
