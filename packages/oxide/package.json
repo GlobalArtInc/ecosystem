@@ -43,7 +43,7 @@
   "devDependencies": {
     "@types/node": "26.6.5",
     "prettier": "3.9.10",
-    "tsdown": "0.23.1",
+    "tsdown": "0.23.2",
     "typescript": "^7.0.2"
   },
   "publishConfig": {
