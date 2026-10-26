@@ -59,7 +59,7 @@
     "@types/node": "26.6.5",
     "prettier": "^3.8.3",
     "reflect-metadata": "^0.2.2",
-    "tsdown": "0.23.1",
+    "tsdown": "0.23.2",
     "typescript": "^7.0.2"
   }
 }
