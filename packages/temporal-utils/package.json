@@ -48,7 +48,7 @@
     "@temporalio/common": "^1.17.2",
     "@temporalio/worker": "^1.17.2",
     "@temporalio/workflow": "^1.17.2",
-    "croner": "^10.0.1",
+    "croner": "^11.0.0",
     "date-fns": "^4.4.0",
     "lodash": "^4.18.1",
     "rxjs": "^7.8.2"
