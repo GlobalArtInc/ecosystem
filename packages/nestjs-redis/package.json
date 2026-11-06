@@ -58,7 +58,7 @@
   },
   "devDependencies": {
     "reflect-metadata": "^0.2.2",
-    "tsdown": "0.23.4",
+    "tsdown": "0.23.5",
     "typescript": "^7.0.2"
   },
   "publishConfig": {
