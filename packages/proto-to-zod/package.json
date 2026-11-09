@@ -39,7 +39,7 @@
     "@types/node": "26.6.6",
     "prettier": "3.9.10",
     "ts-node": "^10.9.2",
-    "tsdown": "0.23.5",
+    "tsdown": "0.23.7",
     "typescript": "^7.0.2"
   },
   "dependencies": {
