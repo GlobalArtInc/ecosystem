@@ -32,7 +32,7 @@
     "tldts": "7.5.2"
   },
   "devDependencies": {
-    "prettier": "3.9.10",
+    "prettier": "3.10.1",
     "rxjs": "7.8.2",
     "tsdown": "0.23.7",
     "typescript": "7.0.2"
