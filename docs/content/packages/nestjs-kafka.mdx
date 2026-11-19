@@ -173,6 +173,7 @@ export class AppService implements OnModuleInit {
 | `deadLetterTopic` | `string` | — | Topic for failed messages after max retries |
 | `shutdownTimeoutMs` | `number` | — | How long `close()` waits for the consumer and producer to disconnect. Reconnects use it too, with `10000` when unset |
 | `handlerTimeoutMs` | `number` | — | Fails a handler that has not finished within this time, so the message goes through the retry/DLQ path instead of blocking the consumer |
+| `rebalanceStallTimeoutMs` | `number` | `2 * maxPollIntervalMs + 60000` (660000 when nothing is configured) | Rebuilds the consumer when no partition assignment arrives within this time after startup or a revoke; `0` disables the watchdog, negative and non-finite values behave like unset. `maxPollIntervalMs` is `consumer.rebalanceTimeout` (it overrides the rdkafka value in `@confluentinc/kafka-javascript`), else `consumerRdKafka.maxPollIntervalMs`, else 300000 |
 
 ### Async registration
 
@@ -495,6 +496,23 @@ for the old consumer to disconnect, abandons it if it does not, and starts a fre
 Rebalance callbacks, errors and offsets that arrive later from the abandoned consumer are ignored,
 so a handler that finally completes on it cannot commit through the new one; the message is
 processed again by the new consumer.
+
+A fatal librdkafka consumer error is a second way for a consumer to die silently. The typical cause
+is static membership (`group.instance.id`) being fenced after the group coordinator moved, for
+example during a broker or KRaft migration. From that point on librdkafka leaves the group and fails
+every commit, and the only fix is to destroy and recreate the consumer. The transport detects this
+from the `Local: Fatal error` message that `@confluentinc/kafka-javascript` logs and from librdkafka
+`FATAL` log events, and rebuilds the consumer the same way as for `MAXPOLL`. As a backstop for
+failure modes that are not recognised, a stall watchdog (`rebalanceStallTimeoutMs`) reconnects when
+no partition assignment has arrived after startup or after a revoke. `@confluentinc/kafka-javascript`
+effectively doubles `max.poll.interval.ms`, and a legitimate rebalance can last that long, so the
+default is twice `maxPollIntervalMs` plus 60 seconds (660000 ms when nothing is configured); a
+shorter timeout would cause rebalance storms. With `consumerRdKafka.groupProtocol: "consumer"`
+(KIP-848) librdkafka does not report an unchanged assignment, so the startup timer is not armed
+there and only a revoke starts the watchdog.
+
+Consumer logs from `@confluentinc/kafka-javascript` now go through the Nest logger, or through
+`consumer.logger` when you set one, instead of being printed to the console as JSON objects.
 
 ---
 

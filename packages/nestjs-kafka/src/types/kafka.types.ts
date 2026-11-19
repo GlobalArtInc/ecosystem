@@ -87,6 +87,8 @@ export interface KafkaOptions {
   deadLetterTopic?: string;
   shutdownTimeoutMs?: number;
   handlerTimeoutMs?: number;
+  /** Reconnects when no partition assignment arrives this long after startup or a revoke. Defaults to 2 * max.poll.interval.ms + 60000 (660000 when unset); 0 disables. */
+  rebalanceStallTimeoutMs?: number;
   /** Auto-creates subscribed topics before the consumer starts. Enabled by default with broker defaults; pass an object to set numPartitions/replicationFactor, or false to disable. */
   autoCreateTopics?: Omit<KafkaJS.ITopicConfig, 'topic'> | false;
   /** When true, consumer runs in eachBatch mode instead of eachMessage. */

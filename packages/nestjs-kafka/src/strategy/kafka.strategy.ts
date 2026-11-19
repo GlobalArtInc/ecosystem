@@ -51,8 +51,18 @@ import type {
 } from "../types/kafka.types";
 import { KafkaStatus as Status } from "../types/kafka.types";
 import { KafkaHandlerTimeoutError } from "../errors/kafka-handler-timeout.error";
+import { isFatalConsumerMessage } from "../utils/kafka-fatal";
 
 const RECONNECT_DISCONNECT_TIMEOUT_MS = 10000;
+const DEFAULT_MAX_POLL_INTERVAL_MS = 300000;
+const REBALANCE_STALL_MARGIN_MS = 60000;
+const MAX_TIMER_DELAY_MS = 2147483647;
+const FATAL_LOG_MESSAGE_LIMIT = 200;
+
+const positiveNumber = (value: unknown): number | undefined =>
+  typeof value === "number" && Number.isFinite(value) && value > 0
+    ? value
+    : undefined;
 
 /** NestJS custom transport strategy backed by rdkafka via KafkaJS. */
 export class KafkaStrategy
@@ -65,6 +75,8 @@ export class KafkaStrategy
   private consumer: KafkaJS.Consumer | undefined;
   private producer: KafkaJS.Producer | undefined;
   private commitTimer: ReturnType<typeof setInterval> | undefined;
+  private rebalanceStallTimer: ReturnType<typeof setTimeout> | undefined;
+  private pendingFatal = false;
   private pendingOffsets = new Map<string, KafkaJS.TopicPartitionOffsetAndMetadata>();
   private failureCounts = new Map<string, number>();
   private closed = false;
@@ -116,6 +128,83 @@ export class KafkaStrategy
     }
   }
 
+  private getRebalanceStallTimeoutMs(): number {
+    const configured = this.options.rebalanceStallTimeoutMs;
+    if (
+      typeof configured === "number" &&
+      Number.isFinite(configured) &&
+      configured >= 0
+    ) {
+      return Math.min(configured, MAX_TIMER_DELAY_MS);
+    }
+    const maxPollIntervalMs =
+      positiveNumber(this.options.consumer?.rebalanceTimeout) ??
+      positiveNumber(this.options.consumerRdKafka?.maxPollIntervalMs) ??
+      DEFAULT_MAX_POLL_INTERVAL_MS;
+    return Math.min(
+      maxPollIntervalMs * 2 + REBALANCE_STALL_MARGIN_MS,
+      MAX_TIMER_DELAY_MS,
+    );
+  }
+
+  private clearRebalanceStallTimer(): void {
+    if (this.rebalanceStallTimer !== undefined) {
+      clearTimeout(this.rebalanceStallTimer);
+      this.rebalanceStallTimer = undefined;
+    }
+  }
+
+  private armRebalanceStallTimer(isCurrent: () => boolean): void {
+    if (!isCurrent()) return;
+    this.clearRebalanceStallTimer();
+    const timeoutMs = this.getRebalanceStallTimeoutMs();
+    if (timeoutMs === 0) return;
+    const timer = setTimeout(() => {
+      if (this.rebalanceStallTimer === timer) {
+        this.rebalanceStallTimer = undefined;
+      }
+      if (this.closed || this.reconnecting || !isCurrent()) return;
+      this.logger.error(
+        `Kafka consumer received no partition assignment for ${timeoutMs}ms, reconnecting`,
+      );
+      this.scheduleReconnect();
+    }, timeoutMs);
+    timer.unref?.();
+    this.rebalanceStallTimer = timer;
+  }
+
+  private createConsumerLogger(
+    onFatal: (message: string) => void,
+    userLogger: KafkaJS.Logger | undefined,
+  ): KafkaJS.Logger {
+    let level: KafkaJS.logLevel = KafkaJS.logLevel.INFO;
+    const consumerLogger: KafkaJS.Logger = {
+      info: (message: string, extra?: object) => {
+        if (userLogger) userLogger.info(message, extra);
+        else if (level >= KafkaJS.logLevel.INFO) this.logger.log(message);
+      },
+      warn: (message: string, extra?: object) => {
+        if (userLogger) userLogger.warn(message, extra);
+        else if (level >= KafkaJS.logLevel.WARN) this.logger.warn(message);
+      },
+      error: (message: string, extra?: object) => {
+        if (isFatalConsumerMessage(message)) onFatal(message);
+        if (userLogger) userLogger.error(message, extra);
+        else if (level >= KafkaJS.logLevel.ERROR) this.logger.error(message);
+      },
+      debug: (message: string, extra?: object) => {
+        if (userLogger) userLogger.debug(message, extra);
+        else if (level >= KafkaJS.logLevel.DEBUG) this.logger.debug(message);
+      },
+      namespace: () => consumerLogger,
+      setLogLevel: (next: KafkaJS.logLevel) => {
+        level = next;
+        userLogger?.setLogLevel(next);
+      },
+    };
+    return consumerLogger;
+  }
+
   private async connect(): Promise<void> {
     const { clientId, groupId } = applyPostfix(
       this.options,
@@ -124,6 +213,9 @@ export class KafkaStrategy
     const kafka = this.createKafka(clientId);
     const generation = ++this.generation;
     const isCurrent = () => generation === this.generation && !this.closed;
+    let assigned = false;
+    this.pendingFatal = false;
+    this.clearRebalanceStallTimer();
 
     const rebalanceCb = async (
       err: { code: number; message: string },
@@ -143,11 +235,15 @@ export class KafkaStrategy
       }
       if (err.code === CODES.ERRORS.ERR__REVOKE_PARTITIONS) {
         this.rebalancing = true;
+        assigned = false;
+        this.armRebalanceStallTimer(isCurrent);
         this.pendingOffsets.clear();
         this.failureCounts.clear();
         this.logger.log(`Rebalance: revoking ${assignment.length} partition(s), pausing consumption`);
         assignmentFns.unassign(assignment);
       } else if (err.code === CODES.ERRORS.ERR__ASSIGN_PARTITIONS) {
+        assigned = true;
+        this.clearRebalanceStallTimer();
         this.pendingOffsets.clear();
         this.failureCounts.clear();
         this.rebalancing = false;
@@ -163,6 +259,23 @@ export class KafkaStrategy
         groupId,
         ...(this.options.consumer ?? {}),
         autoCommit: false,
+        logger: this.createConsumerLogger((message) => {
+          try {
+            if (!isCurrent()) return;
+            if (this.reconnecting) {
+              this.pendingFatal = true;
+              return;
+            }
+            this.logger.error(
+              `Fatal Kafka consumer error, reconnecting: ${message.slice(0, FATAL_LOG_MESSAGE_LIMIT)}`,
+            );
+            this.scheduleReconnect();
+          } catch (err) {
+            this.logger.error(
+              `Failed to handle fatal consumer error: ${String(err)}`,
+            );
+          }
+        }, this.options.consumer?.logger),
       },
     });
     this.producer = kafka.producer({
@@ -177,13 +290,17 @@ export class KafkaStrategy
     const internalClient = (this.consumer as any)._getInternalClient?.();
     if (internalClient) {
       internalClient.on('event.error', (err: { isFatal?: boolean; message?: string }) => {
-        if (err.isFatal && isCurrent()) {
+        const fatal = err.isFatal || isFatalConsumerMessage(err.message);
+        if (fatal && isCurrent()) {
           this.logger.error(`Fatal Kafka consumer error: ${err.message}`);
           this.scheduleReconnect();
         }
       });
       internalClient.on('event.log', (log: { fac?: string; message?: string }) => {
-        if (log.fac === 'MAXPOLL' && isCurrent()) {
+        if (log.fac === "FATAL" && isCurrent()) {
+          this.logger.error(`Kafka consumer fatal event: ${log.message}`);
+          this.scheduleReconnect();
+        } else if (log.fac === 'MAXPOLL' && isCurrent()) {
           this.logger.error(`Kafka consumer stopped polling: ${log.message}`);
           this.scheduleReconnect();
         }
@@ -251,6 +368,13 @@ export class KafkaStrategy
           },
         });
       }
+      if (
+        !assigned &&
+        this.rebalanceStallTimer === undefined &&
+        this.options.consumerRdKafka?.groupProtocol !== "consumer"
+      ) {
+        this.armRebalanceStallTimer(isCurrent);
+      }
     }
   }
 
@@ -258,6 +382,7 @@ export class KafkaStrategy
     if (attempt === 1 && this.reconnecting) return;
     this.reconnecting = true;
     this.rebalancing = false;
+    this.clearRebalanceStallTimer();
     const delay = Math.min(1000 * 2 ** (attempt - 1), 30000);
     this.logger.warn(`Reconnecting in ${delay}ms (attempt ${attempt})`);
     this._status$.next(Status.DISCONNECTED);
@@ -273,6 +398,10 @@ export class KafkaStrategy
         );
         await this.connect();
         this.reconnecting = false;
+        if (this.pendingFatal && !this.closed) {
+          this.pendingFatal = false;
+          this.scheduleReconnect();
+        }
       } catch (err) {
         this.logger.error(`Reconnect attempt ${attempt} failed`, err);
         this.scheduleReconnect(attempt + 1);
@@ -285,6 +414,8 @@ export class KafkaStrategy
     this.closed = true;
     this.reconnecting = false;
     this.rebalancing = false;
+    this.pendingFatal = false;
+    this.clearRebalanceStallTimer();
     clearInterval(this.commitTimer);
     this.pendingOffsets.clear();
     this.failureCounts.clear();
